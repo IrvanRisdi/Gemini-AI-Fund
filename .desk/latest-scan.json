@@ -1,47 +1,15 @@
 {
-  "timestamp": "2026-08-24T22:03:41.668Z",
+  "timestamp": "2026-08-24T22:36:44.485Z",
   "pairsScanned": 19,
   "candidates": [
     {
       "pair": "solidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
+      "agent": "wyckoff-trader",
+      "reason": "possible UTAD: wicked above the 20-bar range high (1726567) on below-average volume (0.15x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
       "data": {
-        "volRatio": 6.49861134529098,
-        "close": 1720344,
-        "resistance20": 1713626
-      }
-    },
-    {
-      "pair": "solidr",
-      "agent": "breakout-specialist",
-      "reason": "squeeze (ATR ratio 0.64, bandwidth pctile 35) resolving up through range high, volume confirms",
-      "data": {
-        "atrRatio": 0.6371621198848705,
-        "bandwidthPercentile": 35,
-        "volRatio": 6.49861134529098
-      }
-    },
-    {
-      "pair": "bnbidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
-      "data": {
-        "prevOpen": 12450658,
-        "prevClose": 12464535,
-        "lastOpen": 12464535,
-        "lastClose": 12420897
-      }
-    },
-    {
-      "pair": "hypeidr",
-      "agent": "fibonacci-trader",
-      "reason": "38.2% retracement (1379509.316000) of swing high 1385342->low 1375904 tagged with a bearish reaction candle",
-      "data": {
-        "level": 0.382,
-        "price": 1379509.316,
-        "swingHigh": 1385342,
-        "swingLow": 1375904
+        "rangeHigh": 1726567,
+        "rangeLow": 1675803,
+        "volRatio": 0.14966482904559536
       }
     }
   ],
