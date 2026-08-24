@@ -437,7 +437,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (PEPE/IDR) — LONG entry @ Rp0,073, stop Rp0,072 (2026-08-24T13:05 UTC)",
+      "last_action": "1 open (BNB/IDR) — LONG entry @ Rp12.464.553, stop Rp12.215.261,94 (2026-08-24T17:18 UTC)",
       "fired_date": "2026-08-21",
       "fire_reason": "User request 2026-08-21 — making room for the four new pattern-based specialists. Never traded by design (no place_order in its own SKILL.md, pure regime-classification role); freeing its book slot rather than leaving it permanently flat."
     },
@@ -467,7 +467,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (BNB/IDR) — LONG entry @ Rp12.460.902, stop Rp12.211.683,96 (2026-08-24T15:03 UTC)"
+      "last_action": "1 open (SUI/IDR) — LONG entry @ Rp14.435, stop Rp14.146,3 (2026-08-24T17:18 UTC)"
     },
     "supply-demand-trader": {
       "status": "active",

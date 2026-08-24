@@ -46,3 +46,20 @@ _None._
 * **Target:** Rp0,077
 * **Reason:** realized vol expanding — short-window vol is 1.60x the longer-window baseline
 * **Allocated:** Rp4.500.000
+
+
+---
+### 2026-08-24T17:18 UTC — Position Closed: LONG PEPE/IDR
+* **Exit Price:** Rp0,071
+* **Realized PnL:** Rp-124.112
+* **Reason:** Stop Loss hit @ Rp0,071
+* **New Balance:** Rp17.875.888
+
+
+---
+### 2026-08-24T17:18 UTC — Position Opened: LONG BNB/IDR
+* **Entry Price:** Rp12.464.553
+* **Stop Loss:** Rp12.215.261,94
+* **Target:** Rp13.087.780,65
+* **Reason:** realized vol expanding — short-window vol is 1.67x the longer-window baseline
+* **Allocated:** Rp4.468.972

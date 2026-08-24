@@ -26,3 +26,21 @@ _None._
 * **Target:** Rp13.083.947,1
 * **Reason:** possible UTAD: wicked above the 20-bar range high (12482443) on below-average volume (0.57x), closed back inside — Phase C test candidate, needs the Test bar to confirm
 * **Allocated:** Rp4.500.000
+
+
+---
+### 2026-08-24T17:18 UTC — Position Opened: LONG DOGE/IDR
+* **Entry Price:** Rp1.598
+* **Stop Loss:** Rp1.566,04
+* **Target:** Rp1.677,9
+* **Reason:** possible Spring: wicked below the 20-bar range low (1597) on below-average volume (0.38x), closed back inside — Phase C test candidate, needs the Test bar to confirm
+* **Allocated:** Rp4.500.000
+
+
+---
+### 2026-08-24T17:18 UTC — Position Opened: LONG SUI/IDR
+* **Entry Price:** Rp14.435
+* **Stop Loss:** Rp14.146,3
+* **Target:** Rp15.156,75
+* **Reason:** possible Spring: wicked below the 20-bar range low (14358) on below-average volume (0.23x), closed back inside — Phase C test candidate, needs the Test bar to confirm
+* **Allocated:** Rp4.500.000
