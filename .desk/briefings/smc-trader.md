@@ -93,3 +93,21 @@ _None._
 * **Target:** Rp6.363
 * **Reason:** sell-side liquidity sweep + bullish CHoCH confirmed (within 5 bars)
 * **Allocated:** Rp4.500.000
+
+
+---
+### 2026-08-24T14:04 UTC — Position Opened: SHORT DOGE/IDR
+* **Entry Price:** Rp1.606
+* **Stop Loss:** Rp1.638,12
+* **Target:** Rp1.525,7
+* **Reason:** buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)
+* **Allocated:** Rp4.500.000
+
+
+---
+### 2026-08-24T14:04 UTC — Position Opened: SHORT BNB/IDR
+* **Entry Price:** Rp12.329.598
+* **Stop Loss:** Rp12.576.189,96
+* **Target:** Rp11.713.118,1
+* **Reason:** buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)
+* **Allocated:** Rp4.500.000

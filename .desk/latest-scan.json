@@ -1,146 +1,71 @@
 {
-  "timestamp": "2026-08-24T13:05:08.786Z",
+  "timestamp": "2026-08-24T14:04:55.474Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "btcidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
-      "data": {
-        "volRatio": 2.9461854408325285,
-        "close": 1393797000,
-        "resistance20": 1385657000
-      }
-    },
-    {
-      "pair": "btcidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 1385656000, distal 1383000000) retested for the first time and held, 2.8x ATR departure",
-      "data": {
-        "zoneProximal": 1385656000,
-        "zoneDistal": 1383000000,
-        "departureToAtr": 2.829826269282612
-      }
-    },
-    {
-      "pair": "ethidr",
-      "agent": "momentum-trader",
-      "reason": "bullish breakout: ADX>25, EMA9>EMA21, RSI in 50-80, close above 20-bar resistance, volume>1.5x",
-      "data": {
-        "adx14": 27.427687200665595,
-        "rsi14": 67.50651736208914,
-        "volRatio": 7.312228840382332
-      }
-    },
-    {
-      "pair": "ethidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
-      "data": {
-        "volRatio": 7.312228840382332,
-        "close": 44288000,
-        "resistance20": 44200000
-      }
-    },
-    {
-      "pair": "xrpidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
-      "data": {
-        "volRatio": 6.423435425698746,
-        "close": 26800,
-        "resistance20": 26750
-      }
-    },
-    {
       "pair": "dogeidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
+      "agent": "smc-trader",
+      "reason": "buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)",
       "data": {
-        "volRatio": 2.607053023951516,
-        "close": 1644,
-        "resistance20": 1638
+        "sweepVolRatio": 1.5080479643754485,
+        "poolPrice": 1637
       }
     },
     {
-      "pair": "pepeidr",
+      "pair": "bnbidr",
+      "agent": "smc-trader",
+      "reason": "buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)",
+      "data": {
+        "sweepVolRatio": 0.12595424891552062,
+        "poolPrice": 12449370
+      }
+    },
+    {
+      "pair": "adaidr",
+      "agent": "smc-trader",
+      "reason": "buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)",
+      "data": {
+        "sweepVolRatio": 1.718084793632326,
+        "poolPrice": 3950
+      }
+    },
+    {
+      "pair": "tonidr",
       "agent": "volatility-analyst",
       "reason": "realized vol expanding — short-window vol is 1.60x the longer-window baseline",
       "data": {
-        "rvShort": 0.010988123212966328,
-        "rvLong": 0.00686142334827752,
-        "ratio": 1.6014349582036456
-      }
-    },
-    {
-      "pair": "pepeidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 0.072299, distal 0.071568) retested for the first time and held, 3.3x ATR departure",
-      "data": {
-        "zoneProximal": 0.072299,
-        "zoneDistal": 0.071568,
-        "departureToAtr": 3.262070622147491
-      }
-    },
-    {
-      "pair": "suiidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
-      "data": {
-        "volRatio": 1.7789730186117634,
-        "close": 14796,
-        "resistance20": 14731
-      }
-    },
-    {
-      "pair": "hypeidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
-      "data": {
-        "volRatio": 3.345519567684209,
-        "close": 1420001,
-        "resistance20": 1420000
-      }
-    },
-    {
-      "pair": "tonidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 26235, distal 26332) retested for the first time and held, 2.0x ATR departure",
-      "data": {
-        "zoneProximal": 26235,
-        "zoneDistal": 26332,
-        "departureToAtr": 2.04172517552658
-      }
-    },
-    {
-      "pair": "tonidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
-      "data": {
-        "prevOpen": 26235,
-        "prevClose": 26332,
-        "lastOpen": 26332,
-        "lastClose": 25605
+        "rvShort": 0.025366529006362833,
+        "rvLong": 0.015810492945142723,
+        "ratio": 1.6044110132667242
       }
     },
     {
       "pair": "ltcidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 939000, distal 931000) retested for the first time and held, 2.3x ATR departure",
+      "agent": "smc-trader",
+      "reason": "buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)",
       "data": {
-        "zoneProximal": 939000,
-        "zoneDistal": 931000,
-        "departureToAtr": 2.3106796116504853
+        "sweepVolRatio": 0.12103188935503652,
+        "poolPrice": 940000
+      }
+    },
+    {
+      "pair": "avaxidr",
+      "agent": "volatility-analyst",
+      "reason": "realized vol expanding — short-window vol is 1.80x the longer-window baseline",
+      "data": {
+        "rvShort": 0.01150212288275085,
+        "rvLong": 0.006380286206366105,
+        "ratio": 1.8027597055558875
       }
     },
     {
       "pair": "uniidr",
       "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.77x the longer-window baseline",
+      "reason": "realized vol expanding — short-window vol is 1.99x the longer-window baseline",
       "data": {
-        "rvShort": 0.02810384326180877,
-        "rvLong": 0.015889897744005673,
-        "ratio": 1.7686610521084505
+        "rvShort": 0.034695464129788876,
+        "rvLong": 0.017421553657328212,
+        "ratio": 1.9915252572892406
       }
     }
   ],
