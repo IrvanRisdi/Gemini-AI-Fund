@@ -1,47 +1,80 @@
 {
-  "timestamp": "2026-08-24T15:03:22.899Z",
+  "timestamp": "2026-08-24T15:58:29.084Z",
   "pairsScanned": 19,
   "candidates": [
     {
       "pair": "btcidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.67x the longer-window baseline",
+      "agent": "candlestick-trader",
+      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
       "data": {
-        "rvShort": 0.005074582938066299,
-        "rvLong": 0.0030358507640270123,
-        "ratio": 1.6715521718646467
+        "prevOpen": 1404210000,
+        "prevClose": 1409200000,
+        "lastOpen": 1409200000,
+        "lastClose": 1398000000
       }
     },
     {
-      "pair": "dogeidr",
-      "agent": "fibonacci-trader",
-      "reason": "61.8% retracement (1627.900000) of swing high 1647->low 1597 tagged with a bearish reaction candle",
+      "pair": "ethidr",
+      "agent": "candlestick-trader",
+      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
       "data": {
-        "level": 0.618,
-        "price": 1627.9,
-        "swingHigh": 1647,
-        "swingLow": 1597
+        "prevOpen": 44399000,
+        "prevClose": 44566000,
+        "lastOpen": 44600000,
+        "lastClose": 44175000
+      }
+    },
+    {
+      "pair": "xrpidr",
+      "agent": "candlestick-trader",
+      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
+      "data": {
+        "prevOpen": 26737,
+        "prevClose": 26943,
+        "lastOpen": 26943,
+        "lastClose": 26438
+      }
+    },
+    {
+      "pair": "pepeidr",
+      "agent": "candlestick-trader",
+      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
+      "data": {
+        "prevOpen": 0.073111,
+        "prevClose": 0.073602,
+        "lastOpen": 0.073743,
+        "lastClose": 0.072509
+      }
+    },
+    {
+      "pair": "suiidr",
+      "agent": "candlestick-trader",
+      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
+      "data": {
+        "prevOpen": 14665,
+        "prevClose": 14800,
+        "lastOpen": 14800,
+        "lastClose": 14662
+      }
+    },
+    {
+      "pair": "bnbidr",
+      "agent": "volatility-analyst",
+      "reason": "realized vol expanding — short-window vol is 1.74x the longer-window baseline",
+      "data": {
+        "rvShort": 0.007015074094315908,
+        "rvLong": 0.00402159966383659,
+        "ratio": 1.744349184578844
       }
     },
     {
       "pair": "bnbidr",
       "agent": "wyckoff-trader",
-      "reason": "possible UTAD: wicked above the 20-bar range high (12482443) on below-average volume (0.57x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+      "reason": "possible UTAD: wicked above the 20-bar range high (12625000) on below-average volume (0.19x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
       "data": {
-        "rangeHigh": 12482443,
+        "rangeHigh": 12625000,
         "rangeLow": 12297401,
-        "volRatio": 0.5737295102292236
-      }
-    },
-    {
-      "pair": "bnbidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
-      "data": {
-        "prevOpen": 12465200,
-        "prevClose": 12475637,
-        "lastOpen": 12475638,
-        "lastClose": 12460901
+        "volRatio": 0.18986585039506473
       }
     },
     {
@@ -49,10 +82,10 @@
       "agent": "candlestick-trader",
       "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
       "data": {
-        "prevOpen": 1406173,
-        "prevClose": 1413200,
-        "lastOpen": 1414611,
-        "lastClose": 1400070
+        "prevOpen": 1402295,
+        "prevClose": 1413175,
+        "lastOpen": 1413319,
+        "lastClose": 1390256
       }
     },
     {
@@ -60,30 +93,31 @@
       "agent": "candlestick-trader",
       "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
       "data": {
-        "prevOpen": 3957,
-        "prevClose": 3965,
-        "lastOpen": 3970,
-        "lastClose": 3950
+        "prevOpen": 3953,
+        "prevClose": 3989,
+        "lastOpen": 3990,
+        "lastClose": 3933
       }
     },
     {
-      "pair": "avaxidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.61x the longer-window baseline",
+      "pair": "shibidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 0.097403, distal 0.097517) retested for the first time and held, 3.2x ATR departure",
       "data": {
-        "rvShort": 0.010617329876121745,
-        "rvLong": 0.006586552507350784,
-        "ratio": 1.6119707334409763
+        "zoneProximal": 0.097403,
+        "zoneDistal": 0.097517,
+        "departureToAtr": 3.1896157840083053
       }
     },
     {
-      "pair": "uniidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.65x the longer-window baseline",
+      "pair": "shibidr",
+      "agent": "candlestick-trader",
+      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
       "data": {
-        "rvShort": 0.028927611658041433,
-        "rvLong": 0.01748241884431605,
-        "ratio": 1.654668722654845
+        "prevOpen": 0.09668,
+        "prevClose": 0.096821,
+        "lastOpen": 0.09748,
+        "lastClose": 0.096258
       }
     }
   ],
