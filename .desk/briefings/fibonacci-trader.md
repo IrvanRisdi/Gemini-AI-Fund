@@ -22,3 +22,12 @@
 
 ## Open Questions
 _None._
+
+
+---
+### 2026-08-24T08:54 UTC — Position Opened: SHORT LTC/IDR
+* **Entry Price:** Rp915.000
+* **Stop Loss:** Rp933.300
+* **Target:** Rp869.250
+* **Reason:** 38.2% retracement (919910.000000) of swing high 923000->low 918000 tagged with a bearish reaction candle
+* **Allocated:** Rp4.490.555

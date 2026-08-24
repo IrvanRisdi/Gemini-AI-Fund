@@ -1,7 +1,7 @@
 {
   "desk": {
     "created": "2026-07-13",
-    "last_session": "2026-08-21",
+    "last_session": "2026-08-24",
     "mode": "paper"
   },
   "agents": {
@@ -495,7 +495,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Hired — awaiting first assignment"
+      "last_action": "1 open (BNB/IDR) — LONG entry @ Rp12.279.307, stop Rp12.033.720,86 (2026-08-24T08:54 UTC)"
     },
     "fibonacci-trader": {
       "status": "active",
@@ -523,7 +523,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened LONG BTC/IDR @ Rp1.364.416.000 (38.2% retracement (1364416000.000000) of swing low 1357000000->high 1369000000 tagged with a bullish reaction candle)"
+      "last_action": "1 open (LTC/IDR) — SHORT entry @ Rp915.000, stop Rp933.300 (2026-08-24T08:54 UTC)"
     },
     "candlestick-trader": {
       "status": "active",
@@ -551,7 +551,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Hired — awaiting first assignment"
+      "last_action": "1 open (PEPE/IDR) — SHORT entry @ Rp0,071, stop Rp0,072 (2026-08-24T08:54 UTC)"
     }
   },
   "exchanges": {}

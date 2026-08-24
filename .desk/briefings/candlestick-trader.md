@@ -31,3 +31,12 @@
 
 ## Open Questions
 _None._
+
+
+---
+### 2026-08-24T08:54 UTC — Position Opened: SHORT PEPE/IDR
+* **Entry Price:** Rp0,071
+* **Stop Loss:** Rp0,072
+* **Target:** Rp0,067
+* **Reason:** Bullish Engulfing after a short downtrend (Level 1 reversal pattern)
+* **Allocated:** Rp4.500.000

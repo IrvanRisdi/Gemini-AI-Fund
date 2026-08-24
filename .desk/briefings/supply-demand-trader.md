@@ -46,3 +46,12 @@
 
 ## Open Questions
 _None._
+
+
+---
+### 2026-08-24T08:54 UTC — Position Opened: LONG BNB/IDR
+* **Entry Price:** Rp12.279.307
+* **Stop Loss:** Rp12.033.720,86
+* **Target:** Rp12.893.272,35
+* **Reason:** fresh supply zone (proximal 12316268, distal 12344072) retested for the first time and held, 2.9x ATR departure
+* **Allocated:** Rp4.500.000
