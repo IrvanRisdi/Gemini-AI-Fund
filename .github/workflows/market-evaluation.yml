@@ -18,7 +18,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0 # Ambil riwayat lengkap agar rebase berjalan lancar
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,9 +34,13 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: npx tsx scripts/daily-evaluation.ts
 
-      - name: Commit Updated Briefings & Config
+      - name: Commit Updated Briefings
         run: |
           git config --global user.name "Gemini Evaluator"
           git config --global user.email "evaluator@gemini-ai-fund.local"
-          git add .desk/ config/
-          git diff-index --quiet HEAD || (git commit -m "chore(gemini): update session review & strategy config [skip ci]" && git push)
+          git add .desk/
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "chore(gemini): update session review [skip ci]"
+            git pull --rebase origin main
+            git push origin main
+          fi
