@@ -467,7 +467,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Hired — awaiting first assignment"
+      "last_action": "1 open (BNB/IDR) — LONG entry @ Rp12.460.902, stop Rp12.211.683,96 (2026-08-24T15:03 UTC)"
     },
     "supply-demand-trader": {
       "status": "active",
@@ -523,7 +523,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Closed SHORT LINK/IDR (Rp-125.677) — Stop Loss hit @ Rp208.344 (2026-08-24T13:05 UTC)"
+      "last_action": "1 open (DOGE/IDR) — SHORT entry @ Rp1.630, stop Rp1.662,6 (2026-08-24T15:03 UTC)"
     },
     "candlestick-trader": {
       "status": "active",
@@ -551,7 +551,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (TON/IDR) — SHORT entry @ Rp26.339, stop Rp26.865,78 (2026-08-24T13:05 UTC)"
+      "last_action": "1 open (HYPE/IDR) — SHORT entry @ Rp1.397.454, stop Rp1.425.403,08 (2026-08-24T15:03 UTC)"
     }
   },
   "exchanges": {}

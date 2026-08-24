@@ -17,3 +17,12 @@
 
 ## Open Questions
 _None._
+
+
+---
+### 2026-08-24T15:03 UTC — Position Opened: LONG BNB/IDR
+* **Entry Price:** Rp12.460.902
+* **Stop Loss:** Rp12.211.683,96
+* **Target:** Rp13.083.947,1
+* **Reason:** possible UTAD: wicked above the 20-bar range high (12482443) on below-average volume (0.57x), closed back inside — Phase C test candidate, needs the Test bar to confirm
+* **Allocated:** Rp4.500.000

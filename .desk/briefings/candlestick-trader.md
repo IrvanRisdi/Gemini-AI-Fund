@@ -91,3 +91,21 @@ _None._
 * **Target:** Rp25.022,05
 * **Reason:** Bearish Engulfing after a short uptrend (Level 1 reversal pattern)
 * **Allocated:** Rp4.426.367
+
+
+---
+### 2026-08-24T15:03 UTC — Position Opened: SHORT BNB/IDR
+* **Entry Price:** Rp12.460.902
+* **Stop Loss:** Rp12.710.120,04
+* **Target:** Rp11.837.856,9
+* **Reason:** Bearish Engulfing after a short uptrend (Level 1 reversal pattern)
+* **Allocated:** Rp4.426.367
+
+
+---
+### 2026-08-24T15:03 UTC — Position Opened: SHORT HYPE/IDR
+* **Entry Price:** Rp1.397.454
+* **Stop Loss:** Rp1.425.403,08
+* **Target:** Rp1.327.581,3
+* **Reason:** Bearish Engulfing after a short uptrend (Level 1 reversal pattern)
+* **Allocated:** Rp4.426.367

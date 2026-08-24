@@ -65,3 +65,12 @@ _None._
 * **Realized PnL:** Rp-125.677
 * **Reason:** Stop Loss hit @ Rp208.344
 * **New Balance:** Rp17.733.481
+
+
+---
+### 2026-08-24T15:03 UTC — Position Opened: SHORT DOGE/IDR
+* **Entry Price:** Rp1.630
+* **Stop Loss:** Rp1.662,6
+* **Target:** Rp1.548,5
+* **Reason:** 61.8% retracement (1627.900000) of swing high 1647->low 1597 tagged with a bearish reaction candle
+* **Allocated:** Rp4.433.370

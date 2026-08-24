@@ -1,64 +1,89 @@
 {
-  "timestamp": "2026-08-24T14:42:56.950Z",
+  "timestamp": "2026-08-24T15:03:22.899Z",
   "pairsScanned": 19,
   "candidates": [
-    {
-      "pair": "btcidr",
-      "agent": "momentum-trader",
-      "reason": "bullish breakout: ADX>25, EMA9>EMA21, RSI in 50-80, close above 20-bar resistance, volume>1.5x",
-      "data": {
-        "adx14": 25.032883556977062,
-        "rsi14": 68.11768476370645,
-        "volRatio": 2.701117866244954
-      }
-    },
-    {
-      "pair": "btcidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
-      "data": {
-        "volRatio": 2.701117866244954,
-        "close": 1397579000,
-        "resistance20": 1395632000
-      }
-    },
     {
       "pair": "btcidr",
       "agent": "volatility-analyst",
       "reason": "realized vol expanding — short-window vol is 1.67x the longer-window baseline",
       "data": {
-        "rvShort": 0.0051058249671132976,
-        "rvLong": 0.0030493158706910092,
-        "ratio": 1.6744165523121946
+        "rvShort": 0.005074582938066299,
+        "rvLong": 0.0030358507640270123,
+        "ratio": 1.6715521718646467
+      }
+    },
+    {
+      "pair": "dogeidr",
+      "agent": "fibonacci-trader",
+      "reason": "61.8% retracement (1627.900000) of swing high 1647->low 1597 tagged with a bearish reaction candle",
+      "data": {
+        "level": 0.618,
+        "price": 1627.9,
+        "swingHigh": 1647,
+        "swingLow": 1597
+      }
+    },
+    {
+      "pair": "bnbidr",
+      "agent": "wyckoff-trader",
+      "reason": "possible UTAD: wicked above the 20-bar range high (12482443) on below-average volume (0.57x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+      "data": {
+        "rangeHigh": 12482443,
+        "rangeLow": 12297401,
+        "volRatio": 0.5737295102292236
+      }
+    },
+    {
+      "pair": "bnbidr",
+      "agent": "candlestick-trader",
+      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
+      "data": {
+        "prevOpen": 12465200,
+        "prevClose": 12475637,
+        "lastOpen": 12475638,
+        "lastClose": 12460901
+      }
+    },
+    {
+      "pair": "hypeidr",
+      "agent": "candlestick-trader",
+      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
+      "data": {
+        "prevOpen": 1406173,
+        "prevClose": 1413200,
+        "lastOpen": 1414611,
+        "lastClose": 1400070
       }
     },
     {
       "pair": "adaidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 3987, distal 4000) retested for the first time and held, 3.3x ATR departure",
+      "agent": "candlestick-trader",
+      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
       "data": {
-        "zoneProximal": 3987,
-        "zoneDistal": 4000,
-        "departureToAtr": 3.281795511221945
-      }
-    },
-    {
-      "pair": "ltcidr",
-      "agent": "smc-trader",
-      "reason": "buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)",
-      "data": {
-        "sweepVolRatio": 0.12103188935503652,
-        "poolPrice": 940000
+        "prevOpen": 3957,
+        "prevClose": 3965,
+        "lastOpen": 3970,
+        "lastClose": 3950
       }
     },
     {
       "pair": "avaxidr",
       "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.80x the longer-window baseline",
+      "reason": "realized vol expanding — short-window vol is 1.61x the longer-window baseline",
       "data": {
-        "rvShort": 0.011688687517924522,
-        "rvLong": 0.0064858218738713565,
-        "ratio": 1.8021906468035023
+        "rvShort": 0.010617329876121745,
+        "rvLong": 0.006586552507350784,
+        "ratio": 1.6119707334409763
+      }
+    },
+    {
+      "pair": "uniidr",
+      "agent": "volatility-analyst",
+      "reason": "realized vol expanding — short-window vol is 1.65x the longer-window baseline",
+      "data": {
+        "rvShort": 0.028927611658041433,
+        "rvLong": 0.01748241884431605,
+        "ratio": 1.654668722654845
       }
     }
   ],
