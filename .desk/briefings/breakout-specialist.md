@@ -95,3 +95,12 @@ _None._
 * **Realized PnL:** Rp-102.567
 * **Reason:** Stop Loss hit @ Rp915.000
 * **New Balance:** Rp18.183.667
+
+
+---
+### 2026-08-24T22:03 UTC — Position Opened: LONG SOL/IDR
+* **Entry Price:** Rp1.725.000
+* **Stop Loss:** Rp1.690.500
+* **Target:** Rp1.811.250
+* **Reason:** squeeze (ATR ratio 0.64, bandwidth pctile 35) resolving up through range high, volume confirms
+* **Allocated:** Rp4.545.917
