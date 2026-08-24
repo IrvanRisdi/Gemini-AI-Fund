@@ -72,7 +72,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (SHIB) — 7 closed in gap catch-up, net +Rp4,205, PEPE best trade +Rp63,751 (2026-08-21 11:35 UTC)"
+      "last_action": "1 open (LTC/IDR) — LONG entry @ Rp936.000, stop Rp917.280 (2026-08-24T09:27 UTC)"
     },
     "mean-reversion-trader": {
       "status": "active",
@@ -409,7 +409,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (AVAX) — XRP hit TP1 +Rp47,232, 75% win rate (2026-08-21 11:35 UTC)"
+      "last_action": "1 open (LTC/IDR) — LONG entry @ Rp936.000, stop Rp917.280 (2026-08-24T09:27 UTC)"
     },
     "volatility-analyst": {
       "status": "fired",
@@ -523,7 +523,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (LTC/IDR) — SHORT entry @ Rp915.000, stop Rp933.300 (2026-08-24T08:54 UTC)"
+      "last_action": "1 open (LINK/IDR) — SHORT entry @ Rp202.640, stop Rp206.692,8 (2026-08-24T09:27 UTC)"
     },
     "candlestick-trader": {
       "status": "active",
@@ -551,7 +551,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (PEPE/IDR) — SHORT entry @ Rp0,071, stop Rp0,072 (2026-08-24T08:54 UTC)"
+      "last_action": "1 open (HYPE/IDR) — SHORT entry @ Rp1.386.328, stop Rp1.414.054,56 (2026-08-24T09:27 UTC)"
     }
   },
   "exchanges": {}

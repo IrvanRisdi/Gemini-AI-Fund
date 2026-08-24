@@ -342,3 +342,12 @@ Net: **+Rp4,205**. Only SHIB survives (not yet at +1R, stop unchanged). Down to 
 
 ## Open Questions
 _None._
+
+
+---
+### 2026-08-24T09:27 UTC — Position Opened: LONG LTC/IDR
+* **Entry Price:** Rp936.000
+* **Stop Loss:** Rp917.280
+* **Target:** Rp982.800
+* **Reason:** bullish breakout: ADX>25, EMA9>EMA21, RSI in 50-80, close above 20-bar resistance, volume>1.5x
+* **Allocated:** Rp4.515.337

@@ -31,3 +31,20 @@ _None._
 * **Target:** Rp869.250
 * **Reason:** 38.2% retracement (919910.000000) of swing high 923000->low 918000 tagged with a bearish reaction candle
 * **Allocated:** Rp4.490.555
+
+
+---
+### 2026-08-24T09:27 UTC — Position Closed: SHORT LTC/IDR
+* **Exit Price:** Rp936.000
+* **Realized PnL:** Rp-103.062
+* **Reason:** Stop Loss hit @ Rp936.000
+* **New Balance:** Rp17.859.158
+
+
+---
+### 2026-08-24T09:27 UTC — Position Opened: SHORT LINK/IDR
+* **Entry Price:** Rp202.640
+* **Stop Loss:** Rp206.692,8
+* **Target:** Rp192.508
+* **Reason:** 61.8% retracement (204445.458000) of swing high 206883->low 200502 tagged with a bearish reaction candle
+* **Allocated:** Rp4.464.790

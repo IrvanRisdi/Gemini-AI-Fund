@@ -78,3 +78,12 @@ Reconstructed across the ~2.5h gap. **XRP/IDR — TP1 HIT** at 24,324, +Rp47,232
 
 ## Open Questions
 _None._
+
+
+---
+### 2026-08-24T09:27 UTC — Position Opened: LONG LTC/IDR
+* **Entry Price:** Rp936.000
+* **Stop Loss:** Rp917.280
+* **Target:** Rp982.800
+* **Reason:** squeeze (ATR ratio 0.91, bandwidth pctile 5) resolving up through range high, volume confirms
+* **Allocated:** Rp4.571.559
