@@ -3,17 +3,18 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fetchBulkIdrPrices } from './market-data';
 
-// Support monorepo root (.desk at root) or local dashboard folder or fallback
+// Determine the candidate paths for .desk folder
 function getDeskDir(): string {
   const candidates = [
-    path.join(process.cwd(), '..', '.desk'),
     path.join(process.cwd(), '.desk'),
+    path.join(process.cwd(), '..', '.desk'),
+    path.join(process.cwd(), 'dashboard', '.desk'),
     path.resolve('.desk'),
   ];
   for (const c of candidates) {
     if (existsSync(c)) return c;
   }
-  return path.join(process.cwd(), '..', '.desk');
+  return path.join(process.cwd(), '.desk');
 }
 
 export interface LedgerTrade {
@@ -88,7 +89,7 @@ export interface DeskSnapshot {
   riskLimits: Record<string, number | string> | null;
 }
 
-const DEFAULT_AGENTS = [
+export const DEFAULT_AGENTS = [
   'momentum-trader',
   'mean-reversion-trader',
   'jesse-livermore',
@@ -100,6 +101,8 @@ const DEFAULT_AGENTS = [
   'candlestick-trader',
 ];
 
+const DEFAULT_STARTING_BALANCE = 18000000;
+
 async function readJson<T>(file: string): Promise<T | null> {
   try {
     const dir = getDeskDir();
@@ -107,7 +110,8 @@ async function readJson<T>(file: string): Promise<T | null> {
     if (!existsSync(fullPath)) return null;
     const raw = await readFile(fullPath, 'utf8');
     return JSON.parse(raw) as T;
-  } catch {
+  } catch (err) {
+    console.warn(`[desk-data] Note: ${file} not found or unreadable, using safe fallback.`);
     return null;
   }
 }
@@ -118,27 +122,25 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     readJson<DeskState>('state.json'),
   ]);
 
-  const defaultStartingBalance = 18000000;
-
   if (!ledger || !state) {
     const agents: AgentSummary[] = DEFAULT_AGENTS.map((slug) => ({
       slug,
       status: 'active',
-      balance: defaultStartingBalance,
-      startingBalance: defaultStartingBalance,
+      balance: DEFAULT_STARTING_BALANCE,
+      startingBalance: DEFAULT_STARTING_BALANCE,
       pnlIdr: 0,
       pnlPct: 0,
       openPositions: [],
       openPairs: [],
       latestTrade: null,
-      lastAction: 'Active — awaiting next market scan cycle',
+      lastAction: 'Active — awaiting next 15-min scan cycle',
     }));
 
     return {
       lastCycle: new Date().toISOString(),
       deskMode: 'paper (local-simulation)',
-      totalEquity: agents.length * defaultStartingBalance,
-      startingTotal: agents.length * defaultStartingBalance,
+      totalEquity: agents.length * DEFAULT_STARTING_BALANCE,
+      startingTotal: agents.length * DEFAULT_STARTING_BALANCE,
       agents,
       riskLimits: {
         max_position_size_pct: 100,
@@ -148,8 +150,8 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     };
   }
 
-  const activeRoster = Object.keys(state.agents).filter(
-    (slug) => state.agents[slug]?.status === 'active' && ledger.agents[slug]?.balance
+  const activeRoster = Object.keys(state.agents || {}).filter(
+    (slug) => state.agents[slug]?.status === 'active' && ledger.agents?.[slug]?.balance
   );
 
   const rosterToUse = activeRoster.length > 0 ? activeRoster : DEFAULT_AGENTS;
@@ -157,7 +159,7 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
   const agents: AgentSummary[] = rosterToUse.map((slug) => {
     const book = ledger.agents?.[slug];
     const stateAgent = state.agents?.[slug];
-    const startingBal = ledger.starting_balance_per_agent || defaultStartingBalance;
+    const startingBal = ledger.starting_balance_per_agent || DEFAULT_STARTING_BALANCE;
     const currentBal = book?.balance?.IDR || startingBal;
     const pnlIdr = currentBal - startingBal;
     const positions = Object.values(book?.positions ?? {});
@@ -181,7 +183,7 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
   });
 
   const totalEquity = agents.reduce((sum, a) => sum + a.balance, 0);
-  const startingTotal = agents.length * (ledger.starting_balance_per_agent || defaultStartingBalance);
+  const startingTotal = agents.length * (ledger.starting_balance_per_agent || DEFAULT_STARTING_BALANCE);
 
   return {
     lastCycle: ledger.last_cycle || new Date().toISOString(),
@@ -196,7 +198,9 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
 export async function getBriefingExcerpt(slug: string, maxChars = 2400): Promise<string> {
   try {
     const dir = getDeskDir();
-    const raw = await readFile(path.join(dir, 'briefings', `${slug}.md`), 'utf8');
+    const fullPath = path.join(dir, 'briefings', `${slug}.md`);
+    if (!existsSync(fullPath)) return `# ${slug}\n\nActive strategy persona on Gemini AI-Fund desk.`;
+    const raw = await readFile(fullPath, 'utf8');
     return raw.length > maxChars ? raw.slice(0, maxChars) + '\n…' : raw;
   } catch {
     return `# ${slug}\n\nActive strategy persona on Gemini AI-Fund desk.`;
@@ -206,16 +210,22 @@ export async function getBriefingExcerpt(slug: string, maxChars = 2400): Promise
 export async function getFullBriefing(slug: string): Promise<string | null> {
   try {
     const dir = getDeskDir();
-    return await readFile(path.join(dir, 'briefings', `${slug}.md`), 'utf8');
+    const fullPath = path.join(dir, 'briefings', `${slug}.md`);
+    if (!existsSync(fullPath)) return `# ${slug}\n\nActive strategy persona on Gemini AI-Fund desk.`;
+    return await readFile(fullPath, 'utf8');
   } catch {
-    return null;
+    return `# ${slug}\n\nActive strategy persona on Gemini AI-Fund desk.`;
   }
 }
 
 export async function getAgentTrades(slug: string): Promise<LedgerTrade[]> {
-  const ledger = await readJson<PaperLedger>('paper-ledger.json');
-  const trades = ledger?.agents?.[slug]?.trades ?? [];
-  return [...trades].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  try {
+    const ledger = await readJson<PaperLedger>('paper-ledger.json');
+    const trades = ledger?.agents?.[slug]?.trades ?? [];
+    return [...trades].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  } catch {
+    return [];
+  }
 }
 
 export interface PositionCycle {
@@ -242,95 +252,105 @@ export interface AgentBookBreakdown {
 }
 
 export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBreakdown> {
-  const ledger = await readJson<PaperLedger>('paper-ledger.json');
-  const book = ledger?.agents?.[slug];
-  const trades = book?.trades ?? [];
-  const chronological = [...trades].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  try {
+    const ledger = await readJson<PaperLedger>('paper-ledger.json');
+    const book = ledger?.agents?.[slug];
+    const trades = book?.trades ?? [];
+    const chronological = [...trades].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 
-  interface Building {
-    side: 'long' | 'short';
-    openedAt: string;
-    legs: { size: number; price: number }[];
-  }
-  const openByInstrument = new Map<string, Building>();
-  const cycles: PositionCycle[] = [];
+    interface Building {
+      side: 'long' | 'short';
+      openedAt: string;
+      legs: { size: number; price: number }[];
+    }
+    const openByInstrument = new Map<string, Building>();
+    const cycles: PositionCycle[] = [];
 
-  for (const t of chronological) {
-    const key = t.instrument;
-    if (t.type === 'open') {
-      openByInstrument.set(key, { side: t.side, openedAt: t.timestamp, legs: [{ size: t.size, price: t.price }] });
-    } else if (t.type === 'add') {
-      openByInstrument.get(key)?.legs.push({ size: t.size, price: t.price });
-    } else if (t.type === 'close') {
-      const building = openByInstrument.get(key);
-      if (!building) continue;
+    for (const t of chronological) {
+      const key = t.instrument;
+      if (t.type === 'open') {
+        openByInstrument.set(key, { side: t.side, openedAt: t.timestamp, legs: [{ size: t.size, price: t.price }] });
+      } else if (t.type === 'add') {
+        openByInstrument.get(key)?.legs.push({ size: t.size, price: t.price });
+      } else if (t.type === 'close') {
+        const building = openByInstrument.get(key);
+        if (!building) continue;
+        const totalSize = building.legs.reduce((sum, l) => sum + l.size, 0);
+        const weightedEntry = building.legs.reduce((sum, l) => sum + l.size * l.price, 0) / (totalSize || 1);
+        cycles.push({
+          instrument: key,
+          side: building.side,
+          status: 'closed',
+          entryPrice: weightedEntry,
+          size: totalSize,
+          exitPrice: t.price,
+          currentPrice: null,
+          stopPrice: null,
+          openedAt: building.openedAt,
+          closedAt: t.timestamp,
+          realizedPnlIdr: t.realizedPnlIdr ?? null,
+          unrealizedPnlIdr: null,
+        });
+        openByInstrument.delete(key);
+      }
+    }
+
+    const stillOpen = [...openByInstrument.entries()];
+    const prices = stillOpen.length > 0 ? await fetchBulkIdrPrices().catch(() => ({})) : {};
+
+    let openPositionValue = 0;
+    let unrealizedPnlIdr = 0;
+
+    for (const [instrument, building] of stillOpen) {
       const totalSize = building.legs.reduce((sum, l) => sum + l.size, 0);
       const weightedEntry = building.legs.reduce((sum, l) => sum + l.size * l.price, 0) / (totalSize || 1);
+      const tickerKey = `${instrument.split('/')[0].toLowerCase()}_idr`;
+      const currentPrice = prices[tickerKey] ?? null;
+      const positionValue = currentPrice != null ? totalSize * currentPrice : null;
+      const unrealized =
+        currentPrice != null
+          ? building.side === 'long'
+            ? totalSize * (currentPrice - weightedEntry)
+            : totalSize * (weightedEntry - currentPrice)
+          : null;
+
+      if (positionValue != null) openPositionValue += positionValue;
+      if (unrealized != null) unrealizedPnlIdr += unrealized;
+
       cycles.push({
-        instrument: key,
+        instrument,
         side: building.side,
-        status: 'closed',
+        status: 'open',
         entryPrice: weightedEntry,
         size: totalSize,
-        exitPrice: t.price,
-        currentPrice: null,
-        stopPrice: null,
+        exitPrice: null,
+        currentPrice,
+        stopPrice: book?.positions?.[instrument]?.stopPrice ?? null,
         openedAt: building.openedAt,
-        closedAt: t.timestamp,
-        realizedPnlIdr: t.realizedPnlIdr ?? null,
-        unrealizedPnlIdr: null,
+        closedAt: null,
+        realizedPnlIdr: null,
+        unrealizedPnlIdr: unrealized,
       });
-      openByInstrument.delete(key);
     }
+
+    cycles.sort((a, b) => (b.closedAt ?? b.openedAt).localeCompare(a.closedAt ?? a.openedAt));
+
+    return {
+      cash: book?.balance?.IDR ?? DEFAULT_STARTING_BALANCE,
+      openPositionValue,
+      realizedPnlIdr: book && ledger ? book.balance.IDR - ledger.starting_balance_per_agent : 0,
+      unrealizedPnlIdr,
+      cycles,
+    };
+  } catch {
+    return {
+      cash: DEFAULT_STARTING_BALANCE,
+      openPositionValue: 0,
+      realizedPnlIdr: 0,
+      unrealizedPnlIdr: 0,
+      cycles: [],
+    };
   }
-
-  const stillOpen = [...openByInstrument.entries()];
-  const prices = stillOpen.length > 0 ? await fetchBulkIdrPrices().catch(() => ({})) : {};
-
-  let openPositionValue = 0;
-  let unrealizedPnlIdr = 0;
-
-  for (const [instrument, building] of stillOpen) {
-    const totalSize = building.legs.reduce((sum, l) => sum + l.size, 0);
-    const weightedEntry = building.legs.reduce((sum, l) => sum + l.size * l.price, 0) / (totalSize || 1);
-    const tickerKey = `${instrument.split('/')[0].toLowerCase()}_idr`;
-    const currentPrice = prices[tickerKey] ?? null;
-    const positionValue = currentPrice != null ? totalSize * currentPrice : null;
-    const unrealized =
-      currentPrice != null
-        ? building.side === 'long'
-          ? totalSize * (currentPrice - weightedEntry)
-          : totalSize * (weightedEntry - currentPrice)
-        : null;
-
-    if (positionValue != null) openPositionValue += positionValue;
-    if (unrealized != null) unrealizedPnlIdr += unrealized;
-
-    cycles.push({
-      instrument,
-      side: building.side,
-      status: 'open',
-      entryPrice: weightedEntry,
-      size: totalSize,
-      exitPrice: null,
-      currentPrice,
-      stopPrice: book?.positions?.[instrument]?.stopPrice ?? null,
-      openedAt: building.openedAt,
-      closedAt: null,
-      realizedPnlIdr: null,
-      unrealizedPnlIdr: unrealized,
-    });
-  }
-
-  cycles.sort((a, b) => (b.closedAt ?? b.openedAt).localeCompare(a.closedAt ?? a.openedAt));
-
-  return {
-    cash: book?.balance?.IDR ?? 18000000,
-    openPositionValue,
-    realizedPnlIdr: book && ledger ? book.balance.IDR - ledger.starting_balance_per_agent : 0,
-    unrealizedPnlIdr,
-    cycles,
-  };
 }
 
 export async function listBriefingSlugs(): Promise<string[]> {
@@ -364,34 +384,53 @@ export interface AgentMeta {
 }
 
 export async function getAgentMeta(slug: string): Promise<AgentMeta> {
-  const [ledger, state] = await Promise.all([
-    readJson<PaperLedger>('paper-ledger.json'),
-    readJson<DeskState & { agents: Record<string, StateAgent & { assets_covered?: string[] }> }>('state.json'),
-  ]);
+  try {
+    const [ledger, state] = await Promise.all([
+      readJson<PaperLedger>('paper-ledger.json'),
+      readJson<DeskState & { agents: Record<string, StateAgent & { assets_covered?: string[] }> }>('state.json'),
+    ]);
 
-  const stateAgent = state?.agents?.[slug];
-  const book = ledger?.agents?.[slug];
-  const hasBook = !!book?.balance;
-  const startingBal = ledger?.starting_balance_per_agent ?? 18000000;
-  const pnlIdr = hasBook && ledger ? book!.balance.IDR - startingBal : 0;
+    const stateAgent = state?.agents?.[slug];
+    const book = ledger?.agents?.[slug];
+    const hasBook = !!book?.balance;
+    const startingBal = ledger?.starting_balance_per_agent ?? DEFAULT_STARTING_BALANCE;
+    const pnlIdr = hasBook && ledger ? book!.balance.IDR - startingBal : 0;
 
-  const trades = book?.trades ?? [];
-  const latestTrade = trades.length ? [...trades].sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0] : null;
+    const trades = book?.trades ?? [];
+    const latestTrade = trades.length ? [...trades].sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0] : null;
 
-  return {
-    slug,
-    status: stateAgent?.status ?? (book?.active === false ? 'fired' : 'active'),
-    hired: stateAgent?.hired ?? '2026-07-13',
-    firedDate: stateAgent?.fired_date ?? (book as { fired?: string } | undefined)?.fired ?? null,
-    fireReason: stateAgent?.fire_reason ?? (book as { fired_reason?: string } | undefined)?.fired_reason ?? null,
-    lastAction: stateAgent?.last_action ?? 'Active',
-    assetsCovered: stateAgent?.assets_covered ?? [],
-    hasBook,
-    balance: hasBook ? book!.balance.IDR : startingBal,
-    startingBalance: startingBal,
-    pnlIdr,
-    pnlPct: (pnlIdr / startingBal) * 100,
-    openPositions: hasBook ? Object.values(book!.positions ?? {}) : [],
-    latestTrade,
-  };
+    return {
+      slug,
+      status: stateAgent?.status ?? (book?.active === false ? 'fired' : 'active'),
+      hired: stateAgent?.hired ?? '2026-07-13',
+      firedDate: stateAgent?.fired_date ?? (book as { fired?: string } | undefined)?.fired ?? null,
+      fireReason: stateAgent?.fire_reason ?? (book as { fired_reason?: string } | undefined)?.fired_reason ?? null,
+      lastAction: stateAgent?.last_action ?? 'Active',
+      assetsCovered: stateAgent?.assets_covered ?? [],
+      hasBook,
+      balance: hasBook ? book!.balance.IDR : startingBal,
+      startingBalance: startingBal,
+      pnlIdr,
+      pnlPct: (pnlIdr / startingBal) * 100,
+      openPositions: hasBook ? Object.values(book!.positions ?? {}) : [],
+      latestTrade,
+    };
+  } catch {
+    return {
+      slug,
+      status: 'active',
+      hired: '2026-07-13',
+      firedDate: null,
+      fireReason: null,
+      lastAction: 'Active',
+      assetsCovered: [],
+      hasBook: true,
+      balance: DEFAULT_STARTING_BALANCE,
+      startingBalance: DEFAULT_STARTING_BALANCE,
+      pnlIdr: 0,
+      pnlPct: 0,
+      openPositions: [],
+      latestTrade: null,
+    };
+  }
 }
