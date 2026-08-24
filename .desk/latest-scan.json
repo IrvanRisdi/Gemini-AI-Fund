@@ -1,42 +1,45 @@
 {
-  "timestamp": "2026-08-24T14:04:55.474Z",
+  "timestamp": "2026-08-24T14:42:56.950Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "dogeidr",
-      "agent": "smc-trader",
-      "reason": "buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)",
+      "pair": "btcidr",
+      "agent": "momentum-trader",
+      "reason": "bullish breakout: ADX>25, EMA9>EMA21, RSI in 50-80, close above 20-bar resistance, volume>1.5x",
       "data": {
-        "sweepVolRatio": 1.5080479643754485,
-        "poolPrice": 1637
+        "adx14": 25.032883556977062,
+        "rsi14": 68.11768476370645,
+        "volRatio": 2.701117866244954
       }
     },
     {
-      "pair": "bnbidr",
-      "agent": "smc-trader",
-      "reason": "buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)",
+      "pair": "btcidr",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
       "data": {
-        "sweepVolRatio": 0.12595424891552062,
-        "poolPrice": 12449370
+        "volRatio": 2.701117866244954,
+        "close": 1397579000,
+        "resistance20": 1395632000
+      }
+    },
+    {
+      "pair": "btcidr",
+      "agent": "volatility-analyst",
+      "reason": "realized vol expanding — short-window vol is 1.67x the longer-window baseline",
+      "data": {
+        "rvShort": 0.0051058249671132976,
+        "rvLong": 0.0030493158706910092,
+        "ratio": 1.6744165523121946
       }
     },
     {
       "pair": "adaidr",
-      "agent": "smc-trader",
-      "reason": "buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 3987, distal 4000) retested for the first time and held, 3.3x ATR departure",
       "data": {
-        "sweepVolRatio": 1.718084793632326,
-        "poolPrice": 3950
-      }
-    },
-    {
-      "pair": "tonidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.60x the longer-window baseline",
-      "data": {
-        "rvShort": 0.025366529006362833,
-        "rvLong": 0.015810492945142723,
-        "ratio": 1.6044110132667242
+        "zoneProximal": 3987,
+        "zoneDistal": 4000,
+        "departureToAtr": 3.281795511221945
       }
     },
     {
@@ -53,19 +56,9 @@
       "agent": "volatility-analyst",
       "reason": "realized vol expanding — short-window vol is 1.80x the longer-window baseline",
       "data": {
-        "rvShort": 0.01150212288275085,
-        "rvLong": 0.006380286206366105,
-        "ratio": 1.8027597055558875
-      }
-    },
-    {
-      "pair": "uniidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.99x the longer-window baseline",
-      "data": {
-        "rvShort": 0.034695464129788876,
-        "rvLong": 0.017421553657328212,
-        "ratio": 1.9915252572892406
+        "rvShort": 0.011688687517924522,
+        "rvLong": 0.0064858218738713565,
+        "ratio": 1.8021906468035023
       }
     }
   ],
