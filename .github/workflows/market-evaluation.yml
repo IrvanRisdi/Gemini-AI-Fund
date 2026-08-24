@@ -1,0 +1,42 @@
+name: Gemini Market Session Evaluation
+
+on:
+  schedule:
+    # 1. 00:00 UTC = 07:00 WIB (Asia Morning Open)
+    - cron: '0 0 * * *'
+    # 2. 13:30 UTC = 20:30 WIB (US Market Open / Wall Street)
+    - cron: '30 13 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  evaluate-session:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Gemini Strategy Evaluation
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: npx tsx scripts/daily-evaluation.ts
+
+      - name: Commit Updated Briefings & Config
+        run: |
+          git config --global user.name "Gemini Evaluator"
+          git config --global user.email "evaluator@gemini-ai-fund.local"
+          git add .desk/ config/
+          git diff-index --quiet HEAD || (git commit -m "chore(gemini): update session review & strategy config [skip ci]" && git push)

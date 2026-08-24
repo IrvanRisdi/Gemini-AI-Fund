@@ -1,12 +1,12 @@
 # AI Fund
 
-An AI trading desk with 45 hedge fund agent personas (including 22 named personas like Arthur Hayes, Jim Simons, George Soros, Jesse Livermore, Warren Buffett, and Peter Lynch) for Claude Code. 150 MCP tools across 3 built-in connectors. 28 shared analysis libraries. Trade on any exchange — Cube, OKX, Kraken, Binance, Coinbase, and 100+ more via CCXT.
+An AI trading desk with 50 hedge fund agent personas (including 22 named personas like Arthur Hayes, Jim Simons, George Soros, Jesse Livermore, Warren Buffett, and Peter Lynch) for Claude Code. 150 MCP tools across 3 built-in connectors. 28 shared analysis libraries. Trade on any exchange — Cube, OKX, Kraken, Binance, Coinbase, and 100+ more via CCXT.
 
 ## Project Structure
 
 ```
 ai-fund/
-├── skills/              # 44 agent personas (SKILL.md each) + _template/
+├── skills/              # 50 agent personas (SKILL.md each) + _template/
 ├── connectors/cube/     # Built-in Cube Exchange MCP server
 │   └── mcp-server/
 ├── connectors/alpaca/   # Built-in Alpaca MCP server (stocks, ETFs, crypto)
@@ -23,6 +23,7 @@ ai-fund/
 │       ├── src/tools/       # market-data, orders, account, strategy, execution, datastore
 │       └── tests/           # vitest test suites (190+ tests)
 ├── lib/                 # Shared TS: indicators, math, format
+├── dashboard/           # Next.js desk dashboard (reads .desk/ state directly, live Indodax ticker)
 ├── bin/desk-state       # CLI for .desk/ state management
 ├── scripts/install.js   # npx ai-fund install|list
 ├── .claude/commands/    # Slash commands (hire, fire, desk, review, setup, backtest)
@@ -194,14 +195,14 @@ When only one exchange is connected, tools are used directly. When multiple are 
 - **Risk Manager as Gatekeeper**: All trading agents should consult the Risk Manager before executing trades.
 - **Paper Mode**: Default to paper/staging mode on all exchanges. Only switch to production after explicit confirmation.
 
-## Agent Categories (45 Total)
+## Agent Categories (50 Total)
 
 - **Named Personas (22)**: ansem, arthur-hayes, cathie-wood-crypto, cobie, cz, ed-thorp, gcr, george-soros, gwyneth-chen, hsaka, jesse-livermore, jim-simons, michael-saylor, paul-tudor-jones, peter-lynch, plan-b, raoul-pal, ray-dalio, stanley-druckenmiller, tetranode, warren-buffett, willy-woo
 - **Trading (6)**: scalper, momentum-trader, mean-reversion-trader, swing-trader, arbitrageur, grid-trader
 - **Execution (3)**: execution-trader, market-maker, dca-strategist
 - **Research (5)**: quant-analyst, orderflow-analyst, volatility-analyst, sentiment-analyst, onchain-analyst
 - **Risk & Portfolio (4)**: risk-manager, equity-risk-manager, portfolio-manager, performance-analyst
-- **Specialists (4)**: funding-rate-farmer, liquidation-hunter, pairs-trader, breakout-specialist
+- **Specialists (9)**: funding-rate-farmer, liquidation-hunter, pairs-trader, breakout-specialist, smc-trader, wyckoff-trader, supply-demand-trader, fibonacci-trader, candlestick-trader
 - **Infrastructure (1)**: backtester
 
 ## Skill File Structure
@@ -264,6 +265,28 @@ Each agent's briefing book is a **compacted summary** — not a full transcript.
 - Exit summary (if fired)
 
 On `/hire`, the agent reads its briefing book and acknowledges prior context. On `/fire`, the briefing is updated with a final exit summary. After any significant analysis or trade, the briefing should be updated.
+
+## Dashboard (`dashboard/`)
+
+A Next.js (App Router) + Tailwind v4 web dashboard for viewing the live desk. It is a separate npm workspace, not part of the `npm run build`/`typecheck` aggregate scripts (those target the MCP-server pipeline only).
+
+- **Read-only against `.desk/`**: Server Components (`dashboard/lib/desk-data.ts`) read `paper-ledger.json` and `state.json` directly off disk at request time — it never writes to `.desk/`, and does not go through `bin/desk-state`.
+- **`/` (Desk Overview)**: per-agent `DataCard`s from `.desk/` state, a `CodeBlock` view of the risk policy, an `AiConsole` placeholder, and an "Other Agents" section linking to every fired/oversight-only agent that has a briefing but no book (risk-manager, portfolio-manager, historical fires like scalper/swing-trader). The book-holding roster on this page is **derived live** from `state.json` (`status: 'active'`) intersected with `paper-ledger.json` (has a `balance` entry) — no hardcoded agent list, so hire/fire changes show up immediately without a dashboard code change.
+- **`/agent/[slug]`**: full briefing book for any agent with a `.desk/briefings/<slug>.md` file — active, fired, or oversight-only. Renders the complete markdown (not the ~2.4KB excerpt `getBriefingExcerpt()` uses elsewhere) via a hand-rolled `renderBriefingMarkdown()` (`dashboard/lib/markdown.ts` — headers/bold/italic/lists/hr/paragraphs only, not a general Markdown engine, no dependency added) plus a status header (`getAgentMeta()`) showing hired/fired dates, fire reason, and book stats if it holds one. Every `DataCard` on `/` links here via `DataCard`'s optional `href` prop.
+- **`/pair/[symbol]` (per-coin detail)**: works for any of the ~460 active Indodax IDR pairs, not just the desk's 8 — `getPair()` (`dashboard/lib/pairs.ts`) checks the curated desk-traded list first (sync, no network call), falling back to `findPairBySymbol()` (`dashboard/lib/all-pairs.ts`) for everything else. Always server-rendered on demand (`dynamic = 'force-dynamic'`, no `generateStaticParams` — this data must never be baked in at build time). The **price chart is daily candles only** (`fetchOhlcv(id, '1d', 60)`, shared with `HistoricalTable`) — a hand-rolled SVG candlestick chart (`components/PriceChart.tsx`, no charting library dependency); the header price/change% are derived from the same daily series (day-over-day, not intraday). Technical indicators still run on 15m candles (`dashboard/lib/technical.ts`, unaffected by the chart timeframe) — the exact same methodology the trading-loop agents use. Also: a CoinGecko coin-info panel, a 5-factor scored analysis grid, a synthesized trading plan, and a placeholder `AiAnalysisPanel`. A handful of pairs Indodax lists as active return zero candles from its chart endpoint (confirmed e.g. for `aaveidr`), and Indodax will occasionally 429 (rate-limit) a request outright — both `fetchOhlcv()` calls in this page are `.catch(() => [])`'d so either failure mode degrades to the same "no chart data" message instead of an unhandled 500; `PriceChart` has an empty-array guard too as defense-in-depth.
+- **`/explore`**: search/browse **table** (`components/PairExplorer.tsx`) over all active Indodax IDR pairs — columns are rank, pair, market cap, IDR price, and **Moving (24h change%)**. Base pair list comes from `dashboard/lib/all-pairs.ts` (`fetchAllPairs()`, Indodax's `/api/pairs` — already includes each pair's CoinGecko id, no manual mapping needed); `dashboard/lib/market-data.ts` (`fetchExplorePairs()`) enriches it with two bulk calls: `indodax.com/api/ticker_all` for every IDR price in one request, and CoinGecko's `/coins/markets?ids=...` **chunked into batches of 200** for rank/market-cap/24h-change (not one request per coin — CoinGecko's free tier would rate-limit that fast). Same graceful-degradation contract as `CoinInfoPanel`: if CoinGecko is unreachable, rank/market-cap/change show `—` and the page never breaks over it.
+  - **Every column header is click-to-sort** (`SortHeader` in `PairExplorer.tsx`): first click on a new column sorts **descending** (e.g. clicking "Moving" surfaces top gainers first — that's the point, not a bug), a second click on the same column toggles to **ascending** (top losers). Rows with no value for the active sort column (CoinGecko unreachable, or a pair it has no data for) **always sort to the bottom regardless of direction** — without that rule, "top loser" would surface unranked/no-data pairs instead of real losers. Default on load is rank ascending, matching the server-side pre-sort in `fetchExplorePairs()`.
+  - **This is browsing/research only** — it is completely decoupled from what the paper-trading agents actually hold books in (`PAIRS` in `pairs.ts`, `.desk/state.json`'s `assets_covered`). Expanding this list never changes agent behavior; only editing `PAIRS` and the trading-loop's own cron prompt does that.
+  - **No per-row trading-plan/5-factor column here, intentionally.** This was tried (running the pair detail page's 5-factor engine against all ~460 pairs) and reverted: firing that many parallel candle requests at Indodax triggered a 429 (rate limit) that also broke the regular `/pair/[symbol]` page for unrelated pairs. If this is revisited, it needs either a much smaller concurrency cap (batched, not all-at-once) or a server-side background job that pre-computes and stores results, not an on-request scan — see `pairs page fetchOhlcv` below for the resulting hardening.
+- **5-factor analysis (`dashboard/lib/analysis-score.ts`)**: Moving Average, RSI, Breakout Structure, Smart Money Concept, and Fibonacci each get an independent `AnalysisVerdict` (bullish/bearish/neutral, ±1/0 score, one-line reasoning), rendered in `components/AnalysisGrid.tsx`. `computeComposite()` sums the scores into an overall bias — **do not read a neutral bias as "0 aligned"**: it means the factors are genuinely split (e.g. 1 bullish/1 bearish/3 neutral), not that nothing fired; `alignedCount` is only meaningful once `bias` is bullish or bearish.
+  - `dashboard/lib/smc.ts` — Smart Money Concepts: pivot-based swing structure (HH/HL vs LH/LL), premium/discount zone, liquidity sweep detection, CHoCH, and order blocks (displacement ≥1.5×ATR). This is a single-timeframe port of the rules documented in `skills/smc-trader/SKILL.md` — keep the two in sync if either changes; the full multi-timeframe top-down bias and fair-value-gap detection from that skill are not implemented here yet. `detectSweepChochConfluence(candles, lookback=5)` is the trading-signal entry point (used by `scripts/scan-signals.ts`) — it checks sweep and CHoCH across a short window instead of the same single bar, which the original same-bar check (`computeSmcSnapshot`'s `sweep`/`choch` fields evaluated together) required and which empirically never fired once across ~1,600 historical bar-checks (verified 2026-08-21). `computeSmcSnapshot` itself is unchanged and still used as-is for the dashboard's live-state display (`/pair/[symbol]`, `analysis-score.ts`), where single-bar sweep/CHoCH is the correct thing to show.
+  - `dashboard/lib/breakout.ts` — structural breakout + retest/fakeout classification off the trailing 20-bar high/low.
+  - `dashboard/lib/fibonacci.ts` — retracement levels (0–100%) off the most recent swing, including the 61.8–65% "golden pocket."
+  - `buildTradingPlan()` requires **bias ≠ neutral AND ≥3/5 aligned** before proposing an entry zone/stop/targets (mirrors the trading-loop's own confluence bar) — otherwise it returns a `'wait'` verdict with the specific reason. Entry/stop/target math intentionally reuses `TechnicalSnapshot`/`SmcSnapshot`/`FibonacciSnapshot` levels rather than duplicating price logic.
+- **Live price data**: `dashboard/lib/indodax.ts` and `dashboard/app/api/prices/route.ts` fetch Indodax's public REST endpoints directly (the same `tradingview/history_v2` and `ticker` endpoints ccxt's Indodax adapter uses internally) — no ccxt dependency, no API key. `components/LiveTicker.tsx` polls `/api/prices` every 30s and links each symbol to its `/pair/[symbol]` page.
+- **Coin info degrades gracefully**: `dashboard/lib/coingecko.ts` calls CoinGecko's free public API (no key, 5-minute `next.revalidate` cache) and returns `null` on any failure; `CoinInfoPanel` renders an "unavailable" state rather than breaking the page. Reachability of `api.coingecko.com` has flipped between blocked and working across sessions in this environment — treat "unavailable" as a network condition to retry, not a code bug.
+- **AI Console and AI Analysis are placeholders**: `components/AiConsole.tsx` and `components/AiAnalysisPanel.tsx` stream canned text built from real `.desk/`/technical/structure numbers (including the 5-factor scores and trading plan) — neither is wired to an LLM. Connect a real backend (e.g. the Claude API) via a new API route before treating their output as authoritative.
+- **Run it**: `npm run dev --workspace=dashboard` (or `npm run build` / `npm run typecheck` the same way).
 
 ## Commands
 

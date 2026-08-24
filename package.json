@@ -46,7 +46,8 @@
     "connectors/cube/mcp-server",
     "connectors/robinhood/mcp-server",
     "connectors/alpaca/mcp-server",
-    "connectors/ccxt/mcp-server"
+    "connectors/ccxt/mcp-server",
+    "dashboard"
   ],
   "engines": {
     "node": ">=20"

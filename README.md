@@ -2,7 +2,7 @@
 
 ### Hire your AI trading desk. Fire the ones that miss KPIs.
 
-> 45 AI trading agents. 21 named personas (Arthur Hayes, Jim Simons, George Soros, Jesse Livermore, Warren Buffett, Peter Lynch…). 147 built-in MCP tools across Cube (31), CCXT (92), and Alpaca (24), plus 110 CCXT exchanges. Paper trading by default. MIT licensed. Runs on [Claude Code](https://claude.ai/code).
+> 50 AI trading agents. 21 named personas (Arthur Hayes, Jim Simons, George Soros, Jesse Livermore, Warren Buffett, Peter Lynch…). 147 built-in MCP tools across Cube (31), CCXT (92), and Alpaca (24), plus 110 CCXT exchanges. Paper trading by default. MIT licensed. Runs on [Claude Code](https://claude.ai/code).
 
 <!-- GitHub Topics (set these in repo Settings > Topics):
 ai-trading, crypto-trading-bot, hedge-fund, ai-hedge-fund, trading-agents, mcp, claude-code, algorithmic-trading, market-making, arbitrage, quantitative-trading, risk-management, multi-exchange, defi, bitcoin, ethereum, crypto-fund -->
@@ -10,11 +10,11 @@ ai-trading, crypto-trading-bot, hedge-fund, ai-hedge-fund, trading-agents, mcp, 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/built%20for-Claude%20Code-blueviolet)](https://claude.ai/code)
 [![Exchanges](https://img.shields.io/badge/exchanges-110%20CCXT%20venues-green)](connectors/README.md)
-[![Agents](https://img.shields.io/badge/agents-45%20hedge%20fund%20roles-orange)](#45-ai-trading-agents--the-full-roster)
+[![Agents](https://img.shields.io/badge/agents-50%20hedge%20fund%20roles-orange)](#50-ai-trading-agents--the-full-roster)
 [![Powered By Cube](https://www.cube.exchange/api/badge)](https://cube.exchange)
 
 <p align="center">
-  <img src="docs/architecture-light.svg" alt="How AI Fund works — You talk to Claude Code, which orchestrates 45 trading agents across cube.exchange, Binance, Coinbase, Kraken, OKX, and 110 CCXT exchanges via MCP connectors" width="100%">
+  <img src="docs/architecture-light.svg" alt="How AI Fund works — You talk to Claude Code, which orchestrates 50 trading agents across cube.exchange, Binance, Coinbase, Kraken, OKX, and 110 CCXT exchanges via MCP connectors" width="100%">
 </p>
 
 ```
@@ -32,16 +32,16 @@ ai-trading, crypto-trading-bot, hedge-fund, ai-hedge-fund, trading-agents, mcp, 
 
 ## What Is ai-fund?
 
-45 autonomous trading agents inside Claude Code, with built-in MCP connectors and broad multi-exchange support via CCXT. Shared analysis libraries cover indicators, execution, portfolio analytics, and risk tooling.
+50 autonomous trading agents inside Claude Code, with built-in MCP connectors and broad multi-exchange support via CCXT. Shared analysis libraries cover indicators, execution, portfolio analytics, and risk tooling.
 
-21 are named personas — Arthur Hayes, Jim Simons, George Soros, Jesse Livermore, Stanley Druckenmiller, Warren Buffett. The other 24 are role-based: scalpers, market makers, risk managers, quants, arbitrageurs.
+21 are named personas — Arthur Hayes, Jim Simons, George Soros, Jesse Livermore, Stanley Druckenmiller, Warren Buffett. The other 29 are role-based: scalpers, market makers, risk managers, quants, arbitrageurs.
 
 No config files. No YAML. You hire agents that fit your thesis and fire the ones that don't deliver. Each one carries its own personality, philosophy, and KPIs.
 
 ### Count Snapshot (from this repo)
 
-- **45 agents total** in `skills/` (`_template` excluded)
-- **21 named personas** + **24 role-based specialists**
+- **50 agents total** in `skills/` (`_template` excluded)
+- **21 named personas** + **29 role-based specialists**
 - **147 built-in MCP tools** across active servers
   - Cube: 31 tools
   - CCXT: 92 tools
@@ -91,7 +91,7 @@ YOU (trader)
   ▼
 CLAUDE CODE (AI runtime)
   │
-  ├── Skills (45 SKILL.md files)  ← agent personas, strategies, KPIs
+  ├── Skills (50 SKILL.md files)  ← agent personas, strategies, KPIs
   │
   ├── Exchange Connectors (MCP)   ← connect any exchange
   │   ├── Cube (built-in)
@@ -114,7 +114,7 @@ The two layers don't know about each other. Add an exchange, don't touch agent c
 
 | You are a... | ai-fund gives you... |
 |-------------|---------------------|
-| Crypto trader | 45 agents, natural language |
+| Crypto trader | 50 agents, natural language |
 | Quant | Backtest, stat tools, multi-exchange |
 | Fund operator | KPIs, hire/fire, risk controls |
 | Developer | MIT skill system, any exchange |
@@ -239,7 +239,7 @@ See [connectors/README.md](connectors/README.md) for setup details.
 
 ---
 
-## 45 AI Trading Agents — The Full Roster
+## 50 AI Trading Agents — The Full Roster
 
 ### Named Personas
 
@@ -282,7 +282,7 @@ See [connectors/README.md](connectors/README.md) for setup details.
 
 ### Role-Based Agents
 
-23 agents organized by function. These don't have celebrity personas — they just do their job.
+28 agents organized by function. These don't have celebrity personas — they just do their job.
 
 #### Active Traders
 
@@ -330,6 +330,11 @@ See [connectors/README.md](connectors/README.md) for setup details.
 | Liquidation Hunter | Margin monitoring | All exchanges |
 | Pairs Trader | Long/short correlated | Cross-exchange pairs |
 | Breakout | Range breaks + volume | Cross-venue volume |
+| SMC Trader | Order blocks, FVGs, liquidity sweeps | Exchange-agnostic |
+| Wyckoff Trader | Accumulation/distribution, Composite Man, P&F counts | Exchange-agnostic |
+| Supply & Demand Trader | Zone imbalances, the curve, set-and-forget entries | Exchange-agnostic |
+| Fibonacci Trader | Retracement/extension confluence | Exchange-agnostic |
+| Candlestick Trader | Japanese candlestick reversal/continuation patterns | Exchange-agnostic |
 
 #### Infrastructure
 
@@ -381,7 +386,7 @@ What ships with each agent:
 | | ai-fund | ai-hedge-fund | Freqtrade | Hummingbot |
 |---|---|---|---|---|
 | **LLM-native** | ✅ Claude | ✅ Multi-LLM | ❌ | ❌ |
-| **Agents** | 45 | 18 | User-defined | ~12 |
+| **Agents** | 50 | 18 | User-defined | ~12 |
 | **Hire/fire** | ✅ | ❌ | ❌ | ❌ |
 | **Personas** | 21 | ✅ | ❌ | ❌ |
 | **Exchanges** | 110+ | Stocks only | 30+ | 20+ |
@@ -430,7 +435,7 @@ ai-fund/
 │   ├── ccxt/                # Built-in: Coinbase, Binance, 110 exchanges (92 tools)
 │   ├── alpaca/              # Built-in: stocks, ETFs, crypto (24 tools)
 │   └── README.md            # How to add more exchanges
-├── skills/                  # 45 agent personas (exchange-agnostic)
+├── skills/                  # 50 agent personas (exchange-agnostic)
 ├── lib/                     # 28 shared libraries, 250+ pure functions
 │   ├── indicators.ts        # SMA, EMA, RSI, MACD, BB, ATR, ADX, OBV, Stochastic
 │   ├── math.ts              # Kelly, VaR, Sharpe, Sortino, correlation, drawdown
@@ -448,7 +453,7 @@ ai-fund/
 
 | Layer | Role |
 |-------|------|
-| `skills/` | 45 agent personalities, strategies, KPIs |
+| `skills/` | 50 agent personalities, strategies, KPIs |
 | `connectors/` | Built-in and beta exchange MCP servers with capability-gated surfaces |
 | `lib/` | 28 shared libraries — indicators, risk, execution, portfolio, options, stat-arb, microstructure |
 | `.claude/commands/` | Slash commands |
@@ -460,10 +465,10 @@ Add an exchange — no agent files change. Write an agent — no exchange code i
 ## FAQ
 
 ### What is ai-fund?
-An open-source AI crypto trading framework with 45 agents running inside Claude Code. You hire the ones that match your strategy and fire the ones that miss KPIs. Think of it as a trading desk, not a bot.
+An open-source AI crypto trading framework with 50 agents running inside Claude Code. You hire the ones that match your strategy and fire the ones that miss KPIs. Think of it as a trading desk, not a bot.
 
 ### How many trading agents does ai-fund have?
-45. 21 named personas (Arthur Hayes, Jim Simons, George Soros, Jesse Livermore, Warren Buffett, and more) plus role-based agents across desk functions. They share analysis libraries for indicators, risk, execution, portfolio analytics, market microstructure, and stat-arb workflows.
+50. 21 named personas (Arthur Hayes, Jim Simons, George Soros, Jesse Livermore, Warren Buffett, and more) plus role-based agents across desk functions. They share analysis libraries for indicators, risk, execution, portfolio analytics, market microstructure, and stat-arb workflows.
 
 ### What exchanges work with ai-fund?
 110 exchanges via CCXT in the pinned dependency, plus dedicated connectors for Cube, Alpaca, Robinhood, Hyperliquid, and gateway orchestration.
@@ -475,7 +480,7 @@ MIT-licensed, fully open source. You need Claude Pro or Team ($20/month) for the
 Yes. The Arbitrageur scans for price gaps. The Execution Trader routes to the best venue. The Market Maker quotes across venues at once. It's one of the main reasons to use this.
 
 ### How is ai-fund different from virattt's ai-hedge-fund?
-virattt's project does stocks with investor personas (Buffett, etc.). ai-fund is crypto, works with any exchange, has 45 agents with connector-backed tool surfaces, and fires them when they underperform. [Comparison table.](#ai-fund-vs-other-ai-trading-bots)
+virattt's project does stocks with investor personas (Buffett, etc.). ai-fund is crypto, works with any exchange, has 50 agents with connector-backed tool surfaces, and fires them when they underperform. [Comparison table.](#ai-fund-vs-other-ai-trading-bots)
 
 ### Can ai-fund trade live?
 Yes. Everything starts in paper/testnet. The Risk Manager reviews all trades. You have to explicitly confirm before anything goes live.
