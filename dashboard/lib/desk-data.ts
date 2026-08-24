@@ -3,6 +3,11 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fetchBulkIdrPrices } from './market-data';
 
+// Repositori GitHub Utama
+const REPO_OWNER = process.env.VERCEL_GIT_REPO_OWNER || process.env.GITHUB_OWNER || 'IrvanRisdi';
+const REPO_NAME = process.env.VERCEL_GIT_REPO_SLUG || process.env.GITHUB_REPO || 'Gemini-AI-Fund';
+const REPO_BRANCH = process.env.VERCEL_GIT_COMMIT_REF || process.env.GITHUB_BRANCH || 'main';
+
 function getDeskDir(): string {
   const candidates = [
     path.join(process.cwd(), '.desk'),
@@ -118,6 +123,26 @@ export const DEFAULT_AGENTS = [
 const DEFAULT_STARTING_BALANCE = 18000000;
 
 async function readJson<T>(file: string): Promise<T | null> {
+  // 1. Ambil data secara LIVE dari GitHub Raw (Sinkronisasi Real-Time)
+  try {
+    const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/.desk/${file}`;
+    const headers: Record<string, string> = {};
+    if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+    }
+    const res = await fetch(rawUrl, {
+      headers,
+      next: { revalidate: 10 }, // Refresh data setiap 10 detik
+    });
+    if (res.ok) {
+      const text = await res.text();
+      return JSON.parse(text) as T;
+    }
+  } catch {
+    // Fallback ke penyimpanan lokal jika offline
+  }
+
+  // 2. Pembacaan dari penyimpanan lokal
   try {
     const dir = getDeskDir();
     const fullPath = path.join(dir, file);
@@ -138,14 +163,14 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
 
   const defaultStartingBalance = DEFAULT_STARTING_BALANCE;
 
-  // Use latest-scan timestamp if newer than ledger
+  // Gunakan timestamp terbaru dari scan jika tersedia
   let lastCycle = scan?.timestamp || ledger?.last_cycle || new Date().toISOString();
 
   if (!ledger || !state) {
     const agents: AgentSummary[] = DEFAULT_AGENTS.map((slug) => {
       const agentCandidates = scan?.candidates?.filter((c) => c.agent === slug) ?? [];
       const lastAction = agentCandidates.length > 0
-        ? `🔥 Signal: ${agentCandidates.map((c) => `${c.pair.toUpperCase()} (${c.reason})`).join('; ')}`
+        ? `⚡ Signal: ${agentCandidates.map((c) => `${c.pair.toUpperCase()} — ${c.reason}`).join(' | ')}`
         : 'Active — awaiting next 15-min scan cycle';
 
       return {
@@ -195,7 +220,7 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
       ? [...trades].sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0]
       : null;
 
-    // Check if latest scan found signals for this agent
+    // Tampilkan sinyal live dari hasil scan terbaru
     const agentCandidates = scan?.candidates?.filter((c) => c.agent === slug) ?? [];
     let lastAction = stateAgent?.last_action ?? 'Active';
     if (agentCandidates.length > 0) {
