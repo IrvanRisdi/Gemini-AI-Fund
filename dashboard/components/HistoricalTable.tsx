@@ -1,4 +1,4 @@
-import type { OHLCV } from './indicators';
+import type { OHLCV } from  '@/lib/indicators';
 
 function fmt(value: number): string {
   if (value >= 1000) return Math.round(value).toLocaleString('id-ID');
