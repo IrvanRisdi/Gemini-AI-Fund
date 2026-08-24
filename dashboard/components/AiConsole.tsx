@@ -1,77 +1,55 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import type { DeskSnapshot } from '@/lib/desk-data';
-
-const LINE_DELAY_MS = 90;
-
-/**
- * Placeholder response generator. No LLM is wired up yet — this only
- * reflects real desk numbers back at the user so the console isn't
- * pure fiction. Swap this for a real `fetch('/api/ai-console', ...)`
- * call once a backend (e.g. the Claude API) is connected.
- */
-function buildMockResponse(question: string, snapshot: DeskSnapshot): string {
-  const active = snapshot.agents.filter((a) => a.status === 'active');
-  const withPositions = active.filter((a) => a.openPairs.length > 0);
-  const pnl = snapshot.totalEquity - snapshot.startingTotal;
-
-  const lines = [
-    `> ${question}`,
-    '',
-    `desk.lastCycle       = "${snapshot.lastCycle}"`,
-    `desk.mode            = "${snapshot.deskMode}"`,
-    `desk.totalEquityIdr  = ${Math.round(snapshot.totalEquity).toLocaleString('en-US')}`,
-    `desk.pnlIdr          = ${pnl >= 0 ? '+' : ''}${Math.round(pnl).toLocaleString('en-US')}`,
-    `desk.activeAgents    = ${active.length}`,
-    `desk.openPositions   = ${withPositions.length}`,
-    '',
-    withPositions.length > 0
-      ? `Open books: ${withPositions.map((a) => `${a.slug} (${a.openPairs.join(', ')})`).join(', ')}`
-      : 'No open positions right now — every book is flat.',
-    '',
-    '// This is a placeholder response reading real .desk/ state directly —',
-    '// no LLM is connected yet. Wire /api/ai-console to Claude to make this live.',
-  ];
-
-  return lines.join('\n');
-}
 
 export function AiConsole({ snapshot }: { snapshot: DeskSnapshot }) {
   const [question, setQuestion] = useState('');
   const [displayed, setDisplayed] = useState('');
-  const [isStreaming, setIsStreaming] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  function handleSend() {
+  async function handleSend() {
     const trimmed = question.trim();
-    if (!trimmed || isStreaming) return;
+    if (!trimmed || isLoading) return;
 
-    if (timerRef.current) clearInterval(timerRef.current);
+    setIsLoading(true);
+    setDisplayed(`> ${trimmed}\n\n[Sedang menganalisis portofolio dengan Gemini AI...]`);
 
-    const fullResponse = buildMockResponse(trimmed, snapshot);
-    const lines = fullResponse.split('\n');
-    let i = 0;
-    setDisplayed('');
-    setIsStreaming(true);
+    try {
+      const res = await fetch('/api/ai-console', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: trimmed,
+          snapshot,
+        }),
+      });
 
-    timerRef.current = setInterval(() => {
-      i += 1;
-      setDisplayed(lines.slice(0, i).join('\n'));
-      if (i >= lines.length) {
-        if (timerRef.current) clearInterval(timerRef.current);
-        setIsStreaming(false);
+      const data = await res.json();
+      if (data.response) {
+        setDisplayed(`> ${trimmed}\n\n${data.response}`);
+      } else {
+        setDisplayed(`> ${trimmed}\n\n⚠️ Tidak dapat memuat respon dari server.`);
       }
-    }, LINE_DELAY_MS);
+    } catch (err: any) {
+      setDisplayed(`> ${trimmed}\n\n⚠️ Gagal terhubung ke Gemini API: ${err?.message || 'Network error'}`);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-5">
       <div className="flex items-center justify-between">
-        <h3 className="font-sans text-lg font-semibold text-ink">AI Console</h3>
-        <span className="rounded-full bg-accent-bg px-2.5 py-0.5 font-mono text-[11px] font-medium tracking-wide text-accent uppercase">
-          preview
+        <h3 className="font-sans text-lg font-semibold text-ink flex items-center gap-2">
+          <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent font-bold">
+            Gemini
+          </span>{' '}
+          Console
+        </h3>
+        <span className="rounded-full bg-blue-500/10 px-2.5 py-0.5 font-mono text-[11px] font-medium tracking-wide text-blue-400 border border-blue-500/20 uppercase">
+          AI LIVE
         </span>
       </div>
 
@@ -85,21 +63,26 @@ export function AiConsole({ snapshot }: { snapshot: DeskSnapshot }) {
               handleSend();
             }
           }}
-          placeholder="Tanya tentang posisi desk, mis. 'siapa yang punya posisi terbuka?'"
+          placeholder="Tanya apa saja tentang desk, mis. 'Siapa yang punya posisi terbuka?' atau 'Jelaskan sinyal BTC hari ini'"
           rows={2}
-          className="flex-1 resize-none rounded-lg border border-border bg-bg/60 px-3 py-2 font-sans text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"
+          disabled={isLoading}
+          className="flex-1 resize-none rounded-lg border border-border bg-bg/60 px-3 py-2 font-sans text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none disabled:opacity-50"
         />
         <button
           type="button"
           onClick={handleSend}
-          disabled={isStreaming || !question.trim()}
-          className="rounded-lg bg-accent px-4 py-2 font-sans text-sm font-medium text-bg transition-opacity hover:opacity-90 disabled:opacity-40"
+          disabled={isLoading || !question.trim()}
+          className="rounded-lg bg-accent px-5 py-2 font-sans text-sm font-semibold text-bg transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center min-w-[75px]"
         >
-          {isStreaming ? '...' : 'Kirim'}
+          {isLoading ? (
+            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-bg border-t-transparent"></span>
+          ) : (
+            'Kirim'
+          )}
         </button>
       </div>
 
-      {displayed && <CodeBlock filename="ai-console.log" language="text" code={displayed} />}
+      {displayed && <CodeBlock filename="gemini-ai.md" language="markdown" code={displayed} />}
     </div>
   );
 }
