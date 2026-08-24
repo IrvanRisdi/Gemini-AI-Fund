@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-24T11:46:04.399Z",
+  "timestamp": "2026-08-24T13:05:08.786Z",
   "pairsScanned": 19,
   "candidates": [
     {
@@ -7,9 +7,29 @@
       "agent": "jesse-livermore",
       "reason": "pivot break up with volume confirmation",
       "data": {
-        "volRatio": 3.3974739834814884,
-        "close": 1384008000,
-        "resistance20": 1374198000
+        "volRatio": 2.9461854408325285,
+        "close": 1393797000,
+        "resistance20": 1385657000
+      }
+    },
+    {
+      "pair": "btcidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh demand zone (proximal 1385656000, distal 1383000000) retested for the first time and held, 2.8x ATR departure",
+      "data": {
+        "zoneProximal": 1385656000,
+        "zoneDistal": 1383000000,
+        "departureToAtr": 2.829826269282612
+      }
+    },
+    {
+      "pair": "ethidr",
+      "agent": "momentum-trader",
+      "reason": "bullish breakout: ADX>25, EMA9>EMA21, RSI in 50-80, close above 20-bar resistance, volume>1.5x",
+      "data": {
+        "adx14": 27.427687200665595,
+        "rsi14": 67.50651736208914,
+        "volRatio": 7.312228840382332
       }
     },
     {
@@ -17,49 +37,9 @@
       "agent": "jesse-livermore",
       "reason": "pivot break up with volume confirmation",
       "data": {
-        "volRatio": 7.784124777596969,
-        "close": 44200000,
-        "resistance20": 43808000
-      }
-    },
-    {
-      "pair": "ethidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.64x the longer-window baseline",
-      "data": {
-        "rvShort": 0.005878229151375207,
-        "rvLong": 0.003590992032576756,
-        "ratio": 1.636937397256551
-      }
-    },
-    {
-      "pair": "ethidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 43634000, distal 43514000) retested for the first time and held, 4.8x ATR departure",
-      "data": {
-        "zoneProximal": 43634000,
-        "zoneDistal": 43514000,
-        "departureToAtr": 4.761527020327218
-      }
-    },
-    {
-      "pair": "solidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
-      "data": {
-        "volRatio": 3.250474414752211,
-        "close": 1695999,
-        "resistance20": 1682000
-      }
-    },
-    {
-      "pair": "solidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 1671000, distal 1667447) retested for the first time and held, 4.7x ATR departure",
-      "data": {
-        "zoneProximal": 1671000,
-        "zoneDistal": 1667447,
-        "departureToAtr": 4.7065583421641355
+        "volRatio": 7.312228840382332,
+        "close": 44288000,
+        "resistance20": 44200000
       }
     },
     {
@@ -67,9 +47,9 @@
       "agent": "jesse-livermore",
       "reason": "pivot break up with volume confirmation",
       "data": {
-        "volRatio": 3.2285256330584096,
-        "close": 26643,
-        "resistance20": 26499
+        "volRatio": 6.423435425698746,
+        "close": 26800,
+        "resistance20": 26750
       }
     },
     {
@@ -77,49 +57,90 @@
       "agent": "jesse-livermore",
       "reason": "pivot break up with volume confirmation",
       "data": {
-        "volRatio": 3.3803153568655953,
-        "close": 1635,
-        "resistance20": 1633
-      }
-    },
-    {
-      "pair": "dogeidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 1614, distal 1606) retested for the first time and held, 3.8x ATR departure",
-      "data": {
-        "zoneProximal": 1614,
-        "zoneDistal": 1606,
-        "departureToAtr": 3.8301886792452833
+        "volRatio": 2.607053023951516,
+        "close": 1644,
+        "resistance20": 1638
       }
     },
     {
       "pair": "pepeidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
+      "agent": "volatility-analyst",
+      "reason": "realized vol expanding — short-window vol is 1.60x the longer-window baseline",
       "data": {
-        "volRatio": 6.1786631787111785,
-        "close": 0.0726,
-        "resistance20": 0.071938
+        "rvShort": 0.010988123212966328,
+        "rvLong": 0.00686142334827752,
+        "ratio": 1.6014349582036456
       }
     },
     {
-      "pair": "bnbidr",
+      "pair": "pepeidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh demand zone (proximal 0.072299, distal 0.071568) retested for the first time and held, 3.3x ATR departure",
+      "data": {
+        "zoneProximal": 0.072299,
+        "zoneDistal": 0.071568,
+        "departureToAtr": 3.262070622147491
+      }
+    },
+    {
+      "pair": "suiidr",
       "agent": "jesse-livermore",
       "reason": "pivot break up with volume confirmation",
       "data": {
-        "volRatio": 6.774987850168456,
-        "close": 12410888,
-        "resistance20": 12370000
+        "volRatio": 1.7789730186117634,
+        "close": 14796,
+        "resistance20": 14731
+      }
+    },
+    {
+      "pair": "hypeidr",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
+      "data": {
+        "volRatio": 3.345519567684209,
+        "close": 1420001,
+        "resistance20": 1420000
       }
     },
     {
       "pair": "tonidr",
       "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 26235, distal 25539) retested for the first time and held, 2.3x ATR departure",
+      "reason": "fresh supply zone (proximal 26235, distal 26332) retested for the first time and held, 2.0x ATR departure",
       "data": {
         "zoneProximal": 26235,
-        "zoneDistal": 25539,
-        "departureToAtr": 2.283641469693424
+        "zoneDistal": 26332,
+        "departureToAtr": 2.04172517552658
+      }
+    },
+    {
+      "pair": "tonidr",
+      "agent": "candlestick-trader",
+      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
+      "data": {
+        "prevOpen": 26235,
+        "prevClose": 26332,
+        "lastOpen": 26332,
+        "lastClose": 25605
+      }
+    },
+    {
+      "pair": "ltcidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh demand zone (proximal 939000, distal 931000) retested for the first time and held, 2.3x ATR departure",
+      "data": {
+        "zoneProximal": 939000,
+        "zoneDistal": 931000,
+        "departureToAtr": 2.3106796116504853
+      }
+    },
+    {
+      "pair": "uniidr",
+      "agent": "volatility-analyst",
+      "reason": "realized vol expanding — short-window vol is 1.77x the longer-window baseline",
+      "data": {
+        "rvShort": 0.02810384326180877,
+        "rvLong": 0.015889897744005673,
+        "ratio": 1.7686610521084505
       }
     }
   ],

@@ -82,3 +82,12 @@ _None._
 * **Realized PnL:** Rp-91.404
 * **Reason:** Stop Loss hit @ Rp1.414.487
 * **New Balance:** Rp17.705.467
+
+
+---
+### 2026-08-24T13:05 UTC — Position Opened: SHORT TON/IDR
+* **Entry Price:** Rp26.339
+* **Stop Loss:** Rp26.865,78
+* **Target:** Rp25.022,05
+* **Reason:** Bearish Engulfing after a short uptrend (Level 1 reversal pattern)
+* **Allocated:** Rp4.426.367

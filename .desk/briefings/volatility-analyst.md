@@ -37,3 +37,12 @@ _None._
 * **Target:** Rp46.354.350
 * **Reason:** realized vol expanding — short-window vol is 1.64x the longer-window baseline
 * **Allocated:** Rp4.500.000
+
+
+---
+### 2026-08-24T13:05 UTC — Position Opened: LONG PEPE/IDR
+* **Entry Price:** Rp0,073
+* **Stop Loss:** Rp0,072
+* **Target:** Rp0,077
+* **Reason:** realized vol expanding — short-window vol is 1.60x the longer-window baseline
+* **Allocated:** Rp4.500.000

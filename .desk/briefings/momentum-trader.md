@@ -351,3 +351,12 @@ _None._
 * **Target:** Rp982.800
 * **Reason:** bullish breakout: ADX>25, EMA9>EMA21, RSI in 50-80, close above 20-bar resistance, volume>1.5x
 * **Allocated:** Rp4.515.337
+
+
+---
+### 2026-08-24T13:05 UTC — Position Opened: LONG ETH/IDR
+* **Entry Price:** Rp44.212.000
+* **Stop Loss:** Rp43.327.760
+* **Target:** Rp46.422.600
+* **Reason:** bullish breakout: ADX>25, EMA9>EMA21, RSI in 50-80, close above 20-bar resistance, volume>1.5x
+* **Allocated:** Rp4.515.337

@@ -57,3 +57,11 @@ _None._
 * **Target:** Rp1.757.891,1
 * **Reason:** 38.2% retracement (1666486.222000) of swing low 1651729->high 1675608 tagged with a bullish reaction candle
 * **Allocated:** Rp4.464.790
+
+
+---
+### 2026-08-24T13:05 UTC — Position Closed: SHORT LINK/IDR
+* **Exit Price:** Rp208.344
+* **Realized PnL:** Rp-125.677
+* **Reason:** Stop Loss hit @ Rp208.344
+* **New Balance:** Rp17.733.481

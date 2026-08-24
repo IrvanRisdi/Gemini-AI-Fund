@@ -72,7 +72,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (LTC/IDR) — LONG entry @ Rp936.000, stop Rp917.280 (2026-08-24T09:27 UTC)"
+      "last_action": "1 open (ETH/IDR) — LONG entry @ Rp44.212.000, stop Rp43.327.760 (2026-08-24T13:05 UTC)"
     },
     "mean-reversion-trader": {
       "status": "active",
@@ -437,7 +437,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (ETH/IDR) — LONG entry @ Rp44.147.000, stop Rp43.264.060 (2026-08-24T11:46 UTC)",
+      "last_action": "1 open (PEPE/IDR) — LONG entry @ Rp0,073, stop Rp0,072 (2026-08-24T13:05 UTC)",
       "fired_date": "2026-08-21",
       "fire_reason": "User request 2026-08-21 — making room for the four new pattern-based specialists. Never traded by design (no place_order in its own SKILL.md, pure regime-classification role); freeing its book slot rather than leaving it permanently flat."
     },
@@ -523,7 +523,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (SOL/IDR) — LONG entry @ Rp1.674.182, stop Rp1.640.698,36 (2026-08-24T10:19 UTC)"
+      "last_action": "Closed SHORT LINK/IDR (Rp-125.677) — Stop Loss hit @ Rp208.344 (2026-08-24T13:05 UTC)"
     },
     "candlestick-trader": {
       "status": "active",
@@ -551,7 +551,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Closed SHORT HYPE/IDR (Rp-91.404) — Stop Loss hit @ Rp1.414.487 (2026-08-24T11:46 UTC)"
+      "last_action": "1 open (TON/IDR) — SHORT entry @ Rp26.339, stop Rp26.865,78 (2026-08-24T13:05 UTC)"
     }
   },
   "exchanges": {}
