@@ -3,7 +3,7 @@ name: 24/7 Trading Loop Engine
 on:
   schedule:
     # Berjalan setiap 15 menit
-    - cron: '*/15 * * * *'
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
 
 permissions:
