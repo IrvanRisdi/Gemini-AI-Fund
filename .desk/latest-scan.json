@@ -1,25 +1,15 @@
 {
-  "timestamp": "2026-08-24T10:19:41.240Z",
+  "timestamp": "2026-08-24T11:04:16.125Z",
   "pairsScanned": 19,
   "candidates": [
     {
       "pair": "btcidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 1371233000, distal 1374198000) retested for the first time and held, 2.6x ATR departure",
       "data": {
-        "volRatio": 4.967110143792079,
-        "close": 1369899000,
-        "resistance20": 1369000000
-      }
-    },
-    {
-      "pair": "ethidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
-      "data": {
-        "volRatio": 3.652734271784091,
-        "close": 43808000,
-        "resistance20": 43600000
+        "zoneProximal": 1371233000,
+        "zoneDistal": 1374198000,
+        "departureToAtr": 2.5869417145081246
       }
     },
     {
@@ -33,53 +23,14 @@
       }
     },
     {
-      "pair": "solidr",
-      "agent": "fibonacci-trader",
-      "reason": "38.2% retracement (1666486.222000) of swing low 1651729->high 1675608 tagged with a bullish reaction candle",
+      "pair": "xrpidr",
+      "agent": "candlestick-trader",
+      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
       "data": {
-        "level": 0.382,
-        "price": 1666486.222,
-        "swingHigh": 1675608,
-        "swingLow": 1651729
-      }
-    },
-    {
-      "pair": "trxidr",
-      "agent": "smc-trader",
-      "reason": "sell-side liquidity sweep + bullish CHoCH confirmed (within 5 bars)",
-      "data": {
-        "sweepVolRatio": 1.0541202236196978,
-        "poolPrice": 6064
-      }
-    },
-    {
-      "pair": "ltcidr",
-      "agent": "momentum-trader",
-      "reason": "bullish breakout: ADX>25, EMA9>EMA21, RSI in 50-80, close above 20-bar resistance, volume>1.5x",
-      "data": {
-        "adx14": 31.86500277388032,
-        "rsi14": 72.14906012339505,
-        "volRatio": 22.900544723786886
-      }
-    },
-    {
-      "pair": "ltcidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
-      "data": {
-        "volRatio": 22.900544723786886,
-        "close": 947000,
-        "resistance20": 942000
-      }
-    },
-    {
-      "pair": "avaxidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.62x the longer-window baseline",
-      "data": {
-        "rvShort": 0.0072055598837374585,
-        "rvLong": 0.004455303444099727,
-        "ratio": 1.6172994666120815
+        "prevOpen": 26213,
+        "prevClose": 26105,
+        "lastOpen": 26105,
+        "lastClose": 26213
       }
     }
   ],

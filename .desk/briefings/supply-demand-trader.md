@@ -64,3 +64,12 @@ _None._
 * **Target:** Rp45.853.500
 * **Reason:** fresh demand zone (proximal 43481000, distal 43449000) retested for the first time and held, 3.0x ATR departure
 * **Allocated:** Rp4.500.000
+
+
+---
+### 2026-08-24T11:04 UTC — Position Opened: LONG BTC/IDR
+* **Entry Price:** Rp1.366.416.000
+* **Stop Loss:** Rp1.339.087.680
+* **Target:** Rp1.434.736.800
+* **Reason:** fresh supply zone (proximal 1371233000, distal 1374198000) retested for the first time and held, 2.6x ATR departure
+* **Allocated:** Rp4.500.000
