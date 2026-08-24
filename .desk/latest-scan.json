@@ -1,0 +1,69 @@
+{
+  "timestamp": "2026-08-21T13:23:09.495Z",
+  "pairsScanned": 19,
+  "candidates": [
+    {
+      "pair": "suiidr",
+      "agent": "fibonacci-trader",
+      "reason": "61.8% retracement (14000.920000) of swing high 14169->low 13729 tagged with a bearish reaction candle",
+      "data": {
+        "level": 0.618,
+        "price": 14000.92,
+        "swingHigh": 14169,
+        "swingLow": 13729
+      }
+    },
+    {
+      "pair": "trxidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh demand zone (proximal 5993, distal 5986) retested for the first time and held, 3.2x ATR departure",
+      "data": {
+        "zoneProximal": 5993,
+        "zoneDistal": 5986,
+        "departureToAtr": 3.2463768115942027
+      }
+    },
+    {
+      "pair": "hypeidr",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
+      "data": {
+        "volRatio": 2.00371198223981,
+        "close": 1340000,
+        "resistance20": 1336999
+      }
+    },
+    {
+      "pair": "hypeidr",
+      "agent": "volatility-analyst",
+      "reason": "realized vol expanding — short-window vol is 1.61x the longer-window baseline",
+      "data": {
+        "rvShort": 0.011426433939221213,
+        "rvLong": 0.00710485601782554,
+        "ratio": 1.6082569316750635
+      }
+    },
+    {
+      "pair": "hypeidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh demand zone (proximal 1305183, distal 1300003) retested for the first time and held, 2.9x ATR departure",
+      "data": {
+        "zoneProximal": 1305183,
+        "zoneDistal": 1300003,
+        "departureToAtr": 2.9255139625401636
+      }
+    },
+    {
+      "pair": "hypeidr",
+      "agent": "candlestick-trader",
+      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
+      "data": {
+        "prevOpen": 1305183,
+        "prevClose": 1303234,
+        "lastOpen": 1301813,
+        "lastClose": 1340000
+      }
+    }
+  ],
+  "errors": []
+}

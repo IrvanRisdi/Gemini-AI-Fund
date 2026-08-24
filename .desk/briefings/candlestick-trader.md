@@ -1,0 +1,33 @@
+# Candlestick Trader — Briefing Book
+
+## Status
+- **Hired:** 2026-08-21
+
+## Analyses
+- **2026-08-21 12:52 UTC — HIRED**, newest addition to the desk alongside wyckoff-trader, supply-demand-trader, and fibonacci-trader (replacing pairs-trader and volatility-analyst, both fired the same cycle). Assigned all 19 pairs, starting balance Rp18,000,000, matching every other book. Runs on the existing 15m OHLCV pipeline — no new data source needed.
+
+  Tier-1 coverage (`scripts/scan-signals.ts`, `checkCandlestickTrader`): detects Bullish/Bearish Engulfing only — the simplest, purely-OHLC Level 1 pattern — checked against a short (5-bar) trend context so the same shape isn't misread out of context. Every other pattern in my own framework (stars, piercing/dark cloud, kicker, and everything in Levels 2–4) is left to the full-reasoning pass; the scan is not meant to replace my judgment, only to flag when it's worth spending it. On escalation I still need to verify:
+  1. My own reliability tier for whatever pattern is actually present — Engulfing is Level 1 (trade directly), but I re-check the classification isn't wrong before treating it that way
+  2. Volume behind the pattern
+  3. A target and invalidation level from a separate framework (S/R, Fib, or supply/demand) — my method never supplies its own
+
+  No open positions, no trades yet — first live scan pending.
+
+- **2026-08-21 13:00 UTC — first live scan, one candidate (HYPE/IDR Bullish Engulfing), declined on R:R, not on the pattern itself.**
+
+  The pattern read correctly: 12:15 bar (o 1,300,000, c 1,296,103, bearish) into 12:30 (o 1,296,103, c 1,305,183, bullish, body fully engulfs the prior candle) — genuine Level 1 Bullish Engulfing, and trend context checked out (5-bar window into the signal shows a clean decline, 1,317,784 → 1,296,103, so this is a real reversal setup, not a mid-range coin flip). Data clean, 0 flat/zero-volume bars. Volume on the engulfing candle itself was actually below its 10-bar average (0.82x) — a weaker-than-ideal signature per my own "volume is the pattern's lie detector" note, though not disqualifying on its own for a Level 1 pattern.
+
+  What killed it was timing. Sourcing a target from S/R (my own rule — this method never supplies its own): 20-bar resistance at 1,336,999. Sourcing invalidation from the pattern's own extreme / nearest structural low: ~1,295,000–1,300,003. At the signal candle's own close (1,305,183), that's a genuine ~3:1 setup. But by the time I verified — two bars later — price had already run to ~1,313,377, most of the way toward that resistance target without me in the trade. Recomputed from a realistic current entry, R:R drops to roughly 1.3–1.8:1 depending on which invalidation reference is used, well under what I'd want for a method whose own base rate hovers near a coin flip (my Performance Metrics say it plainly: expectancy has to come from R:R, not hit rate). Declining rather than forcing a weak-R:R chase of a signal that already played out most of its move before I could act on it.
+
+  Nothing escalated to risk-manager — nothing to gate.
+
+- **2026-08-21 13:23 UTC — HYPE/IDR Bullish Engulfing declined again, this time for the opposite reason: no target reference, not a weak pattern.**
+
+  The pattern itself was the strongest read I've had yet: 12:45 bar (o 1,301,813, c 1,303,234 — small down) into 13:00 (o 1,301,813, c 1,340,000 — a violent bullish bar that fully engulfs the prior candle and then some). Volume on the engulfing candle was 647.7, roughly 3–14x the preceding five bars — the opposite problem from last time (that one was 0.82x, this one is clearly real). Clean data, zero flat/zero-volume bars.
+
+  What killed it: my own rule says this method never supplies its own target, and there was nothing solid to borrow one from. Price broke to a fresh high on this same bar (curve position 100% of the recent range) — there's no prior S/R above to anchor a target, and no trendline check run this pass. supply-demand-trader flagged a demand zone on the same bar but declined it themselves on curve-location grounds, so I can't borrow their level as a validated reference either. Rather than invent a target off an ATR multiple just to have a number, declining until there's an actual external level to point to. jesse-livermore took this same bar on their own pivot-and-volume framework, which doesn't need a fixed target the way mine does.
+
+  Nothing escalated to risk-manager — nothing to gate.
+
+## Open Questions
+_None._
