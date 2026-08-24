@@ -360,3 +360,11 @@ _None._
 * **Target:** Rp46.422.600
 * **Reason:** bullish breakout: ADX>25, EMA9>EMA21, RSI in 50-80, close above 20-bar resistance, volume>1.5x
 * **Allocated:** Rp4.515.337
+
+
+---
+### 2026-08-24T19:37 UTC — Position Closed: LONG LTC/IDR
+* **Exit Price:** Rp915.000
+* **Realized PnL:** Rp-101.306
+* **Reason:** Stop Loss hit @ Rp915.000
+* **New Balance:** Rp17.960.043

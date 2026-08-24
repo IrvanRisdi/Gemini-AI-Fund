@@ -87,3 +87,11 @@ _None._
 * **Target:** Rp982.800
 * **Reason:** squeeze (ATR ratio 0.91, bandwidth pctile 5) resolving up through range high, volume confirms
 * **Allocated:** Rp4.571.559
+
+
+---
+### 2026-08-24T19:37 UTC — Position Closed: LONG LTC/IDR
+* **Exit Price:** Rp915.000
+* **Realized PnL:** Rp-102.567
+* **Reason:** Stop Loss hit @ Rp915.000
+* **New Balance:** Rp18.183.667

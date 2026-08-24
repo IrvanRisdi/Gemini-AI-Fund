@@ -72,7 +72,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (ETH/IDR) — LONG entry @ Rp44.212.000, stop Rp43.327.760 (2026-08-24T13:05 UTC)"
+      "last_action": "Closed LONG LTC/IDR (Rp-101.306) — Stop Loss hit @ Rp915.000 (2026-08-24T19:37 UTC)"
     },
     "mean-reversion-trader": {
       "status": "active",
@@ -409,7 +409,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (LTC/IDR) — LONG entry @ Rp936.000, stop Rp917.280 (2026-08-24T09:27 UTC)"
+      "last_action": "Closed LONG LTC/IDR (Rp-102.567) — Stop Loss hit @ Rp915.000 (2026-08-24T19:37 UTC)"
     },
     "volatility-analyst": {
       "status": "fired",
