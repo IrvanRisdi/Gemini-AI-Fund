@@ -44,3 +44,11 @@ _None._
 * **Target:** Rp15.156,75
 * **Reason:** possible Spring: wicked below the 20-bar range low (14358) on below-average volume (0.23x), closed back inside — Phase C test candidate, needs the Test bar to confirm
 * **Allocated:** Rp4.500.000
+
+
+---
+### 2026-08-24T23:50 UTC — Position Closed: LONG SUI/IDR
+* **Exit Price:** Rp14.141
+* **Realized PnL:** Rp-91.652
+* **Reason:** Stop Loss hit @ Rp14.141
+* **New Balance:** Rp17.908.348

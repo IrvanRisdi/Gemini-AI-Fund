@@ -211,3 +211,12 @@ Flat now. Small sample, but two real data points either way this loop, and I'd r
 
 ## Open Questions
 _None._
+
+
+---
+### 2026-08-24T23:50 UTC — Position Opened: LONG SOL/IDR
+* **Entry Price:** Rp1.739.339
+* **Stop Loss:** Rp1.704.552,22
+* **Target:** Rp1.826.305,95
+* **Reason:** range regime, RSI>70, price at/above upper Bollinger, no volume behind the move
+* **Allocated:** Rp4.451.897

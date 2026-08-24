@@ -100,7 +100,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Flat — LTC short stopped -Rp32,094 (jesse-livermore's opposite long won), UNI declined again (2026-08-21 08:19 UTC)"
+      "last_action": "1 open (SOL/IDR) — LONG entry @ Rp1.739.339, stop Rp1.704.552,22 (2026-08-24T23:50 UTC)"
     },
     "swing-trader": {
       "status": "fired",
@@ -467,7 +467,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (SUI/IDR) — LONG entry @ Rp14.435, stop Rp14.146,3 (2026-08-24T17:18 UTC)"
+      "last_action": "Closed LONG SUI/IDR (Rp-91.652) — Stop Loss hit @ Rp14.141 (2026-08-24T23:50 UTC)"
     },
     "supply-demand-trader": {
       "status": "active",
