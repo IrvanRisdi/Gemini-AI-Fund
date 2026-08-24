@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-08-24T20:11:32.261Z",
+  "timestamp": "2026-08-24T20:51:41.646Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "ethidr",
-      "agent": "fibonacci-trader",
-      "reason": "38.2% retracement (43693690.000000) of swing high 43876000->low 43581000 tagged with a bearish reaction candle",
+      "pair": "dogeidr",
+      "agent": "candlestick-trader",
+      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
       "data": {
-        "level": 0.382,
-        "price": 43693690,
-        "swingHigh": 43876000,
-        "swingLow": 43581000
+        "prevOpen": 1575,
+        "prevClose": 1571,
+        "lastOpen": 1570,
+        "lastClose": 1579
       }
     }
   ],
