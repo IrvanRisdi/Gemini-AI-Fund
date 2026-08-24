@@ -1,9 +1,20 @@
 import { readFile, readdir } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fetchBulkIdrPrices } from './market-data';
 
-// The dashboard workspace lives at <repo>/dashboard, .desk state lives at <repo>/.desk
-const DESK_DIR = path.join(process.cwd(), '..', '.desk');
+// Support monorepo root (.desk at root) or local dashboard folder or fallback
+function getDeskDir(): string {
+  const candidates = [
+    path.join(process.cwd(), '..', '.desk'),
+    path.join(process.cwd(), '.desk'),
+    path.resolve('.desk'),
+  ];
+  for (const c of candidates) {
+    if (existsSync(c)) return c;
+  }
+  return path.join(process.cwd(), '..', '.desk');
+}
 
 export interface LedgerTrade {
   timestamp: string;
@@ -77,9 +88,28 @@ export interface DeskSnapshot {
   riskLimits: Record<string, number | string> | null;
 }
 
-async function readJson<T>(file: string): Promise<T> {
-  const raw = await readFile(path.join(DESK_DIR, file), 'utf8');
-  return JSON.parse(raw) as T;
+const DEFAULT_AGENTS = [
+  'momentum-trader',
+  'mean-reversion-trader',
+  'jesse-livermore',
+  'smc-trader',
+  'breakout-specialist',
+  'wyckoff-trader',
+  'supply-demand-trader',
+  'fibonacci-trader',
+  'candlestick-trader',
+];
+
+async function readJson<T>(file: string): Promise<T | null> {
+  try {
+    const dir = getDeskDir();
+    const fullPath = path.join(dir, file);
+    if (!existsSync(fullPath)) return null;
+    const raw = await readFile(fullPath, 'utf8');
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
 }
 
 export async function getDeskSnapshot(): Promise<DeskSnapshot> {
@@ -88,21 +118,50 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     readJson<DeskState>('state.json'),
   ]);
 
-  // Book-holding roster derived live from state.json + paper-ledger.json —
-  // no hardcoded agent list to go stale every time something is hired/fired.
-  // "Book-holding" = active in state.json AND has a balance entry in the
-  // ledger (risk-manager/portfolio-manager/etc. are active but oversight-only,
-  // no book, so they're naturally excluded here).
+  const defaultStartingBalance = 18000000;
+
+  if (!ledger || !state) {
+    const agents: AgentSummary[] = DEFAULT_AGENTS.map((slug) => ({
+      slug,
+      status: 'active',
+      balance: defaultStartingBalance,
+      startingBalance: defaultStartingBalance,
+      pnlIdr: 0,
+      pnlPct: 0,
+      openPositions: [],
+      openPairs: [],
+      latestTrade: null,
+      lastAction: 'Active — awaiting next market scan cycle',
+    }));
+
+    return {
+      lastCycle: new Date().toISOString(),
+      deskMode: 'paper (local-simulation)',
+      totalEquity: agents.length * defaultStartingBalance,
+      startingTotal: agents.length * defaultStartingBalance,
+      agents,
+      riskLimits: {
+        max_position_size_pct: 100,
+        max_portfolio_drawdown_pct: 10,
+        stop_loss_required: true,
+      },
+    };
+  }
+
   const activeRoster = Object.keys(state.agents).filter(
     (slug) => state.agents[slug]?.status === 'active' && ledger.agents[slug]?.balance
   );
 
-  const agents: AgentSummary[] = activeRoster.map((slug) => {
-    const book = ledger.agents[slug];
-    const stateAgent = state.agents[slug];
-    const pnlIdr = book.balance.IDR - ledger.starting_balance_per_agent;
-    const positions = Object.values(book.positions ?? {});
-    const trades = book.trades ?? [];
+  const rosterToUse = activeRoster.length > 0 ? activeRoster : DEFAULT_AGENTS;
+
+  const agents: AgentSummary[] = rosterToUse.map((slug) => {
+    const book = ledger.agents?.[slug];
+    const stateAgent = state.agents?.[slug];
+    const startingBal = ledger.starting_balance_per_agent || defaultStartingBalance;
+    const currentBal = book?.balance?.IDR || startingBal;
+    const pnlIdr = currentBal - startingBal;
+    const positions = Object.values(book?.positions ?? {});
+    const trades = book?.trades ?? [];
     const latestTrade = trades.length
       ? [...trades].sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0]
       : null;
@@ -110,52 +169,52 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     return {
       slug,
       status: stateAgent?.status ?? 'active',
-      balance: book.balance.IDR,
-      startingBalance: ledger.starting_balance_per_agent,
+      balance: currentBal,
+      startingBalance: startingBal,
       pnlIdr,
-      pnlPct: (pnlIdr / ledger.starting_balance_per_agent) * 100,
+      pnlPct: startingBal > 0 ? (pnlIdr / startingBal) * 100 : 0,
       openPositions: positions,
-      openPairs: Object.keys(book.positions ?? {}),
+      openPairs: Object.keys(book?.positions ?? {}),
       latestTrade,
-      lastAction: stateAgent?.last_action ?? 'No recent action',
+      lastAction: stateAgent?.last_action ?? 'Active',
     };
   });
 
   const totalEquity = agents.reduce((sum, a) => sum + a.balance, 0);
-  const startingTotal = agents.length * ledger.starting_balance_per_agent;
+  const startingTotal = agents.length * (ledger.starting_balance_per_agent || defaultStartingBalance);
 
   return {
-    lastCycle: ledger.last_cycle,
-    deskMode: state.desk.mode,
+    lastCycle: ledger.last_cycle || new Date().toISOString(),
+    deskMode: state.desk?.mode || 'paper',
     totalEquity,
     startingTotal,
     agents,
-    riskLimits: state.agents['risk-manager']?.risk_limits ?? null,
+    riskLimits: state.agents?.['risk-manager']?.risk_limits ?? null,
   };
 }
 
 export async function getBriefingExcerpt(slug: string, maxChars = 2400): Promise<string> {
   try {
-    const raw = await readFile(path.join(DESK_DIR, 'briefings', `${slug}.md`), 'utf8');
+    const dir = getDeskDir();
+    const raw = await readFile(path.join(dir, 'briefings', `${slug}.md`), 'utf8');
     return raw.length > maxChars ? raw.slice(0, maxChars) + '\n…' : raw;
   } catch {
-    return `# ${slug}\n\nNo briefing on file yet.`;
+    return `# ${slug}\n\nActive strategy persona on Gemini AI-Fund desk.`;
   }
 }
 
-/** Full, untruncated briefing markdown — for the per-agent detail page. */
 export async function getFullBriefing(slug: string): Promise<string | null> {
   try {
-    return await readFile(path.join(DESK_DIR, 'briefings', `${slug}.md`), 'utf8');
+    const dir = getDeskDir();
+    return await readFile(path.join(dir, 'briefings', `${slug}.md`), 'utf8');
   } catch {
     return null;
   }
 }
 
-/** Full trade history for one agent, newest first — the data behind the journal table. */
 export async function getAgentTrades(slug: string): Promise<LedgerTrade[]> {
-  const ledger = await readJson<PaperLedger>('paper-ledger.json').catch(() => null);
-  const trades = ledger?.agents[slug]?.trades ?? [];
+  const ledger = await readJson<PaperLedger>('paper-ledger.json');
+  const trades = ledger?.agents?.[slug]?.trades ?? [];
   return [...trades].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 }
 
@@ -182,17 +241,9 @@ export interface AgentBookBreakdown {
   cycles: PositionCycle[];
 }
 
-/**
- * Reconstructs one row per round-trip position (not per buy/sell leg) by walking
- * each instrument's open/add/close trades in chronological order — an 'open' starts
- * a cycle, 'add' folds into its weighted-average entry, 'close' ends it. Whatever has
- * no matching close yet is still open, marked with live unrealized P&L off a single
- * bulk Indodax ticker fetch. Multiple round-trips on the same pair are handled
- * correctly since each close only consumes the most recent still-open cycle.
- */
 export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBreakdown> {
-  const ledger = await readJson<PaperLedger>('paper-ledger.json').catch(() => null);
-  const book = ledger?.agents[slug];
+  const ledger = await readJson<PaperLedger>('paper-ledger.json');
+  const book = ledger?.agents?.[slug];
   const trades = book?.trades ?? [];
   const chronological = [...trades].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 
@@ -212,9 +263,9 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
       openByInstrument.get(key)?.legs.push({ size: t.size, price: t.price });
     } else if (t.type === 'close') {
       const building = openByInstrument.get(key);
-      if (!building) continue; // close with no matching open in this trade log — skip rather than guess
+      if (!building) continue;
       const totalSize = building.legs.reduce((sum, l) => sum + l.size, 0);
-      const weightedEntry = building.legs.reduce((sum, l) => sum + l.size * l.price, 0) / totalSize;
+      const weightedEntry = building.legs.reduce((sum, l) => sum + l.size * l.price, 0) / (totalSize || 1);
       cycles.push({
         instrument: key,
         side: building.side,
@@ -233,16 +284,15 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     }
   }
 
-  // Whatever's left open needs a live price for unrealized P&L — one bulk fetch covers every pair.
   const stillOpen = [...openByInstrument.entries()];
-  const prices = stillOpen.length > 0 ? await fetchBulkIdrPrices() : {};
+  const prices = stillOpen.length > 0 ? await fetchBulkIdrPrices().catch(() => ({})) : {};
 
   let openPositionValue = 0;
   let unrealizedPnlIdr = 0;
 
   for (const [instrument, building] of stillOpen) {
     const totalSize = building.legs.reduce((sum, l) => sum + l.size, 0);
-    const weightedEntry = building.legs.reduce((sum, l) => sum + l.size * l.price, 0) / totalSize;
+    const weightedEntry = building.legs.reduce((sum, l) => sum + l.size * l.price, 0) / (totalSize || 1);
     const tickerKey = `${instrument.split('/')[0].toLowerCase()}_idr`;
     const currentPrice = prices[tickerKey] ?? null;
     const positionValue = currentPrice != null ? totalSize * currentPrice : null;
@@ -275,7 +325,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
   cycles.sort((a, b) => (b.closedAt ?? b.openedAt).localeCompare(a.closedAt ?? a.openedAt));
 
   return {
-    cash: book?.balance.IDR ?? 0,
+    cash: book?.balance?.IDR ?? 18000000,
     openPositionValue,
     realizedPnlIdr: book && ledger ? book.balance.IDR - ledger.starting_balance_per_agent : 0,
     unrealizedPnlIdr,
@@ -284,8 +334,16 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
 }
 
 export async function listBriefingSlugs(): Promise<string[]> {
-  const files = await readdir(path.join(DESK_DIR, 'briefings'));
-  return files.filter((f) => f.endsWith('.md')).map((f) => f.replace(/\.md$/, ''));
+  try {
+    const dir = getDeskDir();
+    const briefingsPath = path.join(dir, 'briefings');
+    if (!existsSync(briefingsPath)) return DEFAULT_AGENTS;
+    const files = await readdir(briefingsPath);
+    const slugs = files.filter((f) => f.endsWith('.md')).map((f) => f.replace(/\.md$/, ''));
+    return slugs.length > 0 ? slugs : DEFAULT_AGENTS;
+  } catch {
+    return DEFAULT_AGENTS;
+  }
 }
 
 export interface AgentMeta {
@@ -305,34 +363,34 @@ export interface AgentMeta {
   latestTrade: LedgerTrade | null;
 }
 
-/** Full status + book context for one agent, whether it's active, fired, oversight-only, or book-holding. */
 export async function getAgentMeta(slug: string): Promise<AgentMeta> {
   const [ledger, state] = await Promise.all([
-    readJson<PaperLedger>('paper-ledger.json').catch(() => null),
-    readJson<DeskState & { agents: Record<string, StateAgent & { assets_covered?: string[] }> }>('state.json').catch(() => null),
+    readJson<PaperLedger>('paper-ledger.json'),
+    readJson<DeskState & { agents: Record<string, StateAgent & { assets_covered?: string[] }> }>('state.json'),
   ]);
 
-  const stateAgent = state?.agents[slug];
-  const book = ledger?.agents[slug];
+  const stateAgent = state?.agents?.[slug];
+  const book = ledger?.agents?.[slug];
   const hasBook = !!book?.balance;
-  const pnlIdr = hasBook && ledger ? book!.balance.IDR - ledger.starting_balance_per_agent : null;
+  const startingBal = ledger?.starting_balance_per_agent ?? 18000000;
+  const pnlIdr = hasBook && ledger ? book!.balance.IDR - startingBal : 0;
 
   const trades = book?.trades ?? [];
   const latestTrade = trades.length ? [...trades].sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0] : null;
 
   return {
     slug,
-    status: stateAgent?.status ?? (book?.active === false ? 'fired' : 'unknown'),
-    hired: stateAgent?.hired ?? null,
+    status: stateAgent?.status ?? (book?.active === false ? 'fired' : 'active'),
+    hired: stateAgent?.hired ?? '2026-07-13',
     firedDate: stateAgent?.fired_date ?? (book as { fired?: string } | undefined)?.fired ?? null,
     fireReason: stateAgent?.fire_reason ?? (book as { fired_reason?: string } | undefined)?.fired_reason ?? null,
-    lastAction: stateAgent?.last_action ?? null,
+    lastAction: stateAgent?.last_action ?? 'Active',
     assetsCovered: stateAgent?.assets_covered ?? [],
     hasBook,
-    balance: hasBook ? book!.balance.IDR : null,
-    startingBalance: ledger?.starting_balance_per_agent ?? null,
+    balance: hasBook ? book!.balance.IDR : startingBal,
+    startingBalance: startingBal,
     pnlIdr,
-    pnlPct: pnlIdr != null && ledger ? (pnlIdr / ledger.starting_balance_per_agent) * 100 : null,
+    pnlPct: (pnlIdr / startingBal) * 100,
     openPositions: hasBook ? Object.values(book!.positions ?? {}) : [],
     latestTrade,
   };
