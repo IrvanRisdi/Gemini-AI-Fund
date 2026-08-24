@@ -15,6 +15,13 @@ function agentCard(agent: AgentSummary) {
     { label: agent.status === 'active' ? 'ACTIVE' : 'FIRED', tone: agent.status === 'active' ? 'positive' : 'neutral' },
   ];
 
+  if (agent.unrealizedPnlIdr !== 0) {
+    badges.push({
+      label: `FL: ${agent.unrealizedPnlIdr >= 0 ? '+' : ''}Rp${Math.round(agent.unrealizedPnlIdr).toLocaleString('id-ID')}`,
+      tone: agent.unrealizedPnlIdr >= 0 ? 'positive' : 'negative',
+    });
+  }
+
   let statusTone: BadgeTone = 'neutral';
   let statusLabel = 'FLAT';
   let statusDescription = agent.lastAction;
@@ -39,12 +46,12 @@ function agentCard(agent: AgentSummary) {
       key={agent.slug}
       title={agent.slug}
       href={`/agent/${agent.slug}`}
-      subtitle={`Rp${agent.startingBalance.toLocaleString('id-ID')} starting book`}
+      subtitle={`Rp${agent.startingBalance.toLocaleString('id-ID')} modal · Kas: Rp${Math.round(agent.cash).toLocaleString('id-ID')}`}
       badges={badges}
       statusTone={statusTone}
       statusLabel={statusLabel}
       statusDescription={statusDescription}
-      value={`Rp${agent.balance.toLocaleString('id-ID')}`}
+      value={`Rp${Math.round(agent.equity).toLocaleString('id-ID')}`}
       deltaPct={agent.pnlPct}
       live={agent.status === 'active'}
     />
@@ -73,12 +80,18 @@ export default async function DeskPage() {
           </p>
         </div>
         <div className="rounded-xl border border-border bg-surface px-5 py-3 text-right">
-          <p className="font-mono text-[11px] tracking-wide text-ink-muted uppercase">Total Equity</p>
+          <p className="font-mono text-[11px] tracking-wide text-ink-muted uppercase">Total Equity (Mark-to-Market)</p>
           <p className="font-mono text-2xl font-semibold text-ink">Rp{Math.round(snapshot.totalEquity).toLocaleString('id-ID')}</p>
-          <p className={`font-mono text-xs font-medium ${deskPnlPct >= 0 ? 'text-positive' : 'text-negative'}`}>
-            {deskPnlPct >= 0 ? '+' : ''}
-            {deskPnlPct.toFixed(3)}%
-          </p>
+          <div className="flex items-center justify-end gap-2 mt-0.5 font-mono text-xs">
+            <span className={deskPnlPct >= 0 ? 'text-positive font-medium' : 'text-negative font-medium'}>
+              {deskPnlPct >= 0 ? '+' : ''}{deskPnlPct.toFixed(3)}% ({deskPnl >= 0 ? '+' : ''}Rp{Math.round(deskPnl).toLocaleString('id-ID')})
+            </span>
+          </div>
+          {snapshot.totalUnrealizedPnl !== 0 && (
+            <p className="font-mono text-[10px] text-ink-faint mt-0.5">
+              Kas: Rp{Math.round(snapshot.totalCash).toLocaleString('id-ID')} · Floating: {snapshot.totalUnrealizedPnl >= 0 ? '+' : ''}Rp{Math.round(snapshot.totalUnrealizedPnl).toLocaleString('id-ID')}
+            </p>
+          )}
         </div>
       </header>
 
