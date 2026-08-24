@@ -287,7 +287,6 @@ function scoreRanging(snap: IndicatorSnapshot): number {
   let score = 0;
 
   // High path-to-net ratio is the strongest ranging signal
-  // (lots of back-and-forth relative to net movement)
   if (snap.pathToNetRatio > 10) score += 0.3;
   else if (snap.pathToNetRatio > 5) score += 0.2;
   else if (snap.pathToNetRatio > 3) score += 0.1;
@@ -301,14 +300,16 @@ function scoreRanging(snap: IndicatorSnapshot): number {
   if (snap.trendDirection === 'neutral') score += 0.1;
 
   // Distinguish from quiet: ranging has moderate volatility
-  if (snap.normalizedAtr > 0.3 && snap.normalizedAtr < 8) score += 0.1;
+  if (snap.normalizedAtr > 0.3 && snap.normalizedAtr < 4) score += 0.1;
 
   // Penalize if very low path-to-net ratio (clearly directional)
   if (snap.pathToNetRatio < 2) score *= 0.3;
 
-  // Penalize if return volatility is very high — that's volatile, not ranging
-  if (snap.returnStdDev > 0.08) score *= 0.3;
-  else if (snap.returnStdDev > 0.05) score *= 0.6;
+  // Berikan penalti jika volatilitas tinggi — itu volatile, bukan ranging
+  if (snap.returnStdDev > 0.04) score *= 0.2;
+  else if (snap.returnStdDev > 0.025) score *= 0.5;
+
+  if (snap.normalizedAtr > 4) score *= 0.3;
 
   // Penalize if return volatility is extremely low — that's quiet, not ranging
   if (snap.returnStdDev < 0.002) score *= 0.5;
@@ -319,21 +320,21 @@ function scoreRanging(snap: IndicatorSnapshot): number {
 function scoreVolatile(snap: IndicatorSnapshot): number {
   let score = 0;
 
-  // Extreme return volatility is the definitive signal
-  if (snap.returnStdDev > 0.12) score += 0.4;
-  else if (snap.returnStdDev > 0.06) score += 0.25;
-  else if (snap.returnStdDev > 0.03) score += 0.15;
+  // Return volatility scoring yang lebih sensitif
+  if (snap.returnStdDev > 0.08) score += 0.45;
+  else if (snap.returnStdDev > 0.04) score += 0.35;
+  else if (snap.returnStdDev > 0.02) score += 0.2;
 
-  // High normalized ATR
-  if (snap.normalizedAtr > 15) score += 0.3;
-  else if (snap.normalizedAtr > 8) score += 0.2;
-  else if (snap.normalizedAtr > 4) score += 0.1;
+  // Normalized ATR scoring
+  if (snap.normalizedAtr > 10) score += 0.4;
+  else if (snap.normalizedAtr > 4) score += 0.3;
+  else if (snap.normalizedAtr > 2) score += 0.15;
 
   if (snap.bollingerWidth > BB_WIDE_THRESHOLD) score += 0.1;
-  if (snap.candleBodyRatio > 0.6) score += 0.1;
+  if (snap.candleBodyRatio > 0.5) score += 0.1;
 
   // Penalize if low volatility
-  if (snap.normalizedAtr < 2) score *= 0.3;
+  if (snap.normalizedAtr < 1.5) score *= 0.2;
 
   return Math.min(1, score);
 }
