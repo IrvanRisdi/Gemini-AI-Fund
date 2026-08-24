@@ -1,4 +1,4 @@
-import type { OHLCV } from '@ai-fund/lib/indicators';
+import type { OHLCV } from './indicators';
 
 export type BreakoutState =
   | 'breakout-up-confirmed'
