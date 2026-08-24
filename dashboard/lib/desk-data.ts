@@ -3,10 +3,14 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fetchBulkIdrPrices } from './market-data';
 
-// Repositori GitHub Utama (Public)
 const REPO_OWNER = 'IrvanRisdi';
 const REPO_NAME = 'Gemini-AI-Fund';
 const REPO_BRANCH = 'main';
+
+function normalizeIndodaxKey(rawPair: string): string {
+  const clean = rawPair.replace('/', '').toLowerCase();
+  return clean.endsWith('idr') ? clean.replace(/idr$/, '_idr') : `${clean}_idr`;
+}
 
 function getDeskDir(): string {
   const candidates = [
@@ -37,6 +41,7 @@ export interface LedgerPosition {
   size: number;
   entryPrice: number;
   stopPrice: number;
+  targetPrice?: number;
   opened: string;
   sizingNote?: string;
 }
@@ -88,7 +93,10 @@ export interface LatestScan {
 export interface AgentSummary {
   slug: string;
   status: 'active' | 'fired';
-  balance: number;
+  equity: number; // Nilai Ekuitas Mark-to-Market (Kas + Floating PnL)
+  cash: number;   // Saldo Kas
+  unrealizedPnlIdr: number;
+  balance: number; // Kompatibilitas komponen
   startingBalance: number;
   pnlIdr: number;
   pnlPct: number;
@@ -101,7 +109,9 @@ export interface AgentSummary {
 export interface DeskSnapshot {
   lastCycle: string;
   deskMode: string;
-  totalEquity: number;
+  totalEquity: number; // Total Ekuitas seluruh agen
+  totalCash: number;   // Total Saldo Kas seluruh agen
+  totalUnrealizedPnl: number;
   startingTotal: number;
   agents: AgentSummary[];
   riskLimits: Record<string, number | string> | null;
@@ -123,19 +133,17 @@ export const DEFAULT_AGENTS = [
 const DEFAULT_STARTING_BALANCE = 18000000;
 
 async function readJson<T>(file: string): Promise<T | null> {
-  // 1. Tarik data secara LIVE langsung dari GitHub Raw tanpa Cache
+  // 1. Tarik data secara LIVE langsung dari GitHub Raw
   try {
     const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/.desk/${file}?t=${Date.now()}`;
     const res = await fetch(rawUrl, {
-      cache: 'no-store', // Wajib ambil data paling baru detik itu juga
+      cache: 'no-store',
     });
     if (res.ok) {
       const text = await res.text();
       return JSON.parse(text) as T;
     }
-  } catch {
-    // Fallback ke penyimpanan lokal
-  }
+  } catch {}
 
   // 2. Pembacaan dari penyimpanan lokal
   try {
@@ -150,10 +158,11 @@ async function readJson<T>(file: string): Promise<T | null> {
 }
 
 export async function getDeskSnapshot(): Promise<DeskSnapshot> {
-  const [ledger, state, scan] = await Promise.all([
+  const [ledger, state, scan, prices] = await Promise.all([
     readJson<PaperLedger>('paper-ledger.json'),
     readJson<DeskState>('state.json'),
     readJson<LatestScan>('latest-scan.json'),
+    fetchBulkIdrPrices().catch(() => ({} as Record<string, number>)),
   ]);
 
   const defaultStartingBalance = DEFAULT_STARTING_BALANCE;
@@ -169,6 +178,9 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
       return {
         slug,
         status: 'active',
+        equity: defaultStartingBalance,
+        cash: defaultStartingBalance,
+        unrealizedPnlIdr: 0,
         balance: defaultStartingBalance,
         startingBalance: defaultStartingBalance,
         pnlIdr: 0,
@@ -184,12 +196,14 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
       lastCycle,
       deskMode: 'paper (local-simulation)',
       totalEquity: agents.length * defaultStartingBalance,
+      totalCash: agents.length * defaultStartingBalance,
+      totalUnrealizedPnl: 0,
       startingTotal: agents.length * defaultStartingBalance,
       agents,
       riskLimits: {
         max_position_size_pct: 100,
         max_portfolio_drawdown_pct: 10,
-        stop_loss_required: 1,
+        stop_loss_required: true,
       },
       latestScanCandidates: scan?.candidates ?? [],
     };
@@ -205,9 +219,28 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     const book = ledger.agents?.[slug];
     const stateAgent = state.agents?.[slug];
     const startingBal = ledger.starting_balance_per_agent || defaultStartingBalance;
-    const currentBal = book?.balance?.IDR || startingBal;
-    const pnlIdr = currentBal - startingBal;
-    const positions = Object.values(book?.positions ?? {});
+    const cash = book?.balance?.IDR ?? startingBal;
+    
+    // Hitung Floating PnL secara Real-Time berdasarkan harga Indodax saat ini
+    let unrealizedPnl = 0;
+    const rawPositions = book?.positions ?? {};
+    const positionsList: LedgerPosition[] = [];
+
+    for (const [pair, pos] of Object.entries(rawPositions)) {
+      positionsList.push(pos);
+      const tickerKey = normalizeIndodaxKey(pair);
+      const currentPrice = prices[tickerKey] ?? pos.entryPrice;
+      const posPnl = pos.side === 'long'
+        ? (currentPrice - pos.entryPrice) * pos.size
+        : (pos.entryPrice - currentPrice) * pos.size;
+      unrealizedPnl += posPnl;
+    }
+
+    // Ekuitas = Kas + Laba/Rugi Posisi Terbuka
+    const equity = cash + unrealizedPnl;
+    const pnlIdr = equity - startingBal;
+    const pnlPct = startingBal > 0 ? (pnlIdr / startingBal) * 100 : 0;
+
     const trades = book?.trades ?? [];
     const latestTrade = trades.length
       ? [...trades].sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0]
@@ -222,24 +255,31 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     return {
       slug,
       status: stateAgent?.status ?? 'active',
-      balance: currentBal,
+      equity,
+      cash,
+      unrealizedPnlIdr: unrealizedPnl,
+      balance: equity,
       startingBalance: startingBal,
       pnlIdr,
-      pnlPct: startingBal > 0 ? (pnlIdr / startingBal) * 100 : 0,
-      openPositions: positions,
-      openPairs: Object.keys(book?.positions ?? {}),
+      pnlPct,
+      openPositions: positionsList,
+      openPairs: Object.keys(rawPositions),
       latestTrade,
       lastAction,
     };
   });
 
-  const totalEquity = agents.reduce((sum, a) => sum + a.balance, 0);
+  const totalEquity = agents.reduce((sum, a) => sum + a.equity, 0);
+  const totalCash = agents.reduce((sum, a) => sum + a.cash, 0);
+  const totalUnrealizedPnl = agents.reduce((sum, a) => sum + a.unrealizedPnlIdr, 0);
   const startingTotal = agents.length * (ledger.starting_balance_per_agent || defaultStartingBalance);
 
   return {
     lastCycle,
     deskMode: state.desk?.mode || 'paper',
     totalEquity,
+    totalCash,
+    totalUnrealizedPnl,
     startingTotal,
     agents,
     riskLimits: state.agents?.['risk-manager']?.risk_limits ?? null,
@@ -363,7 +403,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     }
 
     const stillOpen = [...openByInstrument.entries()];
-    const prices = (stillOpen.length > 0 ? await fetchBulkIdrPrices().catch(() => ({})) : {}) as Record<string, number>;
+    const prices = stillOpen.length > 0 ? await fetchBulkIdrPrices().catch(() => ({})) : {};
 
     let openPositionValue = 0;
     let unrealizedPnlIdr = 0;
@@ -371,7 +411,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     for (const [instrument, building] of stillOpen) {
       const totalSize = building.legs.reduce((sum, l) => sum + l.size, 0);
       const weightedEntry = building.legs.reduce((sum, l) => sum + l.size * l.price, 0) / (totalSize || 1);
-      const tickerKey = `${instrument.split('/')[0].toLowerCase()}_idr`;
+      const tickerKey = normalizeIndodaxKey(instrument);
       const currentPrice = prices[tickerKey] ?? null;
       const positionValue = currentPrice != null ? totalSize * currentPrice : null;
       const unrealized =
