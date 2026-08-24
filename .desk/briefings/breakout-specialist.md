@@ -104,3 +104,12 @@ _None._
 * **Target:** Rp1.811.250
 * **Reason:** squeeze (ATR ratio 0.64, bandwidth pctile 35) resolving up through range high, volume confirms
 * **Allocated:** Rp4.545.917
+
+
+---
+### 2026-08-24T23:29 UTC — Position Opened: SHORT SUI/IDR
+* **Entry Price:** Rp14.220
+* **Stop Loss:** Rp14.504,4
+* **Target:** Rp13.509
+* **Reason:** squeeze (ATR ratio 0.69, bandwidth pctile 13) resolving down through range low, volume confirms
+* **Allocated:** Rp4.545.917

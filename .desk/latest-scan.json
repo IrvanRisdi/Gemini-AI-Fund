@@ -1,77 +1,83 @@
 {
-  "timestamp": "2026-08-24T22:57:51.519Z",
+  "timestamp": "2026-08-24T23:29:17.555Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "solidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
+      "pair": "btcidr",
+      "agent": "smc-trader",
+      "reason": "buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)",
       "data": {
-        "volRatio": 4.0487258762736245,
-        "close": 1727022,
-        "resistance20": 1727000
+        "sweepVolRatio": 0.7246256608568287,
+        "poolPrice": 1396595000
       }
     },
     {
       "pair": "solidr",
-      "agent": "breakout-specialist",
-      "reason": "squeeze (ATR ratio 0.66, bandwidth pctile 48) resolving up through range high, volume confirms",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 1725813, distal 1742581) retested for the first time and held, 2.3x ATR departure",
       "data": {
-        "atrRatio": 0.662935769402148,
-        "bandwidthPercentile": 47.5,
-        "volRatio": 4.0487258762736245
-      }
-    },
-    {
-      "pair": "xrpidr",
-      "agent": "fibonacci-trader",
-      "reason": "50.0% retracement (26203.500000) of swing low 26153->high 26254 tagged with a bullish reaction candle",
-      "data": {
-        "level": 0.5,
-        "price": 26203.5,
-        "swingHigh": 26254,
-        "swingLow": 26153
+        "zoneProximal": 1725813,
+        "zoneDistal": 1742581,
+        "departureToAtr": 2.32493295828242
       }
     },
     {
       "pair": "dogeidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 1582, distal 1589) retested for the first time and held, 2.0x ATR departure",
       "data": {
-        "prevOpen": 1590,
-        "prevClose": 1591,
-        "lastOpen": 1591,
-        "lastClose": 1590
+        "zoneProximal": 1582,
+        "zoneDistal": 1589,
+        "departureToAtr": 2
       }
     },
     {
-      "pair": "hypeidr",
-      "agent": "wyckoff-trader",
-      "reason": "possible UTAD: wicked above the 20-bar range high (1385342) on below-average volume (0.45x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+      "pair": "pepeidr",
+      "agent": "smc-trader",
+      "reason": "buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)",
       "data": {
-        "rangeHigh": 1385342,
-        "rangeLow": 1360000,
-        "volRatio": 0.4461682161185859
+        "sweepVolRatio": 3.00961754698903,
+        "poolPrice": 0.071519
       }
     },
     {
-      "pair": "avaxidr",
+      "pair": "suiidr",
       "agent": "jesse-livermore",
       "reason": "pivot break down with volume confirmation",
       "data": {
-        "volRatio": 68.65667523959102,
-        "close": 132630,
-        "support20": 132853
+        "volRatio": 1.5551956378335237,
+        "close": 14005,
+        "support20": 14120
       }
     },
     {
-      "pair": "avaxidr",
+      "pair": "suiidr",
       "agent": "breakout-specialist",
-      "reason": "squeeze (ATR ratio 0.39, bandwidth pctile 10) resolving down through range low, volume confirms",
+      "reason": "squeeze (ATR ratio 0.69, bandwidth pctile 13) resolving down through range low, volume confirms",
       "data": {
-        "atrRatio": 0.3885065921087517,
-        "bandwidthPercentile": 10,
-        "volRatio": 68.65667523959102
+        "atrRatio": 0.6907724501046283,
+        "bandwidthPercentile": 12.5,
+        "volRatio": 1.5551956378335237
+      }
+    },
+    {
+      "pair": "suiidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 14209, distal 14210) retested for the first time and held, 2.8x ATR departure",
+      "data": {
+        "zoneProximal": 14209,
+        "zoneDistal": 14210,
+        "departureToAtr": 2.81648675171737
+      }
+    },
+    {
+      "pair": "trxidr",
+      "agent": "wyckoff-trader",
+      "reason": "possible UTAD: wicked above the 20-bar range high (6087) on below-average volume (0.57x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+      "data": {
+        "rangeHigh": 6087,
+        "rangeLow": 6057,
+        "volRatio": 0.5696320528512324
       }
     }
   ],
