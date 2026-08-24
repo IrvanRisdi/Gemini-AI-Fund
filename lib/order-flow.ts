@@ -483,7 +483,7 @@ export function volumeClockSpeed(
   const currentRate = recentRates.length > 0 ? recentRates[recentRates.length - 1] : 0;
   const averageRate = mean(recentRates);
 
-  // Acceleration: compare last bucket to previous
+  // Acceleration: pastikan bernilai 0 jika hanya ada 1 bucket
   let acceleration = 0;
   if (recentRates.length >= 2) {
     const prev = recentRates[recentRates.length - 2];
@@ -508,10 +508,7 @@ export function volumeClockSpeed(
   return { currentRate, averageRate, acceleration, percentile, regime, timeToNextBucket };
 }
 
-/**
- * Order flow imbalance profile across price levels.
- * Identifies support/resistance based on volume imbalance.
- */
+
 export function orderFlowImbalanceProfile(
   trades: Trade[],
   priceLevels: number
