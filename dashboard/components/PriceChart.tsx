@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { OHLCV } from '@ai-fund/lib/indicators';
+import type { OHLCV } from '@/lib/indicators';
 
 const WIDTH = 800;
 const HEIGHT = 300;
