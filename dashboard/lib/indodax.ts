@@ -1,4 +1,4 @@
-import type { OHLCV } from './indicators;
+import type { OHLCV } from './indicators';
 
 // Indodax's TradingView-compatible candle endpoint. Same one ccxt's indodax
 // adapter calls internally — fetched directly here so the dashboard doesn't
