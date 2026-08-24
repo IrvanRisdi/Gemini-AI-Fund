@@ -437,7 +437,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (AVAX/IDR) — LONG entry @ Rp133.025, stop Rp130.364,5 (2026-08-24T10:19 UTC)",
+      "last_action": "1 open (ETH/IDR) — LONG entry @ Rp44.147.000, stop Rp43.264.060 (2026-08-24T11:46 UTC)",
       "fired_date": "2026-08-21",
       "fire_reason": "User request 2026-08-21 — making room for the four new pattern-based specialists. Never traded by design (no place_order in its own SKILL.md, pure regime-classification role); freeing its book slot rather than leaving it permanently flat."
     },
@@ -551,7 +551,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (HYPE/IDR) — SHORT entry @ Rp1.386.328, stop Rp1.414.054,56 (2026-08-24T09:27 UTC)"
+      "last_action": "Closed SHORT HYPE/IDR (Rp-91.404) — Stop Loss hit @ Rp1.414.487 (2026-08-24T11:46 UTC)"
     }
   },
   "exchanges": {}

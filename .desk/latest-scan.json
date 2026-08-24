@@ -1,36 +1,125 @@
 {
-  "timestamp": "2026-08-24T11:04:16.125Z",
+  "timestamp": "2026-08-24T11:46:04.399Z",
   "pairsScanned": 19,
   "candidates": [
     {
       "pair": "btcidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 1371233000, distal 1374198000) retested for the first time and held, 2.6x ATR departure",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
       "data": {
-        "zoneProximal": 1371233000,
-        "zoneDistal": 1374198000,
-        "departureToAtr": 2.5869417145081246
+        "volRatio": 3.3974739834814884,
+        "close": 1384008000,
+        "resistance20": 1374198000
+      }
+    },
+    {
+      "pair": "ethidr",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
+      "data": {
+        "volRatio": 7.784124777596969,
+        "close": 44200000,
+        "resistance20": 43808000
+      }
+    },
+    {
+      "pair": "ethidr",
+      "agent": "volatility-analyst",
+      "reason": "realized vol expanding — short-window vol is 1.64x the longer-window baseline",
+      "data": {
+        "rvShort": 0.005878229151375207,
+        "rvLong": 0.003590992032576756,
+        "ratio": 1.636937397256551
       }
     },
     {
       "pair": "ethidr",
       "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 43481000, distal 43449000) retested for the first time and held, 3.0x ATR departure",
+      "reason": "fresh demand zone (proximal 43634000, distal 43514000) retested for the first time and held, 4.8x ATR departure",
       "data": {
-        "zoneProximal": 43481000,
-        "zoneDistal": 43449000,
-        "departureToAtr": 2.963443396226415
+        "zoneProximal": 43634000,
+        "zoneDistal": 43514000,
+        "departureToAtr": 4.761527020327218
+      }
+    },
+    {
+      "pair": "solidr",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
+      "data": {
+        "volRatio": 3.250474414752211,
+        "close": 1695999,
+        "resistance20": 1682000
+      }
+    },
+    {
+      "pair": "solidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh demand zone (proximal 1671000, distal 1667447) retested for the first time and held, 4.7x ATR departure",
+      "data": {
+        "zoneProximal": 1671000,
+        "zoneDistal": 1667447,
+        "departureToAtr": 4.7065583421641355
       }
     },
     {
       "pair": "xrpidr",
-      "agent": "candlestick-trader",
-      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
       "data": {
-        "prevOpen": 26213,
-        "prevClose": 26105,
-        "lastOpen": 26105,
-        "lastClose": 26213
+        "volRatio": 3.2285256330584096,
+        "close": 26643,
+        "resistance20": 26499
+      }
+    },
+    {
+      "pair": "dogeidr",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
+      "data": {
+        "volRatio": 3.3803153568655953,
+        "close": 1635,
+        "resistance20": 1633
+      }
+    },
+    {
+      "pair": "dogeidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh demand zone (proximal 1614, distal 1606) retested for the first time and held, 3.8x ATR departure",
+      "data": {
+        "zoneProximal": 1614,
+        "zoneDistal": 1606,
+        "departureToAtr": 3.8301886792452833
+      }
+    },
+    {
+      "pair": "pepeidr",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
+      "data": {
+        "volRatio": 6.1786631787111785,
+        "close": 0.0726,
+        "resistance20": 0.071938
+      }
+    },
+    {
+      "pair": "bnbidr",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
+      "data": {
+        "volRatio": 6.774987850168456,
+        "close": 12410888,
+        "resistance20": 12370000
+      }
+    },
+    {
+      "pair": "tonidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh demand zone (proximal 26235, distal 25539) retested for the first time and held, 2.3x ATR departure",
+      "data": {
+        "zoneProximal": 26235,
+        "zoneDistal": 25539,
+        "departureToAtr": 2.283641469693424
       }
     }
   ],

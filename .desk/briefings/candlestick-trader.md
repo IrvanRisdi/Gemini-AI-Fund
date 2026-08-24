@@ -58,3 +58,27 @@ _None._
 * **Target:** Rp1.317.011,6
 * **Reason:** Bullish Engulfing after a short downtrend (Level 1 reversal pattern)
 * **Allocated:** Rp4.500.000
+
+
+---
+### 2026-08-24T11:46 UTC — Position Closed: SHORT PEPE/IDR
+* **Exit Price:** Rp0,073
+* **Realized PnL:** Rp-101.229
+* **Reason:** Stop Loss hit @ Rp0,073
+* **New Balance:** Rp17.898.771
+
+
+---
+### 2026-08-24T11:46 UTC — Position Closed: SHORT XRP/IDR
+* **Exit Price:** Rp26.645
+* **Realized PnL:** Rp-101.900
+* **Reason:** Stop Loss hit @ Rp26.645
+* **New Balance:** Rp17.796.871
+
+
+---
+### 2026-08-24T11:46 UTC — Position Closed: SHORT HYPE/IDR
+* **Exit Price:** Rp1.414.487
+* **Realized PnL:** Rp-91.404
+* **Reason:** Stop Loss hit @ Rp1.414.487
+* **New Balance:** Rp17.705.467

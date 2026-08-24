@@ -28,3 +28,12 @@ _None._
 * **Target:** Rp139.676,25
 * **Reason:** realized vol expanding — short-window vol is 1.62x the longer-window baseline
 * **Allocated:** Rp4.500.000
+
+
+---
+### 2026-08-24T11:46 UTC — Position Opened: LONG ETH/IDR
+* **Entry Price:** Rp44.147.000
+* **Stop Loss:** Rp43.264.060
+* **Target:** Rp46.354.350
+* **Reason:** realized vol expanding — short-window vol is 1.64x the longer-window baseline
+* **Allocated:** Rp4.500.000
