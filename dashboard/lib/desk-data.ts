@@ -189,7 +189,7 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
       riskLimits: {
         max_position_size_pct: 100,
         max_portfolio_drawdown_pct: 10,
-        stop_loss_required: true,
+        stop_loss_required: 1,
       },
       latestScanCandidates: scan?.candidates ?? [],
     };
