@@ -4,7 +4,7 @@
   "created": "2026-07-13",
   "loop_restarted": "2026-07-14T02:45:00Z",
   "restart_reason": "Tokocrypto (prior data source) became unreachable (3 consecutive connection failures) after a short working period. Switched to Indodax, verified reachable from this network when OKX/Binance/Tokocrypto all failed simultaneously. Indodax's USDT pairs are too illiquid for technical indicators (16-19 of 20 candles flat on BTC/USDT and ETH/USDT; SOL/USDT doesn't exist at all) so the universe moved to IDR-quoted pairs instead. Ledger reset to a fresh IDR-denominated balance; prior Tokocrypto-era and OKX-era history preserved in each agent's briefing under dated dividers.",
-  "last_cycle": "2026-08-21T13:23:09Z",
+  "last_cycle": "2026-08-24T08:29:37.335Z",
   "roster_change_2026-08-21T12:52:00Z": "Fired pairs-trader and volatility-analyst per user request, hired wyckoff-trader, supply-demand-trader, fibonacci-trader, and candlestick-trader (new SKILL.md personas, authored from four trading books: the StockCharts Wyckoff Method tutorial, the Set-and-Forget supply/demand methodology, a Fibonacci strategy guide, and a candlestick pattern dictionary). Both firings were clean — pairs-trader and volatility-analyst were flat (no open positions) at the time. Before hiring, added mechanical Tier-1 coverage for all four new agents to scripts/scan-signals.ts (checkWyckoffTrader: Spring/UTAD proxy — range-extreme wick+reclaim on below-average volume; checkSupplyDemandTrader: single-base zone with >=2xATR departure, first retest; checkFibonacciTrader: price tagging a 38.2/50/61.8% retracement band of the last swing with a reversal-candle reaction; checkCandlestickTrader: Bullish/Bearish Engulfing with short-term trend context) — same standard applied when breakout-specialist/volatility-analyst/pairs-trader were hired on 2026-08-20T01:10:00Z and the reason scalper/swing-trader were fired: no agent goes on this desk's book without Tier-1 scan coverage. Verified the scan runs clean and produces sane (non-empty, non-noisy) candidates for the new checks before hiring. All four new agents assigned the full 19-pair universe via bin/desk-state update, starting balance Rp18,000,000 each, matching every other book. Active book-holding roster is now 9: momentum-trader, mean-reversion-trader, jesse-livermore, smc-trader, breakout-specialist, wyckoff-trader, supply-demand-trader, fibonacci-trader, candlestick-trader (+ risk-manager, portfolio-manager in oversight roles).",
   "loop_correction_2026-08-20T01:24:00Z": "First Tier-1 candidate of the new architecture flagged volatility-analyst on TON/IDR (vol expansion). Discovered on escalation: volatility-analyst's own SKILL.md has no place_order tool — it is a pure regime-classification/research role by design ('you never say it's going up or down'), not a directional trader, despite being given a Rp18,000,000 book like the other 6. Correction going forward: a volatility-analyst Tier-1 candidate should always resolve to a briefing analysis entry, never a trade proposal — there is nothing to risk-manager-gate. Its book is expected to stay flat indefinitely; that is by design, not a missed signal.",
   "loop_cadence_note": "Loop switched from 15-minute to hourly cadence on 2026-07-20 per user request (cron job recreated at '7 * * * *', session-only, auto-expires after 7 days). Superseded 2026-08-20 (see loop_architecture_note) — back to 15-minute cadence, but now cheap-scan-gated.",
@@ -34,7 +34,9 @@
   "fx_reference": "USDT/IDR = 18,074 at time of reset (Indodax ticker) — 18,000,000 IDR chosen as a round figure close to the prior $1,000 USDC baseline (~$996 equivalent).",
   "agents": {
     "momentum-trader": {
-      "balance": { "IDR": 18061348.78 },
+      "balance": {
+        "IDR": 18061348.78
+      },
       "positions": {
         "SHIB/IDR": {
           "side": "long",
@@ -271,7 +273,7 @@
           "instrument": "SOL/IDR",
           "side": "long",
           "type": "add",
-          "size": 0.58890,
+          "size": 0.5889,
           "price": 1539430.43,
           "reason": "Consolidated pyramid update on a fast, broad market rally (multiple pairs breaking out simultaneously this cycle) — both my +1R (1,535,889.43) and +2R (1,544,208.86) add triggers were crossed within one 15-min-cadence check, so logging as one blended update rather than two separate fills, same convention as this desk's prior fast-move catch-ups. Added 30% of planned size at +1R and 20% at +2R (both per my pyramiding rules), bringing total to my full 1.1778 SOL planned size (combined added size shown; weighted-average entry and new position size are in the position record). Per my trail rules: +1R moved stop to breakeven, +2R tightened the trail to 1.5xATR below the highest close since entry (1,545,670) — new stop 1,539,430.43, which now sits ABOVE my weighted average entry (1,533,393.60). This position is risk-free from here regardless of what happens next."
         },
@@ -352,7 +354,9 @@
       ]
     },
     "mean-reversion-trader": {
-      "balance": { "IDR": 17807586.16 },
+      "balance": {
+        "IDR": 17807586.16
+      },
       "positions": {},
       "trades": [
         {
@@ -415,12 +419,16 @@
       ]
     },
     "swing-trader": {
-      "balance": { "IDR": 18000000 },
+      "balance": {
+        "IDR": 18000000
+      },
       "positions": {},
       "trades": []
     },
     "scalper": {
-      "balance": { "IDR": 18000000 },
+      "balance": {
+        "IDR": 18000000
+      },
       "positions": {},
       "trades": []
     },
@@ -428,7 +436,9 @@
       "active": false,
       "fired": "2026-07-15T03:42:00Z",
       "fired_reason": "Fired per user request. First real ADF p-value validation (p<0.01) found all 8 pairs non-stationary and no candidate anomaly to test in the first place — a legitimate but empty result given this desk's simple OHLCV/order-book data, without proper backtest/walk-forward infrastructure this persona's edge needs.",
-      "balance": { "IDR": 18000000 },
+      "balance": {
+        "IDR": 18000000
+      },
       "positions": {},
       "trades": []
     },
@@ -436,12 +446,16 @@
       "active": false,
       "fired": "2026-07-15T00:45:00Z",
       "fired_reason": "Crypto-only desk — persona explicitly refuses to trade non-cash-flow-producing assets, structurally incompatible with this universe regardless of data pipeline improvements.",
-      "balance": { "IDR": 18000000 },
+      "balance": {
+        "IDR": 18000000
+      },
       "positions": {},
       "trades": []
     },
     "jesse-livermore": {
-      "balance": { "IDR": 17836474.41 },
+      "balance": {
+        "IDR": 17836474.41
+      },
       "positions": {
         "SOL/IDR": {
           "side": "long",
@@ -873,7 +887,9 @@
       "active": false,
       "fired": "2026-07-15T00:45:00Z",
       "fired_reason": "No on-chain/fundamental data source available (stablecoin reserves, protocol revenue, usage metrics) — reflexivity thesis requires data this desk's Indodax/ccxt price-only pipeline cannot provide without a new, unapproved data integration.",
-      "balance": { "IDR": 18000000 },
+      "balance": {
+        "IDR": 18000000
+      },
       "positions": {},
       "trades": []
     },
@@ -881,7 +897,9 @@
       "active": false,
       "fired": "2026-07-15T03:42:00Z",
       "fired_reason": "Fired per user request. Reactive-only by design (executes orders handed off by other agents) — with the desk trimmed down, its role had zero fills to work across its entire tenure.",
-      "balance": { "IDR": 18000000 },
+      "balance": {
+        "IDR": 18000000
+      },
       "positions": {},
       "trades": []
     },
@@ -891,7 +909,9 @@
       "fired_reason": "User request — making room for wyckoff-trader/supply-demand-trader/fibonacci-trader/candlestick-trader. Second tenure: one real trade (BTC short/DOGE long spread) stopped out for -Rp38,943 when a broad correlated rally widened the spread past its historical sigma; otherwise consistently found cointegrated pairs but with sub-1.5-bar half-lives, too fast for 15-min cadence, the same limitation that ended its first tenure.",
       "rehired": "2026-08-20T01:10:00Z",
       "rehire_reason": "Re-hired per user request. First tenure (fired 2026-07-15) found no tradeable setup across only 28 pair combinations from the original 8-pair universe. Universe has since expanded to 19 pairs (171 combinations) with weeks of accumulated 15m history — worth a second real attempt.",
-      "balance": { "IDR": 17961057.44 },
+      "balance": {
+        "IDR": 17961057.44
+      },
       "positions": {},
       "trades": [
         {
@@ -936,7 +956,9 @@
     },
     "breakout-specialist": {
       "hired": "2026-08-20T01:10:00Z",
-      "balance": { "IDR": 18286234.23 },
+      "balance": {
+        "IDR": 18286234.23
+      },
       "positions": {
         "AVAX/IDR": {
           "side": "long",
@@ -1116,40 +1138,71 @@
       "fired": "2026-08-21T12:52:00Z",
       "fired_reason": "User request — making room for the four new pattern-based specialists. Never traded by design (no place_order in its own SKILL.md, pure regime-classification role); freeing its book slot rather than leaving it permanently flat.",
       "hired": "2026-08-20T01:10:00Z",
-      "balance": { "IDR": 18000000 },
+      "balance": {
+        "IDR": 18000000
+      },
       "positions": {},
       "trades": []
     },
     "wyckoff-trader": {
       "hired": "2026-08-21T12:52:00Z",
-      "balance": { "IDR": 18000000 },
+      "balance": {
+        "IDR": 18000000
+      },
       "positions": {},
       "trades": []
     },
     "supply-demand-trader": {
       "hired": "2026-08-21T12:52:00Z",
-      "balance": { "IDR": 18000000 },
+      "balance": {
+        "IDR": 18000000
+      },
       "positions": {},
       "trades": []
     },
     "fibonacci-trader": {
       "hired": "2026-08-21T12:52:00Z",
-      "balance": { "IDR": 18000000 },
+      "balance": {
+        "IDR": 17962220.25
+      },
       "positions": {
-        "SUI/IDR": {
-          "side": "short",
-          "size": 144.75,
-          "entryPrice": 13989,
-          "stopPrice": 14075,
-          "opened": "2026-08-21T13:23:00Z",
-          "sizingNote": "First trade. 61.8% retracement (14000.92) of the 14169->13729 down-leg, confluence score 2/3: real S/R (this exact 13990-14020 band was tested and rejected 4 separate times over the prior ~5 hours — 08:30, 09:30, 10:30, 11:15 — before this retest) plus a bearish reaction candle closing back below the level. Stop placed just past the 76.4% level (14065) rounded to 14075. Target the swing low 13729 (0% retracement) — R:R ~3.0:1. Curve position 77.6% of the 60-bar range, favorable for a short (high in the range, not fighting location). Initial entry = 25% of full position, capped at 5%-of-desk (Rp8,099,582, recomputed off current active-desk cash total Rp161,991,643.58 across 9 books). Risk ~Rp12,449. Note: jesse-livermore holds SUI long from a much earlier, much lower entry (12,600) — not a contradiction, different framework/timeframe/entry, same precedent as mean-reversion-trader's opposite LTC short earlier this loop."
+        "BTC/IDR": {
+          "side": "long",
+          "size": 0.0032911920283110138,
+          "entryPrice": 1364416000,
+          "stopPrice": 1337127680,
+          "targetPrice": 1418992640,
+          "opened": "2026-08-24T08:29:37.335Z",
+          "sizingNote": "Allocated Rp4.490.555 (Risk Rp359.244)"
         }
       },
-      "trades": []
+      "trades": [
+        {
+          "timestamp": "2026-08-24T08:29:37.335Z",
+          "instrument": "SUI/IDR",
+          "side": "short",
+          "type": "close",
+          "size": 144.75,
+          "price": 14250,
+          "realizedPnlIdr": -37779.75,
+          "reason": "Stop Loss hit at Rp14.250"
+        },
+        {
+          "timestamp": "2026-08-24T08:29:37.335Z",
+          "instrument": "BTC/IDR",
+          "side": "long",
+          "type": "open",
+          "size": 0.0032911920283110138,
+          "price": 1364416000,
+          "reason": "38.2% retracement (1364416000.000000) of swing low 1357000000->high 1369000000 tagged with a bullish reaction candle"
+        }
+      ]
     },
     "candlestick-trader": {
       "hired": "2026-08-21T12:52:00Z",
-      "balance": { "IDR": 18000000 },
+      "balance": {
+        "IDR": 18000000
+      },
       "positions": {},
       "trades": []
     },
@@ -1158,14 +1211,18 @@
       "hired": "2026-07-15T00:45:00Z",
       "fired": "2026-07-15T01:15:00Z",
       "fired_reason": "Fired per user request after its first cycle — S2F model showed a -92.3% deviation from raw price (a known model-overshoot weakness at this S2F ratio), and its on-chain sub-models (MVRV, SOPR, realized price) remain unavailable on this desk, the same gap that got george-soros fired.",
-      "balance": { "IDR": 18000000 },
+      "balance": {
+        "IDR": 18000000
+      },
       "positions": {},
       "trades": []
     },
     "smc-trader": {
       "active": true,
       "hired": "2026-07-15T06:30:00Z",
-      "balance": { "IDR": 18000000 },
+      "balance": {
+        "IDR": 18000000
+      },
       "positions": {},
       "trades": []
     }

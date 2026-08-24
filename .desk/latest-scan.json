@@ -1,56 +1,57 @@
 {
-  "timestamp": "2026-08-24T07:31:10.274Z",
+  "timestamp": "2026-08-24T08:29:36.689Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "solidr",
+      "pair": "btcidr",
+      "agent": "fibonacci-trader",
+      "reason": "38.2% retracement (1364416000.000000) of swing low 1357000000->high 1369000000 tagged with a bullish reaction candle",
+      "data": {
+        "level": 0.382,
+        "price": 1364416000,
+        "swingHigh": 1369000000,
+        "swingLow": 1357000000
+      }
+    },
+    {
+      "pair": "ethidr",
       "agent": "candlestick-trader",
       "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
       "data": {
-        "prevOpen": 1670501,
-        "prevClose": 1680923,
-        "lastOpen": 1682000,
-        "lastClose": 1667759
+        "prevOpen": 43335000,
+        "prevClose": 43349000,
+        "lastOpen": 43350000,
+        "lastClose": 43335000
       }
     },
     {
-      "pair": "pepeidr",
-      "agent": "wyckoff-trader",
-      "reason": "possible UTAD: wicked above the 20-bar range high (0.071788) on below-average volume (0.68x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+      "pair": "hypeidr",
+      "agent": "momentum-trader",
+      "reason": "bearish breakdown: ADX>25, EMA9<EMA21, RSI in 20-50, close below 20-bar support, volume>1.5x",
       "data": {
-        "rangeHigh": 0.071788,
-        "rangeLow": 0.070254,
-        "volRatio": 0.6788441684206716
+        "adx14": 26.59549268787001,
+        "rsi14": 35.00080540911817,
+        "volRatio": 3.6111393872941586
       }
     },
     {
-      "pair": "bnbidr",
-      "agent": "wyckoff-trader",
-      "reason": "possible UTAD: wicked above the 20-bar range high (12358788) on below-average volume (0.77x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
-      "data": {
-        "rangeHigh": 12358788,
-        "rangeLow": 12269040,
-        "volRatio": 0.7680415718268515
-      }
-    },
-    {
-      "pair": "hbaridr",
+      "pair": "hypeidr",
       "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
+      "reason": "pivot break down with volume confirmation",
       "data": {
-        "volRatio": 7.826872175882414,
-        "close": 1423,
-        "resistance20": 1420
+        "volRatio": 3.6111393872941586,
+        "close": 1382000,
+        "support20": 1396369
       }
     },
     {
-      "pair": "shibidr",
+      "pair": "hypeidr",
       "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 0.095948, distal 0.094615) retested for the first time and held, 2.1x ATR departure",
+      "reason": "fresh supply zone (proximal 1403371, distal 1408054) retested for the first time and held, 2.9x ATR departure",
       "data": {
-        "zoneProximal": 0.095948,
-        "zoneDistal": 0.094615,
-        "departureToAtr": 2.061461461461459
+        "zoneProximal": 1403371,
+        "zoneDistal": 1408054,
+        "departureToAtr": 2.9115494216907862
       }
     }
   ],
