@@ -363,7 +363,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     }
 
     const stillOpen = [...openByInstrument.entries()];
-    const prices = stillOpen.length > 0 ? await fetchBulkIdrPrices().catch(() => ({})) : {};
+    const prices = (stillOpen.length > 0 ? await fetchBulkIdrPrices().catch(() => ({})) : {}) as Record<string, number>;
 
     let openPositionValue = 0;
     let unrealizedPnlIdr = 0;
