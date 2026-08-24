@@ -1,123 +1,26 @@
 {
-  "timestamp": "2026-08-24T15:58:29.084Z",
+  "timestamp": "2026-08-24T16:45:55.119Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "btcidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
-      "data": {
-        "prevOpen": 1404210000,
-        "prevClose": 1409200000,
-        "lastOpen": 1409200000,
-        "lastClose": 1398000000
-      }
-    },
-    {
-      "pair": "ethidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
-      "data": {
-        "prevOpen": 44399000,
-        "prevClose": 44566000,
-        "lastOpen": 44600000,
-        "lastClose": 44175000
-      }
-    },
-    {
-      "pair": "xrpidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
-      "data": {
-        "prevOpen": 26737,
-        "prevClose": 26943,
-        "lastOpen": 26943,
-        "lastClose": 26438
-      }
-    },
-    {
-      "pair": "pepeidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
-      "data": {
-        "prevOpen": 0.073111,
-        "prevClose": 0.073602,
-        "lastOpen": 0.073743,
-        "lastClose": 0.072509
-      }
-    },
-    {
-      "pair": "suiidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
-      "data": {
-        "prevOpen": 14665,
-        "prevClose": 14800,
-        "lastOpen": 14800,
-        "lastClose": 14662
-      }
-    },
-    {
       "pair": "bnbidr",
       "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.74x the longer-window baseline",
+      "reason": "realized vol expanding — short-window vol is 1.69x the longer-window baseline",
       "data": {
-        "rvShort": 0.007015074094315908,
-        "rvLong": 0.00402159966383659,
-        "ratio": 1.744349184578844
-      }
-    },
-    {
-      "pair": "bnbidr",
-      "agent": "wyckoff-trader",
-      "reason": "possible UTAD: wicked above the 20-bar range high (12625000) on below-average volume (0.19x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
-      "data": {
-        "rangeHigh": 12625000,
-        "rangeLow": 12297401,
-        "volRatio": 0.18986585039506473
+        "rvShort": 0.007018336080810829,
+        "rvLong": 0.004144245167162853,
+        "ratio": 1.6935137275229246
       }
     },
     {
       "pair": "hypeidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
+      "agent": "fibonacci-trader",
+      "reason": "50.0% retracement (1399099.000000) of swing high 1414999->low 1383199 tagged with a bearish reaction candle",
       "data": {
-        "prevOpen": 1402295,
-        "prevClose": 1413175,
-        "lastOpen": 1413319,
-        "lastClose": 1390256
-      }
-    },
-    {
-      "pair": "adaidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
-      "data": {
-        "prevOpen": 3953,
-        "prevClose": 3989,
-        "lastOpen": 3990,
-        "lastClose": 3933
-      }
-    },
-    {
-      "pair": "shibidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 0.097403, distal 0.097517) retested for the first time and held, 3.2x ATR departure",
-      "data": {
-        "zoneProximal": 0.097403,
-        "zoneDistal": 0.097517,
-        "departureToAtr": 3.1896157840083053
-      }
-    },
-    {
-      "pair": "shibidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
-      "data": {
-        "prevOpen": 0.09668,
-        "prevClose": 0.096821,
-        "lastOpen": 0.09748,
-        "lastClose": 0.096258
+        "level": 0.5,
+        "price": 1399099,
+        "swingHigh": 1414999,
+        "swingLow": 1383199
       }
     }
   ],
