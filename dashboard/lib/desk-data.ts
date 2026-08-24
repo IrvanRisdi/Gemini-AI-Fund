@@ -412,7 +412,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
       const totalSize = building.legs.reduce((sum, l) => sum + l.size, 0);
       const weightedEntry = building.legs.reduce((sum, l) => sum + l.size * l.price, 0) / (totalSize || 1);
       const tickerKey = normalizeIndodaxKey(instrument);
-      const prices = (stillOpen.length > 0 ? await fetchBulkIdrPrices().catch(() => ({})) : {}) as Record<string, number>;
+      const currentPrice = prices[tickerKey] ?? null;
       const positionValue = currentPrice != null ? totalSize * currentPrice : null;
       const unrealized =
         currentPrice != null
