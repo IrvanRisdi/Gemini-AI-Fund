@@ -63,7 +63,7 @@ export function AiConsole({ snapshot }: { snapshot: DeskSnapshot }) {
               handleSend();
             }
           }}
-          placeholder="Tanya apa saja tentang desk, mis. 'Siapa yang punya posisi terbuka?' atau 'Jelaskan sinyal BTC hari ini'"
+          placeholder="Tanya apa saja tentang desk, mis. 'Jelaskan mengapa SHIB, LTC, dan ETH dibuka?'"
           rows={2}
           disabled={isLoading}
           className="flex-1 resize-none rounded-lg border border-border bg-bg/60 px-3 py-2 font-sans text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none disabled:opacity-50"
