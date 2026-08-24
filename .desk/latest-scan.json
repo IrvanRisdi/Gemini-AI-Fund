@@ -1,56 +1,35 @@
 {
-  "timestamp": "2026-08-24T17:17:59.735Z",
+  "timestamp": "2026-08-24T17:50:22.776Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "dogeidr",
+      "pair": "xrpidr",
       "agent": "wyckoff-trader",
-      "reason": "possible Spring: wicked below the 20-bar range low (1597) on below-average volume (0.38x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+      "reason": "possible Spring: wicked below the 20-bar range low (25958) on below-average volume (0.37x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
       "data": {
-        "rangeLow": 1597,
-        "rangeHigh": 1647,
-        "volRatio": 0.38278780933774276
+        "rangeLow": 25958,
+        "rangeHigh": 26990,
+        "volRatio": 0.368904947998081
       }
     },
     {
       "pair": "suiidr",
       "agent": "wyckoff-trader",
-      "reason": "possible Spring: wicked below the 20-bar range low (14358) on below-average volume (0.23x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+      "reason": "possible Spring: wicked below the 20-bar range low (14199) on below-average volume (0.80x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
       "data": {
-        "rangeLow": 14358,
+        "rangeLow": 14199,
         "rangeHigh": 14800,
-        "volRatio": 0.22714177735890895
-      }
-    },
-    {
-      "pair": "bnbidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.67x the longer-window baseline",
-      "data": {
-        "rvShort": 0.006934162372780873,
-        "rvLong": 0.004141888307037311,
-        "ratio": 1.674154844059731
-      }
-    },
-    {
-      "pair": "trxidr",
-      "agent": "candlestick-trader",
-      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
-      "data": {
-        "prevOpen": 6081,
-        "prevClose": 6066,
-        "lastOpen": 6066,
-        "lastClose": 6081
+        "volRatio": 0.795220343809223
       }
     },
     {
       "pair": "hypeidr",
-      "agent": "wyckoff-trader",
-      "reason": "possible Spring: wicked below the 20-bar range low (1383199) on below-average volume (0.59x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 1372958, distal 1398924) retested for the first time and held, 2.3x ATR departure",
       "data": {
-        "rangeLow": 1383199,
-        "rangeHigh": 1427999,
-        "volRatio": 0.5876635623788472
+        "zoneProximal": 1372958,
+        "zoneDistal": 1398924,
+        "departureToAtr": 2.2905144824503423
       }
     }
   ],
