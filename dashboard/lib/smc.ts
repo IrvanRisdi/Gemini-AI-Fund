@@ -1,5 +1,5 @@
-import type { OHLCV } from '@ai-fund/lib/indicators';
-import { atr } from '@ai-fund/lib/indicators';
+import type { OHLCV } from './indicators';
+import { atr } from './indicators';
 
 export interface SwingPoint {
   price: number;
