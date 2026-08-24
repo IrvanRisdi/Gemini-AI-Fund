@@ -59,7 +59,7 @@ interface StateAgent {
   last_action: string;
   fired_date?: string;
   fire_reason?: string;
-  risk_limits?: Record<string, number | string>;
+  risk_limits?: Record<string, number | string | boolean>;
 }
 
 interface DeskState {
@@ -86,7 +86,7 @@ export interface DeskSnapshot {
   totalEquity: number;
   startingTotal: number;
   agents: AgentSummary[];
-  riskLimits: Record<string, number | string> | null;
+  riskLimits: Record<string, number | string | boolean> | null;
 }
 
 export const DEFAULT_AGENTS = [
