@@ -1,56 +1,67 @@
 {
-  "timestamp": "2026-08-21T13:23:09.495Z",
+  "timestamp": "2026-08-24T07:12:07.155Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "suiidr",
-      "agent": "fibonacci-trader",
-      "reason": "61.8% retracement (14000.920000) of swing high 14169->low 13729 tagged with a bearish reaction candle",
+      "pair": "btcidr",
+      "agent": "momentum-trader",
+      "reason": "bullish breakout: ADX>25, EMA9>EMA21, RSI in 50-80, close above 20-bar resistance, volume>1.5x",
       "data": {
-        "level": 0.618,
-        "price": 14000.92,
-        "swingHigh": 14169,
-        "swingLow": 13729
+        "adx14": 36.72311648534191,
+        "rsi14": 57.99784780583213,
+        "volRatio": 2.080571073050103
       }
     },
     {
-      "pair": "trxidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 5993, distal 5986) retested for the first time and held, 3.2x ATR departure",
-      "data": {
-        "zoneProximal": 5993,
-        "zoneDistal": 5986,
-        "departureToAtr": 3.2463768115942027
-      }
-    },
-    {
-      "pair": "hypeidr",
+      "pair": "btcidr",
       "agent": "jesse-livermore",
       "reason": "pivot break up with volume confirmation",
       "data": {
-        "volRatio": 2.00371198223981,
-        "close": 1340000,
-        "resistance20": 1336999
+        "volRatio": 2.080571073050103,
+        "close": 1364999000,
+        "resistance20": 1364390000
       }
     },
     {
-      "pair": "hypeidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.61x the longer-window baseline",
-      "data": {
-        "rvShort": 0.011426433939221213,
-        "rvLong": 0.00710485601782554,
-        "ratio": 1.6082569316750635
-      }
-    },
-    {
-      "pair": "hypeidr",
+      "pair": "btcidr",
       "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 1305183, distal 1300003) retested for the first time and held, 2.9x ATR departure",
+      "reason": "fresh demand zone (proximal 1363950000, distal 1357000000) retested for the first time and held, 2.6x ATR departure",
       "data": {
-        "zoneProximal": 1305183,
-        "zoneDistal": 1300003,
-        "departureToAtr": 2.9255139625401636
+        "zoneProximal": 1363950000,
+        "zoneDistal": 1357000000,
+        "departureToAtr": 2.5716122809837647
+      }
+    },
+    {
+      "pair": "solidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh demand zone (proximal 1663899, distal 1650608) retested for the first time and held, 2.4x ATR departure",
+      "data": {
+        "zoneProximal": 1663899,
+        "zoneDistal": 1650608,
+        "departureToAtr": 2.3988827415802763
+      }
+    },
+    {
+      "pair": "solidr",
+      "agent": "candlestick-trader",
+      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
+      "data": {
+        "prevOpen": 1663899,
+        "prevClose": 1659094,
+        "lastOpen": 1659094,
+        "lastClose": 1666558
+      }
+    },
+    {
+      "pair": "pepeidr",
+      "agent": "candlestick-trader",
+      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
+      "data": {
+        "prevOpen": 0.070801,
+        "prevClose": 0.070374,
+        "lastOpen": 0.070374,
+        "lastClose": 0.070825
       }
     },
     {
@@ -58,10 +69,20 @@
       "agent": "candlestick-trader",
       "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
       "data": {
-        "prevOpen": 1305183,
-        "prevClose": 1303234,
-        "lastOpen": 1301813,
-        "lastClose": 1340000
+        "prevOpen": 1403568,
+        "prevClose": 1400843,
+        "lastOpen": 1400645,
+        "lastClose": 1408176
+      }
+    },
+    {
+      "pair": "shibidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 0.094874, distal 0.095676) retested for the first time and held, 2.1x ATR departure",
+      "data": {
+        "zoneProximal": 0.094874,
+        "zoneDistal": 0.095676,
+        "departureToAtr": 2.050635662284037
       }
     }
   ],
