@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-08-24T19:37:40.794Z",
+  "timestamp": "2026-08-24T20:11:32.261Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "pepeidr",
+      "pair": "ethidr",
       "agent": "fibonacci-trader",
-      "reason": "61.8% retracement (0.070641) of swing low 0.07->high 0.071677 tagged with a bullish reaction candle",
+      "reason": "38.2% retracement (43693690.000000) of swing high 43876000->low 43581000 tagged with a bearish reaction candle",
       "data": {
-        "level": 0.618,
-        "price": 0.070640614,
-        "swingHigh": 0.071677,
-        "swingLow": 0.07
+        "level": 0.382,
+        "price": 43693690,
+        "swingHigh": 43876000,
+        "swingLow": 43581000
       }
     }
   ],
