@@ -1,35 +1,16 @@
 {
-  "timestamp": "2026-08-24T17:50:22.776Z",
+  "timestamp": "2026-08-24T18:17:37.983Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "xrpidr",
-      "agent": "wyckoff-trader",
-      "reason": "possible Spring: wicked below the 20-bar range low (25958) on below-average volume (0.37x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+      "pair": "btcidr",
+      "agent": "candlestick-trader",
+      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
       "data": {
-        "rangeLow": 25958,
-        "rangeHigh": 26990,
-        "volRatio": 0.368904947998081
-      }
-    },
-    {
-      "pair": "suiidr",
-      "agent": "wyckoff-trader",
-      "reason": "possible Spring: wicked below the 20-bar range low (14199) on below-average volume (0.80x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
-      "data": {
-        "rangeLow": 14199,
-        "rangeHigh": 14800,
-        "volRatio": 0.795220343809223
-      }
-    },
-    {
-      "pair": "hypeidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 1372958, distal 1398924) retested for the first time and held, 2.3x ATR departure",
-      "data": {
-        "zoneProximal": 1372958,
-        "zoneDistal": 1398924,
-        "departureToAtr": 2.2905144824503423
+        "prevOpen": 1391052000,
+        "prevClose": 1390877000,
+        "lastOpen": 1390474000,
+        "lastClose": 1396894000
       }
     }
   ],
