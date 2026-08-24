@@ -10,7 +10,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Pertanyaan tidak valid' }, { status: 400 });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    // Bersihkan API Key dari spasi/tanda kutip tak terlihat
+    const rawApiKey = process.env.GEMINI_API_KEY;
+    const apiKey = rawApiKey ? rawApiKey.trim().replace(/^["']|["']$/g, '') : '';
+
     if (!apiKey) {
       return NextResponse.json({
         response: `⚠️ GEMINI_API_KEY belum disetel di Vercel Environment Variables.\n\nUntuk mengaktifkan AI interaktif:\n1. Buka Vercel Settings -> Environment Variables\n2. Tambahkan GEMINI_API_KEY dengan API Key Anda dari Google AI Studio.`,
@@ -45,39 +48,63 @@ ${(snapshot?.agents || [])
 === PANDUAN MENJAWAB ===
 1. Jawab pertanyaan pengguna secara ringkas, jelas, ramah, dan profesional dalam Bahasa Indonesia.
 2. Gunakan data angka dan posisi di atas sebagai fakta kebenaran dasar (*ground truth*).
-3. Jika ditanya mengenai sinyal, sebutkan koin dan strategi yang mendeteksinya.
+3. Jika ditanya mengenai sinyal atau posisi, jelaskan koin, strategi, dan alasannya.
 4. Gunakan format Markdown yang rapi.
 `;
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // Coba model resmi Google AI Studio secara berurutan
+    const modelCandidates = [
+      'gemini-1.5-flash-latest',
+      'gemini-1.5-flash',
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-pro-latest',
+      'gemini-1.5-pro',
+    ];
 
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: `${systemPrompt}\n\nUser Question: ${question}` }],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 1000,
-        },
-      }),
-    });
+    let answer = '';
+    let lastError = '';
 
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('[Gemini AI Console] Error:', errText);
-      return NextResponse.json({
-        response: `Maaf, terjadi kendala saat memanggil Gemini API (${res.status}). Silakan periksa GEMINI_API_KEY Anda.`,
-      });
+    for (const model of modelCandidates) {
+      try {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: `${systemPrompt}\n\nUser Question: ${question}` }],
+              },
+            ],
+            generationConfig: {
+              temperature: 0.3,
+              maxOutputTokens: 1000,
+            },
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            answer = text;
+            break;
+          }
+        } else {
+          lastError = `Status ${res.status} on ${model}`;
+        }
+      } catch (e: any) {
+        lastError = e?.message || 'Fetch error';
+      }
     }
 
-    const data = await res.json();
-    const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Tidak ada respon yang dihasilkan.';
+    if (!answer) {
+      return NextResponse.json({
+        response: `Maaf, terjadi kendala koneksi ke Gemini (${lastError}). Pastikan Google Generative Language API aktif pada API Key Anda.`,
+      });
+    }
 
     return NextResponse.json({ response: answer });
   } catch (err: any) {
