@@ -48,3 +48,12 @@ _None._
 * **Target:** Rp192.508
 * **Reason:** 61.8% retracement (204445.458000) of swing high 206883->low 200502 tagged with a bearish reaction candle
 * **Allocated:** Rp4.464.790
+
+
+---
+### 2026-08-24T10:19 UTC — Position Opened: LONG SOL/IDR
+* **Entry Price:** Rp1.674.182
+* **Stop Loss:** Rp1.640.698,36
+* **Target:** Rp1.757.891,1
+* **Reason:** 38.2% retracement (1666486.222000) of swing low 1651729->high 1675608 tagged with a bullish reaction candle
+* **Allocated:** Rp4.464.790

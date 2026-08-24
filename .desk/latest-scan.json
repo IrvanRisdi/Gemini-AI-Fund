@@ -1,38 +1,55 @@
 {
-  "timestamp": "2026-08-24T09:27:57.380Z",
+  "timestamp": "2026-08-24T10:19:41.240Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "xrpidr",
-      "agent": "candlestick-trader",
-      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
+      "pair": "btcidr",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
       "data": {
-        "prevOpen": 25880,
-        "prevClose": 25812,
-        "lastOpen": 25810,
-        "lastClose": 26000
+        "volRatio": 4.967110143792079,
+        "close": 1369899000,
+        "resistance20": 1369000000
       }
     },
     {
-      "pair": "hypeidr",
-      "agent": "candlestick-trader",
-      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
+      "pair": "ethidr",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
       "data": {
-        "prevOpen": 1379079,
-        "prevClose": 1378728,
-        "lastOpen": 1378022,
-        "lastClose": 1384812
+        "volRatio": 3.652734271784091,
+        "close": 43808000,
+        "resistance20": 43600000
       }
     },
     {
-      "pair": "linkidr",
+      "pair": "ethidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh demand zone (proximal 43481000, distal 43449000) retested for the first time and held, 3.0x ATR departure",
+      "data": {
+        "zoneProximal": 43481000,
+        "zoneDistal": 43449000,
+        "departureToAtr": 2.963443396226415
+      }
+    },
+    {
+      "pair": "solidr",
       "agent": "fibonacci-trader",
-      "reason": "61.8% retracement (204445.458000) of swing high 206883->low 200502 tagged with a bearish reaction candle",
+      "reason": "38.2% retracement (1666486.222000) of swing low 1651729->high 1675608 tagged with a bullish reaction candle",
       "data": {
-        "level": 0.618,
-        "price": 204445.458,
-        "swingHigh": 206883,
-        "swingLow": 200502
+        "level": 0.382,
+        "price": 1666486.222,
+        "swingHigh": 1675608,
+        "swingLow": 1651729
+      }
+    },
+    {
+      "pair": "trxidr",
+      "agent": "smc-trader",
+      "reason": "sell-side liquidity sweep + bullish CHoCH confirmed (within 5 bars)",
+      "data": {
+        "sweepVolRatio": 1.0541202236196978,
+        "poolPrice": 6064
       }
     },
     {
@@ -40,9 +57,9 @@
       "agent": "momentum-trader",
       "reason": "bullish breakout: ADX>25, EMA9>EMA21, RSI in 50-80, close above 20-bar resistance, volume>1.5x",
       "data": {
-        "adx14": 25.06862703831349,
-        "rsi14": 58.99418209319524,
-        "volRatio": 210.23345501690937
+        "adx14": 31.86500277388032,
+        "rsi14": 72.14906012339505,
+        "volRatio": 22.900544723786886
       }
     },
     {
@@ -50,19 +67,19 @@
       "agent": "jesse-livermore",
       "reason": "pivot break up with volume confirmation",
       "data": {
-        "volRatio": 210.23345501690937,
-        "close": 924000,
-        "resistance20": 923000
+        "volRatio": 22.900544723786886,
+        "close": 947000,
+        "resistance20": 942000
       }
     },
     {
-      "pair": "ltcidr",
-      "agent": "breakout-specialist",
-      "reason": "squeeze (ATR ratio 0.91, bandwidth pctile 5) resolving up through range high, volume confirms",
+      "pair": "avaxidr",
+      "agent": "volatility-analyst",
+      "reason": "realized vol expanding — short-window vol is 1.62x the longer-window baseline",
       "data": {
-        "atrRatio": 0.9114583333333334,
-        "bandwidthPercentile": 5,
-        "volRatio": 210.23345501690937
+        "rvShort": 0.0072055598837374585,
+        "rvLong": 0.004455303444099727,
+        "ratio": 1.6172994666120815
       }
     }
   ],

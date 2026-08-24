@@ -55,3 +55,12 @@ _None._
 * **Target:** Rp12.893.272,35
 * **Reason:** fresh supply zone (proximal 12316268, distal 12344072) retested for the first time and held, 2.9x ATR departure
 * **Allocated:** Rp4.500.000
+
+
+---
+### 2026-08-24T10:19 UTC — Position Opened: LONG ETH/IDR
+* **Entry Price:** Rp43.670.000
+* **Stop Loss:** Rp42.796.600
+* **Target:** Rp45.853.500
+* **Reason:** fresh demand zone (proximal 43481000, distal 43449000) retested for the first time and held, 3.0x ATR departure
+* **Allocated:** Rp4.500.000

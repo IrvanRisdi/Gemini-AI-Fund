@@ -84,3 +84,12 @@ First live run after the fix immediately found a real candidate: SUI/IDR, buy-si
 
 ## Open Questions
 _None._
+
+
+---
+### 2026-08-24T10:19 UTC — Position Opened: LONG TRX/IDR
+* **Entry Price:** Rp6.060
+* **Stop Loss:** Rp5.938,8
+* **Target:** Rp6.363
+* **Reason:** sell-side liquidity sweep + bullish CHoCH confirmed (within 5 bars)
+* **Allocated:** Rp4.500.000

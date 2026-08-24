@@ -19,3 +19,12 @@
 
 ## Open Questions
 _None._
+
+
+---
+### 2026-08-24T10:19 UTC — Position Opened: LONG AVAX/IDR
+* **Entry Price:** Rp133.025
+* **Stop Loss:** Rp130.364,5
+* **Target:** Rp139.676,25
+* **Reason:** realized vol expanding — short-window vol is 1.62x the longer-window baseline
+* **Allocated:** Rp4.500.000

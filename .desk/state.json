@@ -381,7 +381,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Found and fixed a real bug: scan required sweep+CHoCH on same bar (structurally impossible, 0 hits in 1600 backtests) — now checks a 5-bar window, immediately found a live candidate (2026-08-21 11:54 UTC)"
+      "last_action": "1 open (TRX/IDR) — LONG entry @ Rp6.060, stop Rp5.938,8 (2026-08-24T10:19 UTC)"
     },
     "breakout-specialist": {
       "status": "active",
@@ -437,7 +437,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Analysis: BTC/ETH broad breakout (RSI 91), UNI still dead (2026-08-21 09:04 UTC)",
+      "last_action": "1 open (AVAX/IDR) — LONG entry @ Rp133.025, stop Rp130.364,5 (2026-08-24T10:19 UTC)",
       "fired_date": "2026-08-21",
       "fire_reason": "User request 2026-08-21 — making room for the four new pattern-based specialists. Never traded by design (no place_order in its own SKILL.md, pure regime-classification role); freeing its book slot rather than leaving it permanently flat."
     },
@@ -495,7 +495,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (BNB/IDR) — LONG entry @ Rp12.279.307, stop Rp12.033.720,86 (2026-08-24T08:54 UTC)"
+      "last_action": "1 open (ETH/IDR) — LONG entry @ Rp43.670.000, stop Rp42.796.600 (2026-08-24T10:19 UTC)"
     },
     "fibonacci-trader": {
       "status": "active",
@@ -523,7 +523,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (LINK/IDR) — SHORT entry @ Rp202.640, stop Rp206.692,8 (2026-08-24T09:27 UTC)"
+      "last_action": "1 open (SOL/IDR) — LONG entry @ Rp1.674.182, stop Rp1.640.698,36 (2026-08-24T10:19 UTC)"
     },
     "candlestick-trader": {
       "status": "active",
