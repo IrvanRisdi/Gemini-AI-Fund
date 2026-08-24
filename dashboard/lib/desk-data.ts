@@ -3,7 +3,6 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fetchBulkIdrPrices } from './market-data';
 
-// Determine the candidate paths for .desk folder
 function getDeskDir(): string {
   const candidates = [
     path.join(process.cwd(), '.desk'),
@@ -59,12 +58,26 @@ interface StateAgent {
   last_action: string;
   fired_date?: string;
   fire_reason?: string;
-  risk_limits?: Record<string, number | string | boolean>;
+  risk_limits?: Record<string, number | string>;
 }
 
 interface DeskState {
   desk: { created: string; last_session: string; mode: string };
   agents: Record<string, StateAgent>;
+}
+
+export interface LatestScanCandidate {
+  pair: string;
+  agent: string;
+  reason: string;
+  data?: Record<string, number>;
+}
+
+export interface LatestScan {
+  timestamp: string;
+  pairsScanned: number;
+  candidates: LatestScanCandidate[];
+  errors: string[];
 }
 
 export interface AgentSummary {
@@ -86,7 +99,8 @@ export interface DeskSnapshot {
   totalEquity: number;
   startingTotal: number;
   agents: AgentSummary[];
-  riskLimits: Record<string, number | string | boolean> | null;
+  riskLimits: Record<string, number | string> | null;
+  latestScanCandidates?: LatestScanCandidate[];
 }
 
 export const DEFAULT_AGENTS = [
@@ -110,43 +124,56 @@ async function readJson<T>(file: string): Promise<T | null> {
     if (!existsSync(fullPath)) return null;
     const raw = await readFile(fullPath, 'utf8');
     return JSON.parse(raw) as T;
-  } catch (err) {
-    console.warn(`[desk-data] Note: ${file} not found or unreadable, using safe fallback.`);
+  } catch {
     return null;
   }
 }
 
 export async function getDeskSnapshot(): Promise<DeskSnapshot> {
-  const [ledger, state] = await Promise.all([
+  const [ledger, state, scan] = await Promise.all([
     readJson<PaperLedger>('paper-ledger.json'),
     readJson<DeskState>('state.json'),
+    readJson<LatestScan>('latest-scan.json'),
   ]);
 
+  const defaultStartingBalance = DEFAULT_STARTING_BALANCE;
+
+  // Use latest-scan timestamp if newer than ledger
+  let lastCycle = scan?.timestamp || ledger?.last_cycle || new Date().toISOString();
+
   if (!ledger || !state) {
-    const agents: AgentSummary[] = DEFAULT_AGENTS.map((slug) => ({
-      slug,
-      status: 'active',
-      balance: DEFAULT_STARTING_BALANCE,
-      startingBalance: DEFAULT_STARTING_BALANCE,
-      pnlIdr: 0,
-      pnlPct: 0,
-      openPositions: [],
-      openPairs: [],
-      latestTrade: null,
-      lastAction: 'Active — awaiting next 15-min scan cycle',
-    }));
+    const agents: AgentSummary[] = DEFAULT_AGENTS.map((slug) => {
+      const agentCandidates = scan?.candidates?.filter((c) => c.agent === slug) ?? [];
+      const lastAction = agentCandidates.length > 0
+        ? `🔥 Signal: ${agentCandidates.map((c) => `${c.pair.toUpperCase()} (${c.reason})`).join('; ')}`
+        : 'Active — awaiting next 15-min scan cycle';
+
+      return {
+        slug,
+        status: 'active',
+        balance: defaultStartingBalance,
+        startingBalance: defaultStartingBalance,
+        pnlIdr: 0,
+        pnlPct: 0,
+        openPositions: [],
+        openPairs: [],
+        latestTrade: null,
+        lastAction,
+      };
+    });
 
     return {
-      lastCycle: new Date().toISOString(),
+      lastCycle,
       deskMode: 'paper (local-simulation)',
-      totalEquity: agents.length * DEFAULT_STARTING_BALANCE,
-      startingTotal: agents.length * DEFAULT_STARTING_BALANCE,
+      totalEquity: agents.length * defaultStartingBalance,
+      startingTotal: agents.length * defaultStartingBalance,
       agents,
       riskLimits: {
         max_position_size_pct: 100,
         max_portfolio_drawdown_pct: 10,
         stop_loss_required: true,
       },
+      latestScanCandidates: scan?.candidates ?? [],
     };
   }
 
@@ -159,7 +186,7 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
   const agents: AgentSummary[] = rosterToUse.map((slug) => {
     const book = ledger.agents?.[slug];
     const stateAgent = state.agents?.[slug];
-    const startingBal = ledger.starting_balance_per_agent || DEFAULT_STARTING_BALANCE;
+    const startingBal = ledger.starting_balance_per_agent || defaultStartingBalance;
     const currentBal = book?.balance?.IDR || startingBal;
     const pnlIdr = currentBal - startingBal;
     const positions = Object.values(book?.positions ?? {});
@@ -167,6 +194,13 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     const latestTrade = trades.length
       ? [...trades].sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0]
       : null;
+
+    // Check if latest scan found signals for this agent
+    const agentCandidates = scan?.candidates?.filter((c) => c.agent === slug) ?? [];
+    let lastAction = stateAgent?.last_action ?? 'Active';
+    if (agentCandidates.length > 0) {
+      lastAction = `⚡ Signal: ${agentCandidates.map((c) => `${c.pair.toUpperCase()} — ${c.reason}`).join(' | ')}`;
+    }
 
     return {
       slug,
@@ -178,20 +212,21 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
       openPositions: positions,
       openPairs: Object.keys(book?.positions ?? {}),
       latestTrade,
-      lastAction: stateAgent?.last_action ?? 'Active',
+      lastAction,
     };
   });
 
   const totalEquity = agents.reduce((sum, a) => sum + a.balance, 0);
-  const startingTotal = agents.length * (ledger.starting_balance_per_agent || DEFAULT_STARTING_BALANCE);
+  const startingTotal = agents.length * (ledger.starting_balance_per_agent || defaultStartingBalance);
 
   return {
-    lastCycle: ledger.last_cycle || new Date().toISOString(),
+    lastCycle,
     deskMode: state.desk?.mode || 'paper',
     totalEquity,
     startingTotal,
     agents,
     riskLimits: state.agents?.['risk-manager']?.risk_limits ?? null,
+    latestScanCandidates: scan?.candidates ?? [],
   };
 }
 
@@ -296,7 +331,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     }
 
     const stillOpen = [...openByInstrument.entries()];
-    const prices: Record<string, number> = stillOpen.length > 0 ? await fetchBulkIdrPrices().catch(() => ({})) : {};
+    const prices = stillOpen.length > 0 ? await fetchBulkIdrPrices().catch(() => ({})) : {};
 
     let openPositionValue = 0;
     let unrealizedPnlIdr = 0;
