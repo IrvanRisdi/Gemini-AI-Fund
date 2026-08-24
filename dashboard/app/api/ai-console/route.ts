@@ -4,19 +4,21 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const { question, snapshot } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const question = body.question;
+    const snapshot = body.snapshot;
 
     if (!question || typeof question !== 'string') {
       return NextResponse.json({ error: 'Pertanyaan tidak valid' }, { status: 400 });
     }
 
-    // Bersihkan API Key dari spasi/tanda kutip tak terlihat
-    const rawApiKey = process.env.GEMINI_API_KEY;
-    const apiKey = rawApiKey ? rawApiKey.trim().replace(/^["']|["']$/g, '') : '';
+    // 1. Ambil dan bersihkan API Key dari Vercel Environment Variables
+    const rawApiKey = process.env.GEMINI_API_KEY || '';
+    const apiKey = rawApiKey.trim().replace(/^["']|["']$/g, '');
 
     if (!apiKey) {
       return NextResponse.json({
-        response: `⚠️ GEMINI_API_KEY belum disetel di Vercel Environment Variables.\n\nUntuk mengaktifkan AI interaktif:\n1. Buka Vercel Settings -> Environment Variables\n2. Tambahkan GEMINI_API_KEY dengan API Key Anda dari Google AI Studio.`,
+        response: `⚠️ **GEMINI_API_KEY belum disetel di Vercel.**\n\nSilakan buka Vercel -> Settings -> Environment Variables -> Tambahkan \`GEMINI_API_KEY\`, lalu klik Redeploy.`,
       });
     }
 
@@ -46,31 +48,31 @@ ${(snapshot?.agents || [])
   .join('\n')}
 
 === PANDUAN MENJAWAB ===
-1. Jawab pertanyaan pengguna secara ringkas, jelas, ramah, dan profesional dalam Bahasa Indonesia.
-2. Gunakan data angka dan posisi di atas sebagai fakta kebenaran dasar (*ground truth*).
-3. Jika ditanya mengenai sinyal atau posisi, jelaskan koin, strategi, dan alasannya.
-4. Gunakan format Markdown yang rapi.
+1. Jawab pertanyaan pengguna secara cerdas, ramah, dan profesional dalam Bahasa Indonesia.
+2. Gunakan data angka dan posisi di atas sebagai fakta dasar yang akurat.
+3. Jelaskan alasan teknikal atau status portofolio dengan format Markdown yang rapi.
 `;
 
-    // Coba model resmi Google AI Studio secara berurutan
-    const modelCandidates = [
-      'gemini-1.5-flash-latest',
-      'gemini-1.5-flash',
-      'gemini-2.5-flash',
-      'gemini-2.0-flash',
-      'gemini-1.5-pro-latest',
-      'gemini-1.5-pro',
+    // Coba endpoint resmi Google AI Studio dengan header x-goog-api-key dan parameter ?key=
+    const endpoints = [
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
     ];
 
     let answer = '';
-    let lastError = '';
+    let apiErrorMessage = '';
 
-    for (const model of modelCandidates) {
+    for (const url of endpoints) {
       try {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-        const res = await fetch(endpoint, {
+        const res = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey,
+          },
           body: JSON.stringify({
             contents: [
               {
@@ -87,28 +89,25 @@ ${(snapshot?.agents || [])
 
         if (res.ok) {
           const data = await res.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) {
-            answer = text;
-            break;
-          }
+          answer = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          if (answer) break;
         } else {
-          lastError = `Status ${res.status} on ${model}`;
+          const errJson = await res.json().catch(() => null);
+          apiErrorMessage = errJson?.error?.message || `HTTP ${res.status} (${res.statusText})`;
         }
       } catch (e: any) {
-        lastError = e?.message || 'Fetch error';
+        apiErrorMessage = e?.message || 'Network fetch error';
       }
     }
 
     if (!answer) {
       return NextResponse.json({
-        response: `Maaf, terjadi kendala koneksi ke Gemini (${lastError}). Pastikan Google Generative Language API aktif pada API Key Anda.`,
+        response: `⚠️ **Kendala Google AI API:** ${apiErrorMessage}\n\n**Saran Perbaikan:**\n1. Pastikan Anda menyalin API Key dari situs resmi: **[https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)** (Klik *Create API Key*).\n2. Di Vercel: Masuk ke **Settings -> Environment Variables** -> Pastikan key \`GEMINI_API_KEY\` terpasang tanpa spasi tambahan.`,
       });
     }
 
     return NextResponse.json({ response: answer });
   } catch (err: any) {
-    console.error('[Gemini AI Console] Catch Error:', err);
     return NextResponse.json({
       response: `Terjadi kesalahan internal: ${err?.message || 'Unknown error'}`,
     });
