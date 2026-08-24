@@ -1,15 +1,77 @@
 {
-  "timestamp": "2026-08-24T22:36:44.485Z",
+  "timestamp": "2026-08-24T22:57:51.519Z",
   "pairsScanned": 19,
   "candidates": [
     {
       "pair": "solidr",
-      "agent": "wyckoff-trader",
-      "reason": "possible UTAD: wicked above the 20-bar range high (1726567) on below-average volume (0.15x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
       "data": {
-        "rangeHigh": 1726567,
-        "rangeLow": 1675803,
-        "volRatio": 0.14966482904559536
+        "volRatio": 4.0487258762736245,
+        "close": 1727022,
+        "resistance20": 1727000
+      }
+    },
+    {
+      "pair": "solidr",
+      "agent": "breakout-specialist",
+      "reason": "squeeze (ATR ratio 0.66, bandwidth pctile 48) resolving up through range high, volume confirms",
+      "data": {
+        "atrRatio": 0.662935769402148,
+        "bandwidthPercentile": 47.5,
+        "volRatio": 4.0487258762736245
+      }
+    },
+    {
+      "pair": "xrpidr",
+      "agent": "fibonacci-trader",
+      "reason": "50.0% retracement (26203.500000) of swing low 26153->high 26254 tagged with a bullish reaction candle",
+      "data": {
+        "level": 0.5,
+        "price": 26203.5,
+        "swingHigh": 26254,
+        "swingLow": 26153
+      }
+    },
+    {
+      "pair": "dogeidr",
+      "agent": "candlestick-trader",
+      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
+      "data": {
+        "prevOpen": 1590,
+        "prevClose": 1591,
+        "lastOpen": 1591,
+        "lastClose": 1590
+      }
+    },
+    {
+      "pair": "hypeidr",
+      "agent": "wyckoff-trader",
+      "reason": "possible UTAD: wicked above the 20-bar range high (1385342) on below-average volume (0.45x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+      "data": {
+        "rangeHigh": 1385342,
+        "rangeLow": 1360000,
+        "volRatio": 0.4461682161185859
+      }
+    },
+    {
+      "pair": "avaxidr",
+      "agent": "jesse-livermore",
+      "reason": "pivot break down with volume confirmation",
+      "data": {
+        "volRatio": 68.65667523959102,
+        "close": 132630,
+        "support20": 132853
+      }
+    },
+    {
+      "pair": "avaxidr",
+      "agent": "breakout-specialist",
+      "reason": "squeeze (ATR ratio 0.39, bandwidth pctile 10) resolving down through range low, volume confirms",
+      "data": {
+        "atrRatio": 0.3885065921087517,
+        "bandwidthPercentile": 10,
+        "volRatio": 68.65667523959102
       }
     }
   ],
