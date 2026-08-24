@@ -1,16 +1,26 @@
 {
-  "timestamp": "2026-08-24T20:51:41.646Z",
+  "timestamp": "2026-08-24T21:15:22.055Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "dogeidr",
-      "agent": "candlestick-trader",
-      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
+      "pair": "trxidr",
+      "agent": "wyckoff-trader",
+      "reason": "possible UTAD: wicked above the 20-bar range high (6086) on below-average volume (0.26x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
       "data": {
-        "prevOpen": 1575,
-        "prevClose": 1571,
-        "lastOpen": 1570,
-        "lastClose": 1579
+        "rangeHigh": 6086,
+        "rangeLow": 6048,
+        "volRatio": 0.25892663101454716
+      }
+    },
+    {
+      "pair": "hypeidr",
+      "agent": "candlestick-trader",
+      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
+      "data": {
+        "prevOpen": 1379189,
+        "prevClose": 1381634,
+        "lastOpen": 1385342,
+        "lastClose": 1379188
       }
     }
   ],
