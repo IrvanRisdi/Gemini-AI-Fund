@@ -203,7 +203,7 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
       riskLimits: {
         max_position_size_pct: 100,
         max_portfolio_drawdown_pct: 10,
-        stop_loss_required: true,
+        stop_loss_required: 1,
       },
       latestScanCandidates: scan?.candidates ?? [],
     };
@@ -412,7 +412,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
       const totalSize = building.legs.reduce((sum, l) => sum + l.size, 0);
       const weightedEntry = building.legs.reduce((sum, l) => sum + l.size * l.price, 0) / (totalSize || 1);
       const tickerKey = normalizeIndodaxKey(instrument);
-      const currentPrice = prices[tickerKey] ?? null;
+      const prices = (stillOpen.length > 0 ? await fetchBulkIdrPrices().catch(() => ({})) : {}) as Record<string, number>;
       const positionValue = currentPrice != null ? totalSize * currentPrice : null;
       const unrealized =
         currentPrice != null
