@@ -1,4 +1,4 @@
-import { rsi, adx, ema, atr, bollingerBands, type OHLCV } from '@ai-fund/lib/indicators';
+import { rsi, adx, ema, atr, bollingerBands, type OHLCV } from './indicators';
 
 export interface TechnicalSnapshot {
   close: number;
