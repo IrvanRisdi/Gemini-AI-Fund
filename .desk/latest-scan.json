@@ -1,27 +1,6 @@
 {
-  "timestamp": "2026-08-25T11:36:28.140Z",
+  "timestamp": "2026-08-25T11:59:18.685Z",
   "pairsScanned": 19,
-  "candidates": [
-    {
-      "pair": "solidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break down with volume confirmation",
-      "data": {
-        "volRatio": 2.1227460107650575,
-        "close": 1744560,
-        "support20": 1751355
-      }
-    },
-    {
-      "pair": "solidr",
-      "agent": "breakout-specialist",
-      "reason": "squeeze (ATR ratio 0.67, bandwidth pctile 65) resolving down through range low, volume confirms",
-      "data": {
-        "atrRatio": 0.674030480989749,
-        "bandwidthPercentile": 65,
-        "volRatio": 2.1227460107650575
-      }
-    }
-  ],
+  "candidates": [],
   "errors": []
 }

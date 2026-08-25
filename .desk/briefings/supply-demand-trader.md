@@ -363,3 +363,14 @@ _None._
 * **Maximum Risk Target:** Rp292.895
 * **Portfolio Gross Exposure Before:** Rp128.338.823
 * **Portfolio Gross Exposure After:** Rp142.983.592
+
+
+---
+### 2026-08-25T11:59 UTC — Position Closed: LONG ADA/IDR
+
+* **Exit Price:** Rp3.871
+* **Realized PnL:** Rp-374.328
+* **Reason:** Stop Loss hit @ Rp3.871
+* **Notional:** Rp17.889.170
+* **Margin Used:** Rp1.788.917
+* **New Balance:** Rp14.815.479

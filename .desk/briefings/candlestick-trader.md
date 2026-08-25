@@ -216,3 +216,14 @@ _None._
 * **Maximum Risk Target:** Rp400.151
 * **Portfolio Gross Exposure Before:** Rp96.308.067
 * **Portfolio Gross Exposure After:** Rp116.315.615
+
+
+---
+### 2026-08-25T11:59 UTC — Position Closed: SHORT TON/IDR
+
+* **Exit Price:** Rp27.500
+* **Realized PnL:** Rp-195.110
+* **Reason:** Stop Loss hit @ Rp27.500
+* **Notional:** Rp4.621.477
+* **Margin Used:** Rp462.148
+* **New Balance:** Rp17.418.672

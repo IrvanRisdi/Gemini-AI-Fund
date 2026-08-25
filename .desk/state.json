@@ -437,7 +437,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened SHORT TRX/IDR @ Rp6.099 | SL Rp6.221 | TP Rp5.794 | 0.62x",
+      "last_action": "Closed SHORT TON/IDR (Rp-739.464) — Stop Loss hit @ Rp27.500 (2026-08-25T11:59 UTC)",
       "fired_date": "2026-08-21",
       "fire_reason": "User request 2026-08-21 — making room for the four new pattern-based specialists. Never traded by design (no place_order in its own SKILL.md, pure regime-classification role); freeing its book slot rather than leaving it permanently flat."
     },
@@ -495,7 +495,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened LONG AVAX/IDR @ Rp132.237 | SL Rp129.592 | TP Rp138.849 | 1.00x"
+      "last_action": "Closed LONG ADA/IDR (Rp-374.328) — Stop Loss hit @ Rp3.871 (2026-08-25T11:59 UTC)"
     },
     "fibonacci-trader": {
       "status": "active",
@@ -551,7 +551,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened SHORT XRP/IDR @ Rp26.266 | SL Rp26.791 | TP Rp24.953 | 1.00x"
+      "last_action": "Closed SHORT TON/IDR (Rp-195.110) — Stop Loss hit @ Rp27.500 (2026-08-25T11:59 UTC)"
     }
   },
   "exchanges": {}
