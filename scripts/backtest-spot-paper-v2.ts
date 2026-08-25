@@ -142,6 +142,7 @@ function equityCurve(trades: Trade[]) {
     return { timestamp: trade.closedAt, equity };
   });
 }
+function compoundedReturn(trades: Trade[]) { return trades.reduce((equity, trade) => equity * (1 + trade.netReturn), 1) - 1; }
 function pairEntries(trades: Trade[]) {
   return Object.entries(trades.reduce<Record<string, number>>((counts, trade) => {
     counts[trade.pair] = (counts[trade.pair] ?? 0) + 1; return counts;
@@ -154,7 +155,10 @@ async function main() {
   const datasets = await mapLimit(PAIRS, 3, async pair => ({ pair, one: await fetchOhlcv(pair, '1h', bars), four: await fetchOhlcv(pair, '4h', Math.ceil(bars / 4) + 80) }));
   const all = AGENTS.flatMap(agent => datasets.flatMap(data => simulate(agent, data.pair, data.one, data.four)));
   const split = datasets[0]?.one[Math.floor(datasets[0].one.length * .7)]?.timestamp ?? 0;
-  const report = { generatedAt: new Date().toISOString(), assumptions: { bars, feePerSide: FEE_PER_SIDE, pendingOrders: true, sameCandleResolution: 'stop-first (conservative)', inSampleEnd: new Date(split).toISOString() }, byAgent: Object.fromEntries(AGENTS.map(agent => { const trades = all.filter(t => t.agent === agent); const outOfSample = trades.filter(t => t.openedAt >= split); return [agent, { all: metrics(trades), inSample: metrics(trades.filter(t => t.openedAt < split)), outOfSample: metrics(outOfSample), equityCurve: equityCurve(outOfSample), pairEntries: pairEntries(outOfSample) }]; })), totalTrades: all.length };
+  const btc = datasets.find(data => data.pair === 'btcidr')?.one ?? [];
+  const btcEntry = btc.find(candle => candle.timestamp >= split); const btcExit = btc.at(-1);
+  const btcBuyAndHold = btcEntry && btcExit ? { pair: 'btcidr', startedAt: btcEntry.timestamp, endedAt: btcExit.timestamp, grossReturn: btcExit.close / btcEntry.close - 1, netReturn: btcExit.close / btcEntry.close - 1 - 2 * FEE_PER_SIDE } : null;
+  const report = { generatedAt: new Date().toISOString(), assumptions: { bars, feePerSide: FEE_PER_SIDE, pendingOrders: true, sameCandleResolution: 'stop-first (conservative)', inSampleEnd: new Date(split).toISOString() }, benchmark: { btcBuyAndHold }, byAgent: Object.fromEntries(AGENTS.map(agent => { const trades = all.filter(t => t.agent === agent); const outOfSample = trades.filter(t => t.openedAt >= split); return [agent, { all: metrics(trades), inSample: metrics(trades.filter(t => t.openedAt < split)), outOfSample: metrics(outOfSample), compoundedReturn: compoundedReturn(outOfSample), equityCurve: equityCurve(outOfSample), pairEntries: pairEntries(outOfSample) }]; })), totalTrades: all.length };
   const destination = process.env.BACKTEST_OUTPUT ?? path.resolve(process.cwd(), '..', 'outputs', `spot-paper-v2-backtest-${new Date().toISOString().slice(0, 10)}.json`);
   fs.mkdirSync(path.dirname(destination), { recursive: true }); fs.writeFileSync(destination, JSON.stringify({ ...report, trades: all }, null, 2));
   console.table(Object.entries(report.byAgent).map(([agent, value]) => ({ agent, trades: value.outOfSample.trades, winRate: `${(value.outOfSample.winRate * 100).toFixed(1)}%`, avgNet: `${(value.outOfSample.avgNetReturn * 100).toFixed(2)}%`, profitFactor: Number.isFinite(value.outOfSample.profitFactor) ? value.outOfSample.profitFactor.toFixed(2) : '∞', maxDD: `${(value.outOfSample.maxDrawdown * 100).toFixed(1)}%`, tradesPerMonth: value.all.signalsPerMonth.toFixed(1) })));
