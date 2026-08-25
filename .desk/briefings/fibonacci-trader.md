@@ -166,3 +166,19 @@ _None._
 * **Notional:** Rp17.788.633
 * **Margin Used:** Rp1.778.863
 * **New Balance:** Rp17.383.707
+
+
+---
+### 2026-08-25T10:52 UTC — Position Opened: SHORT SUI/IDR
+
+* **Entry Price:** Rp14.143
+* **Stop Loss:** Rp14.426
+* **Target:** Rp13.436
+* **Reason:** 50.0% retracement (14206.500000) of swing high 14313->low 14100 tagged with a bearish reaction candle
+* **Notional:** Rp17.898.744
+* **Margin Used:** Rp1.789.874
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp357.975
+* **Maximum Risk Target:** Rp357.975
+* **Portfolio Gross Exposure Before:** Rp22.174.311
+* **Portfolio Gross Exposure After:** Rp40.073.056

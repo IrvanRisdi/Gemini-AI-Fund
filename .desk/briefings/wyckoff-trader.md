@@ -95,3 +95,19 @@ _None._
 * **Notional:** Rp17.592.977
 * **Margin Used:** Rp1.759.298
 * **New Balance:** Rp17.139.120
+
+
+---
+### 2026-08-25T10:52 UTC — Position Opened: LONG PEPE/IDR
+
+* **Entry Price:** Rp0
+* **Stop Loss:** Rp0
+* **Target:** Rp0
+* **Reason:** possible Spring: wicked below the 20-bar range low (0.07107) on below-average volume (0.09x), closed back inside — Phase C test candidate, needs the Test bar to confirm
+* **Notional:** Rp17.017.685
+* **Margin Used:** Rp1.701.769
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp340.354
+* **Maximum Risk Target:** Rp340.354
+* **Portfolio Gross Exposure Before:** Rp26.830.802
+* **Portfolio Gross Exposure After:** Rp43.848.487

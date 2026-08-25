@@ -1,34 +1,47 @@
 {
-  "timestamp": "2026-08-25T10:15:26.703Z",
+  "timestamp": "2026-08-25T10:52:47.073Z",
   "pairsScanned": 19,
   "candidates": [
     {
       "pair": "xrpidr",
-      "agent": "smc-trader",
-      "reason": "buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)",
+      "agent": "candlestick-trader",
+      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
       "data": {
-        "sweepVolRatio": 0.11628232387060318,
-        "poolPrice": 26442
+        "prevOpen": 26186,
+        "prevClose": 26182,
+        "lastOpen": 26182,
+        "lastClose": 26193
+      }
+    },
+    {
+      "pair": "pepeidr",
+      "agent": "wyckoff-trader",
+      "reason": "possible Spring: wicked below the 20-bar range low (0.07107) on below-average volume (0.09x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+      "data": {
+        "rangeLow": 0.07107,
+        "rangeHigh": 0.075194,
+        "volRatio": 0.08917986831081263
+      }
+    },
+    {
+      "pair": "suiidr",
+      "agent": "fibonacci-trader",
+      "reason": "50.0% retracement (14206.500000) of swing high 14313->low 14100 tagged with a bearish reaction candle",
+      "data": {
+        "level": 0.5,
+        "price": 14206.5,
+        "swingHigh": 14313,
+        "swingLow": 14100
       }
     },
     {
       "pair": "tonidr",
       "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 2.09x the longer-window baseline",
+      "reason": "realized vol expanding — short-window vol is 2.07x the longer-window baseline",
       "data": {
-        "rvShort": 0.06233165326018052,
-        "rvLong": 0.029810050986127965,
-        "ratio": 2.0909609745111273
-      }
-    },
-    {
-      "pair": "avaxidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 132893, distal 133441) retested for the first time and held, 3.3x ATR departure",
-      "data": {
-        "zoneProximal": 132893,
-        "zoneDistal": 133441,
-        "departureToAtr": 3.345108156380234
+        "rvShort": 0.06164856291644204,
+        "rvLong": 0.029816893075985763,
+        "ratio": 2.06757165340252
       }
     }
   ],

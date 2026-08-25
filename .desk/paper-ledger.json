@@ -4,7 +4,7 @@
   "created": "2026-07-13",
   "loop_restarted": "2026-07-14T02:45:00Z",
   "restart_reason": "Tokocrypto (prior data source) became unreachable (3 consecutive connection failures) after a short working period. Switched to Indodax, verified reachable from this network when OKX/Binance/Tokocrypto all failed simultaneously. Indodax's USDT pairs are too illiquid for technical indicators (16-19 of 20 candles flat on BTC/USDT and ETH/USDT; SOL/USDT doesn't exist at all) so the universe moved to IDR-quoted pairs instead. Ledger reset to a fresh IDR-denominated balance; prior Tokocrypto-era and OKX-era history preserved in each agent's briefing under dated dividers.",
-  "last_cycle": "2026-08-25T10:15:27.212Z",
+  "last_cycle": "2026-08-25T10:52:47.668Z",
   "roster_change_2026-08-21T12:52:00Z": "Fired pairs-trader and volatility-analyst per user request, hired wyckoff-trader, supply-demand-trader, fibonacci-trader, and candlestick-trader (new SKILL.md personas, authored from four trading books: the StockCharts Wyckoff Method tutorial, the Set-and-Forget supply/demand methodology, a Fibonacci strategy guide, and a candlestick pattern dictionary). Both firings were clean — pairs-trader and volatility-analyst were flat (no open positions) at the time. Before hiring, added mechanical Tier-1 coverage for all four new agents to scripts/scan-signals.ts (checkWyckoffTrader: Spring/UTAD proxy — range-extreme wick+reclaim on below-average volume; checkSupplyDemandTrader: single-base zone with >=2xATR departure, first retest; checkFibonacciTrader: price tagging a 38.2/50/61.8% retracement band of the last swing with a reversal-candle reaction; checkCandlestickTrader: Bullish/Bearish Engulfing with short-term trend context) — same standard applied when breakout-specialist/volatility-analyst/pairs-trader were hired on 2026-08-20T01:10:00Z and the reason scalper/swing-trader were fired: no agent goes on this desk's book without Tier-1 scan coverage. Verified the scan runs clean and produces sane (non-empty, non-noisy) candidates for the new checks before hiring. All four new agents assigned the full 19-pair universe via bin/desk-state update, starting balance Rp18,000,000 each, matching every other book. Active book-holding roster is now 9: momentum-trader, mean-reversion-trader, jesse-livermore, smc-trader, breakout-specialist, wyckoff-trader, supply-demand-trader, fibonacci-trader, candlestick-trader (+ risk-manager, portfolio-manager in oversight roles).",
   "loop_correction_2026-08-20T01:24:00Z": "First Tier-1 candidate of the new architecture flagged volatility-analyst on TON/IDR (vol expansion). Discovered on escalation: volatility-analyst's own SKILL.md has no place_order tool — it is a pure regime-classification/research role by design ('you never say it's going up or down'), not a directional trader, despite being given a Rp18,000,000 book like the other 6. Correction going forward: a volatility-analyst Tier-1 candidate should always resolve to a briefing analysis entry, never a trade proposal — there is nothing to risk-manager-gate. Its book is expected to stay flat indefinitely; that is by design, not a missed signal.",
   "loop_cadence_note": "Loop switched from 15-minute to hourly cadence on 2026-07-20 per user request (cron job recreated at '7 * * * *', session-only, auto-expires after 7 days). Superseded 2026-08-20 (see loop_architecture_note) — back to 15-minute cadence, but now cheap-scan-gated.",
@@ -1920,6 +1920,18 @@
           "marginUsed": 1795223.7100382682,
           "leverage": 1,
           "sizingNote": "Notional Rp17.952.237 | Margin Rp1.795.224 | Leverage 1.00x | Risk Rp359.045"
+        },
+        "PEPE/IDR": {
+          "side": "long",
+          "size": 237441717.05686274,
+          "entryPrice": 0.071671,
+          "stopPrice": 0.07023758,
+          "targetPrice": 0.07525455,
+          "opened": "2026-08-25T10:52:47.668Z",
+          "notionalValue": 17017685.30318241,
+          "marginUsed": 1701768.5303182409,
+          "leverage": 1,
+          "sizingNote": "Notional Rp17.017.685 | Margin Rp1.701.769 | Leverage 1.00x | Risk Rp340.354"
         }
       },
       "trades": [
@@ -1993,6 +2005,17 @@
           "reason": "Stop Loss hit @ Rp0",
           "notionalValue": 17592976.875445746,
           "marginUsed": 1759297.6875445745
+        },
+        {
+          "timestamp": "2026-08-25T10:52:47.668Z",
+          "instrument": "PEPE/IDR",
+          "side": "long",
+          "type": "open",
+          "size": 237441717.05686274,
+          "price": 0.071671,
+          "reason": "possible Spring: wicked below the 20-bar range low (0.07107) on below-average volume (0.09x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+          "notionalValue": 17017685.30318241,
+          "marginUsed": 1701768.5303182409
         }
       ]
     },
@@ -2408,6 +2431,18 @@
           "marginUsed": 1825597.8646689537,
           "leverage": 1,
           "sizingNote": "Notional Rp18.255.979 | Margin Rp1.825.598 | Leverage 1.00x | Risk Rp365.120"
+        },
+        "SUI/IDR": {
+          "side": "short",
+          "size": 1265.5550062367959,
+          "entryPrice": 14143,
+          "stopPrice": 14425.86,
+          "targetPrice": 13435.85,
+          "opened": "2026-08-25T10:52:47.668Z",
+          "notionalValue": 17898744.453207005,
+          "marginUsed": 1789874.4453207005,
+          "leverage": 1,
+          "sizingNote": "Notional Rp17.898.744 | Margin Rp1.789.874 | Leverage 1.00x | Risk Rp357.975"
         }
       },
       "trades": [
@@ -2566,6 +2601,17 @@
           "reason": "Stop Loss hit @ Rp12.368.645",
           "notionalValue": 17788632.71485911,
           "marginUsed": 1778863.271485911
+        },
+        {
+          "timestamp": "2026-08-25T10:52:47.668Z",
+          "instrument": "SUI/IDR",
+          "side": "short",
+          "type": "open",
+          "size": 1265.5550062367959,
+          "price": 14143,
+          "reason": "50.0% retracement (14206.500000) of swing high 14313->low 14100 tagged with a bearish reaction candle",
+          "notionalValue": 17898744.453207005,
+          "marginUsed": 1789874.4453207005
         }
       ]
     },
@@ -2652,6 +2698,18 @@
           "marginUsed": 1928286.9898681617,
           "leverage": 1,
           "sizingNote": "Notional Rp19.282.870 | Margin Rp1.928.287 | Leverage 1.00x | Risk Rp385.657"
+        },
+        "XRP/IDR": {
+          "side": "short",
+          "size": 761.7280081656027,
+          "entryPrice": 26266,
+          "stopPrice": 26791.32,
+          "targetPrice": 24952.7,
+          "opened": "2026-08-25T10:52:47.668Z",
+          "notionalValue": 20007547.86247772,
+          "marginUsed": 2000754.786247772,
+          "leverage": 0.9999999999999998,
+          "sizingNote": "Notional Rp20.007.548 | Margin Rp2.000.755 | Leverage 1.00x | Risk Rp400.151"
         }
       },
       "trades": [
@@ -2805,6 +2863,17 @@
           "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
           "notionalValue": 19282869.89868162,
           "marginUsed": 1928286.9898681617
+        },
+        {
+          "timestamp": "2026-08-25T10:52:47.668Z",
+          "instrument": "XRP/IDR",
+          "side": "short",
+          "type": "open",
+          "size": 761.7280081656027,
+          "price": 26266,
+          "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
+          "notionalValue": 20007547.86247772,
+          "marginUsed": 2000754.786247772
         }
       ]
     },
