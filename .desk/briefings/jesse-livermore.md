@@ -434,3 +434,67 @@ _None._
 * **Notional:** Rp18.781.435
 * **Margin Used:** Rp1.878.143
 * **New Balance:** Rp17.286.017
+
+
+---
+### 2026-08-25T08:01 UTC — Position Opened: SHORT ETH/IDR
+
+* **Entry Price:** Rp43.754.000
+* **Stop Loss:** Rp44.629.080
+* **Target:** Rp41.566.300
+* **Reason:** pivot break down with volume confirmation
+* **Notional:** Rp18.755.414
+* **Margin Used:** Rp1.875.541
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp375.108
+* **Maximum Risk Target:** Rp375.108
+* **Portfolio Gross Exposure Before:** Rp33.846.262
+* **Portfolio Gross Exposure After:** Rp52.601.676
+
+
+---
+### 2026-08-25T08:01 UTC — Position Opened: SHORT PEPE/IDR
+
+* **Entry Price:** Rp0
+* **Stop Loss:** Rp0
+* **Target:** Rp0
+* **Reason:** pivot break down with volume confirmation
+* **Notional:** Rp18.755.414
+* **Margin Used:** Rp1.875.541
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp375.108
+* **Maximum Risk Target:** Rp375.108
+* **Portfolio Gross Exposure Before:** Rp52.601.676
+* **Portfolio Gross Exposure After:** Rp71.357.089
+
+
+---
+### 2026-08-25T08:01 UTC — Position Opened: SHORT BNB/IDR
+
+* **Entry Price:** Rp12.480.652
+* **Stop Loss:** Rp12.730.265
+* **Target:** Rp11.856.619
+* **Reason:** pivot break down with volume confirmation
+* **Notional:** Rp18.755.414
+* **Margin Used:** Rp1.875.541
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp375.108
+* **Maximum Risk Target:** Rp375.108
+* **Portfolio Gross Exposure Before:** Rp71.357.089
+* **Portfolio Gross Exposure After:** Rp90.112.503
+
+
+---
+### 2026-08-25T08:01 UTC — Position Opened: SHORT UNI/IDR
+
+* **Entry Price:** Rp77.000
+* **Stop Loss:** Rp78.540
+* **Target:** Rp73.150
+* **Reason:** pivot break down with volume confirmation
+* **Notional:** Rp18.755.414
+* **Margin Used:** Rp1.875.541
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp375.108
+* **Maximum Risk Target:** Rp375.108
+* **Portfolio Gross Exposure Before:** Rp90.112.503
+* **Portfolio Gross Exposure After:** Rp108.867.917

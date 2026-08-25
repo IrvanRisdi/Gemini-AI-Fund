@@ -239,3 +239,84 @@ _None._
 * **Maximum Risk Target:** Rp336.248
 * **Portfolio Gross Exposure Before:** Rp123.727.383
 * **Portfolio Gross Exposure After:** Rp140.539.790
+
+
+---
+### 2026-08-25T08:01 UTC — Position Closed: LONG XRP/IDR
+
+* **Exit Price:** Rp26.272
+* **Realized PnL:** Rp-509.422
+* **Reason:** Stop Loss hit @ Rp26.272
+* **Notional:** Rp18.409.260
+* **Margin Used:** Rp1.840.926
+* **New Balance:** Rp16.446.618
+
+
+---
+### 2026-08-25T08:01 UTC — Position Closed: LONG HBAR/IDR
+
+* **Exit Price:** Rp1.433
+* **Realized PnL:** Rp-441.839
+* **Reason:** Stop Loss hit @ Rp1.433
+* **Notional:** Rp18.090.132
+* **Margin Used:** Rp1.809.013
+* **New Balance:** Rp16.004.779
+
+
+---
+### 2026-08-25T08:01 UTC — Position Closed: LONG SUI/IDR
+
+* **Exit Price:** Rp14.248
+* **Realized PnL:** Rp-350.090
+* **Reason:** Stop Loss hit @ Rp14.248
+* **Notional:** Rp16.462.317
+* **Margin Used:** Rp1.646.232
+* **New Balance:** Rp15.654.689
+
+
+---
+### 2026-08-25T08:01 UTC — Position Opened: LONG XRP/IDR
+
+* **Entry Price:** Rp26.272
+* **Stop Loss:** Rp25.747
+* **Target:** Rp27.586
+* **Reason:** fresh supply zone (proximal 26511, distal 26600) retested for the first time and held, 2.9x ATR departure
+* **Notional:** Rp15.277.009
+* **Margin Used:** Rp1.527.701
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp305.540
+* **Maximum Risk Target:** Rp305.540
+* **Portfolio Gross Exposure Before:** Rp86.042.682
+* **Portfolio Gross Exposure After:** Rp101.319.690
+
+
+---
+### 2026-08-25T08:01 UTC — Position Opened: LONG DOGE/IDR
+
+* **Entry Price:** Rp1.600
+* **Stop Loss:** Rp1.568
+* **Target:** Rp1.680
+* **Reason:** fresh supply zone (proximal 1625, distal 1631) retested for the first time and held, 3.5x ATR departure
+* **Notional:** Rp15.277.009
+* **Margin Used:** Rp1.527.701
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp305.540
+* **Maximum Risk Target:** Rp305.540
+* **Portfolio Gross Exposure Before:** Rp101.319.690
+* **Portfolio Gross Exposure After:** Rp116.596.699
+
+
+---
+### 2026-08-25T08:01 UTC — Position Opened: LONG PEPE/IDR
+
+* **Entry Price:** Rp0
+* **Stop Loss:** Rp0
+* **Target:** Rp0
+* **Reason:** fresh supply zone (proximal 0.073211, distal 0.073727) retested for the first time and held, 2.6x ATR departure
+* **Notional:** Rp15.277.009
+* **Margin Used:** Rp1.527.701
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp305.540
+* **Maximum Risk Target:** Rp305.540
+* **Portfolio Gross Exposure Before:** Rp116.596.699
+* **Portfolio Gross Exposure After:** Rp131.873.708

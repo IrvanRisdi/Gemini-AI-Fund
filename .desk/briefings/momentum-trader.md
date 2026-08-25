@@ -395,3 +395,19 @@ _None._
 * **Notional:** Rp17.482.649
 * **Margin Used:** Rp1.748.265
 * **New Balance:** Rp17.447.651
+
+
+---
+### 2026-08-25T08:01 UTC — Position Opened: SHORT BNB/IDR
+
+* **Entry Price:** Rp12.480.652
+* **Stop Loss:** Rp12.730.265
+* **Target:** Rp11.856.619
+* **Reason:** bearish breakdown: ADX>25, EMA9<EMA21, RSI in 20-50, close below 20-bar support, volume>1.5x
+* **Notional:** Rp17.448.699
+* **Margin Used:** Rp1.744.870
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp348.974
+* **Maximum Risk Target:** Rp348.974
+* **Portfolio Gross Exposure Before:** Rp5.419.707
+* **Portfolio Gross Exposure After:** Rp22.868.406

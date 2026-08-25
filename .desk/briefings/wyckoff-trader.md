@@ -84,3 +84,14 @@ _None._
 * **Maximum Risk Target:** Rp367.244
 * **Portfolio Gross Exposure Before:** Rp27.406.094
 * **Portfolio Gross Exposure After:** Rp45.768.298
+
+
+---
+### 2026-08-25T08:01 UTC — Position Closed: LONG PEPE/IDR
+
+* **Exit Price:** Rp0
+* **Realized PnL:** Rp-769.227
+* **Reason:** Stop Loss hit @ Rp0
+* **Notional:** Rp17.592.977
+* **Margin Used:** Rp1.759.298
+* **New Balance:** Rp17.139.120

@@ -72,7 +72,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Closed LONG TON/IDR (Rp-512.392) — Stop Loss hit @ Rp25.658 (2026-08-25T04:48 UTC)"
+      "last_action": "Opened SHORT BNB/IDR @ Rp12.480.652 | SL Rp12.730.265 | TP Rp11.856.619 | 1.00x"
     },
     "mean-reversion-trader": {
       "status": "active",
@@ -228,7 +228,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Closed LONG TON/IDR (Rp-550.458) — Stop Loss hit @ Rp25.658 (2026-08-25T04:48 UTC)"
+      "last_action": "Opened SHORT UNI/IDR @ Rp77.000 | SL Rp78.540 | TP Rp73.150 | 1.00x"
     },
     "george-soros": {
       "status": "fired",
@@ -409,7 +409,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Closed SHORT SUI/IDR (Rp-152.809) — Stop Loss hit @ Rp14.698 (2026-08-25T03:08 UTC)"
+      "last_action": "Opened SHORT UNI/IDR @ Rp77.000 | SL Rp78.540 | TP Rp73.150 | 1.00x"
     },
     "volatility-analyst": {
       "status": "fired",
@@ -467,7 +467,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened LONG PEPE/IDR @ Rp0 | SL Rp0 | TP Rp0 | 1.00x"
+      "last_action": "Closed LONG PEPE/IDR (Rp-769.227) — Stop Loss hit @ Rp0 (2026-08-25T08:01 UTC)"
     },
     "supply-demand-trader": {
       "status": "active",
@@ -495,7 +495,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened LONG SUI/IDR @ Rp14.551 | SL Rp14.260 | TP Rp15.279 | 1.00x"
+      "last_action": "Opened LONG PEPE/IDR @ Rp0 | SL Rp0 | TP Rp0 | 1.00x"
     },
     "fibonacci-trader": {
       "status": "active",

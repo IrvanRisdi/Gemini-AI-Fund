@@ -140,3 +140,51 @@ _None._
 * **Notional:** Rp4.698.726
 * **Margin Used:** Rp469.873
 * **New Balance:** Rp18.030.858
+
+
+---
+### 2026-08-25T08:01 UTC — Position Opened: SHORT BNB/IDR
+
+* **Entry Price:** Rp12.480.652
+* **Stop Loss:** Rp12.730.265
+* **Target:** Rp11.856.619
+* **Reason:** squeeze (ATR ratio 0.63, bandwidth pctile 45) resolving down through range low, volume confirms
+* **Notional:** Rp18.214.992
+* **Margin Used:** Rp1.821.499
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp364.300
+* **Maximum Risk Target:** Rp364.300
+* **Portfolio Gross Exposure Before:** Rp24.832.541
+* **Portfolio Gross Exposure After:** Rp43.047.533
+
+
+---
+### 2026-08-25T08:01 UTC — Position Opened: SHORT LINK/IDR
+
+* **Entry Price:** Rp204.202
+* **Stop Loss:** Rp208.286
+* **Target:** Rp193.992
+* **Reason:** squeeze (ATR ratio 0.87, bandwidth pctile 5) resolving down through range low, volume confirms
+* **Notional:** Rp18.214.992
+* **Margin Used:** Rp1.821.499
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp364.300
+* **Maximum Risk Target:** Rp364.300
+* **Portfolio Gross Exposure Before:** Rp43.047.533
+* **Portfolio Gross Exposure After:** Rp61.262.525
+
+
+---
+### 2026-08-25T08:01 UTC — Position Opened: SHORT UNI/IDR
+
+* **Entry Price:** Rp77.000
+* **Stop Loss:** Rp78.540
+* **Target:** Rp73.150
+* **Reason:** squeeze (ATR ratio 0.83, bandwidth pctile 3) resolving down through range low, volume confirms
+* **Notional:** Rp18.214.992
+* **Margin Used:** Rp1.821.499
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp364.300
+* **Maximum Risk Target:** Rp364.300
+* **Portfolio Gross Exposure Before:** Rp61.262.525
+* **Portfolio Gross Exposure After:** Rp79.477.517
