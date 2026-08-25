@@ -113,3 +113,19 @@ _None._
 * **Target:** Rp13.509
 * **Reason:** squeeze (ATR ratio 0.69, bandwidth pctile 13) resolving down through range low, volume confirms
 * **Allocated:** Rp4.545.917
+
+
+---
+### 2026-08-25T02:05 UTC — Position Opened: LONG HBAR/IDR
+
+* **Entry Price:** Rp1.429
+* **Stop Loss:** Rp1.400
+* **Target:** Rp1.500
+* **Reason:** squeeze (ATR ratio 0.69, bandwidth pctile 68) resolving up through range high, volume confirms
+* **Notional:** Rp18.278.589
+* **Margin Used:** Rp1.827.859
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp365.572
+* **Maximum Risk Target:** Rp365.572
+* **Portfolio Gross Exposure Before:** Rp11.127.021
+* **Portfolio Gross Exposure After:** Rp29.405.611

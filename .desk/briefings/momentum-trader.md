@@ -368,3 +368,19 @@ _None._
 * **Realized PnL:** Rp-101.306
 * **Reason:** Stop Loss hit @ Rp915.000
 * **New Balance:** Rp17.960.043
+
+
+---
+### 2026-08-25T02:05 UTC — Position Opened: LONG TON/IDR
+
+* **Entry Price:** Rp26.410
+* **Stop Loss:** Rp25.882
+* **Target:** Rp27.731
+* **Reason:** bullish breakout: ADX>25, EMA9>EMA21, RSI in 50-80, close above 20-bar resistance, volume>1.5x
+* **Notional:** Rp17.995.041
+* **Margin Used:** Rp1.799.504
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp359.901
+* **Maximum Risk Target:** Rp359.901
+* **Portfolio Gross Exposure Before:** Rp5.453.657
+* **Portfolio Gross Exposure After:** Rp23.448.698

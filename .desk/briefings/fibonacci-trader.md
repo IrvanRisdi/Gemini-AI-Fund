@@ -74,3 +74,14 @@ _None._
 * **Target:** Rp1.548,5
 * **Reason:** 61.8% retracement (1627.900000) of swing high 1647->low 1597 tagged with a bearish reaction candle
 * **Allocated:** Rp4.433.370
+
+
+---
+### 2026-08-25T02:05 UTC — Position Closed: LONG SOL/IDR
+
+* **Exit Price:** Rp1.772.611
+* **Realized PnL:** +Rp262.495
+* **Reason:** Take Profit hit @ Rp1.772.611
+* **Notional:** Rp4.727.285
+* **Margin Used:** Rp472.728
+* **New Balance:** Rp17.995.977

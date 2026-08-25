@@ -63,3 +63,35 @@ _None._
 * **Target:** Rp13.087.780,65
 * **Reason:** realized vol expanding — short-window vol is 1.67x the longer-window baseline
 * **Allocated:** Rp4.468.972
+
+
+---
+### 2026-08-25T02:05 UTC — Position Opened: SHORT SOL/IDR
+
+* **Entry Price:** Rp1.772.611
+* **Stop Loss:** Rp1.808.063
+* **Target:** Rp1.683.980
+* **Reason:** realized vol expanding — short-window vol is 1.96x the longer-window baseline
+* **Notional:** Rp17.916.742
+* **Margin Used:** Rp1.791.674
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp358.335
+* **Maximum Risk Target:** Rp358.335
+* **Portfolio Gross Exposure Before:** Rp13.509.825
+* **Portfolio Gross Exposure After:** Rp31.426.567
+
+
+---
+### 2026-08-25T02:05 UTC — Position Opened: SHORT TON/IDR
+
+* **Entry Price:** Rp26.410
+* **Stop Loss:** Rp26.938
+* **Target:** Rp25.090
+* **Reason:** realized vol expanding — short-window vol is 1.73x the longer-window baseline
+* **Notional:** Rp17.916.742
+* **Margin Used:** Rp1.791.674
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp358.335
+* **Maximum Risk Target:** Rp358.335
+* **Portfolio Gross Exposure Before:** Rp31.426.567
+* **Portfolio Gross Exposure After:** Rp49.343.308

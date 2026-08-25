@@ -1,7 +1,7 @@
 {
   "desk": {
     "created": "2026-07-13",
-    "last_session": "2026-08-24",
+    "last_session": "2026-08-25",
     "mode": "paper"
   },
   "agents": {
@@ -72,7 +72,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Closed LONG LTC/IDR (Rp-101.306) — Stop Loss hit @ Rp915.000 (2026-08-24T19:37 UTC)"
+      "last_action": "Opened LONG TON/IDR @ Rp26.410 | SL Rp25.882 | TP Rp27.731 | 1.00x"
     },
     "mean-reversion-trader": {
       "status": "active",
@@ -228,7 +228,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "7 open — only AVAX lost -Rp11.93, all others survived gap (2026-08-21 11:35 UTC)"
+      "last_action": "Opened LONG HBAR/IDR @ Rp1.429 | SL Rp1.400 | TP Rp1.500 | 1.00x"
     },
     "george-soros": {
       "status": "fired",
@@ -409,7 +409,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (SUI/IDR) — SHORT entry @ Rp14.220, stop Rp14.504,4 (2026-08-24T23:29 UTC)"
+      "last_action": "Opened LONG HBAR/IDR @ Rp1.429 | SL Rp1.400 | TP Rp1.500 | 1.00x"
     },
     "volatility-analyst": {
       "status": "fired",
@@ -437,7 +437,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (BNB/IDR) — LONG entry @ Rp12.464.553, stop Rp12.215.261,94 (2026-08-24T17:18 UTC)",
+      "last_action": "Opened SHORT TON/IDR @ Rp26.410 | SL Rp26.938 | TP Rp25.090 | 1.00x",
       "fired_date": "2026-08-21",
       "fire_reason": "User request 2026-08-21 — making room for the four new pattern-based specialists. Never traded by design (no place_order in its own SKILL.md, pure regime-classification role); freeing its book slot rather than leaving it permanently flat."
     },
@@ -467,7 +467,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Closed LONG SUI/IDR (Rp-91.652) — Stop Loss hit @ Rp14.141 (2026-08-24T23:50 UTC)"
+      "last_action": "Opened LONG LINK/IDR @ Rp206.650 | SL Rp202.517 | TP Rp216.983 | 1.00x"
     },
     "supply-demand-trader": {
       "status": "active",
@@ -495,7 +495,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (BTC/IDR) — LONG entry @ Rp1.366.416.000, stop Rp1.339.087.680 (2026-08-24T11:04 UTC)"
+      "last_action": "Opened LONG TON/IDR @ Rp26.410 | SL Rp25.882 | TP Rp27.731 | 1.00x"
     },
     "fibonacci-trader": {
       "status": "active",
@@ -523,7 +523,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (DOGE/IDR) — SHORT entry @ Rp1.630, stop Rp1.662,6 (2026-08-24T15:03 UTC)"
+      "last_action": "Closed LONG SOL/IDR (+Rp262.495) — Take Profit hit @ Rp1.772.611 (2026-08-25T02:05 UTC)"
     },
     "candlestick-trader": {
       "status": "active",

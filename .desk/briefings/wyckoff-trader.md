@@ -52,3 +52,19 @@ _None._
 * **Realized PnL:** Rp-91.652
 * **Reason:** Stop Loss hit @ Rp14.141
 * **New Balance:** Rp17.908.348
+
+
+---
+### 2026-08-25T02:05 UTC — Position Opened: LONG LINK/IDR
+
+* **Entry Price:** Rp206.650
+* **Stop Loss:** Rp202.517
+* **Target:** Rp216.983
+* **Reason:** possible UTAD: wicked above the 20-bar range high (208931) on below-average volume (0.32x), closed back inside — Phase C test candidate, needs the Test bar to confirm
+* **Notional:** Rp17.952.237
+* **Margin Used:** Rp1.795.224
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp359.045
+* **Maximum Risk Target:** Rp359.045
+* **Portfolio Gross Exposure Before:** Rp9.043.889
+* **Portfolio Gross Exposure After:** Rp26.996.126

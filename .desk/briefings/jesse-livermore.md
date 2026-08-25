@@ -391,3 +391,35 @@ Eight concurrent positions now.
 
 ## Open Questions
 _None._
+
+
+---
+### 2026-08-25T02:05 UTC — Position Opened: LONG TON/IDR
+
+* **Entry Price:** Rp26.410
+* **Stop Loss:** Rp25.882
+* **Target:** Rp27.731
+* **Reason:** pivot break up with volume confirmation
+* **Notional:** Rp19.331.892
+* **Margin Used:** Rp1.933.189
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp386.638
+* **Maximum Risk Target:** Rp386.638
+* **Portfolio Gross Exposure Before:** Rp14.540.391
+* **Portfolio Gross Exposure After:** Rp33.872.283
+
+
+---
+### 2026-08-25T02:05 UTC — Position Opened: LONG HBAR/IDR
+
+* **Entry Price:** Rp1.429
+* **Stop Loss:** Rp1.400
+* **Target:** Rp1.500
+* **Reason:** pivot break up with volume confirmation
+* **Notional:** Rp19.331.892
+* **Margin Used:** Rp1.933.189
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp386.638
+* **Maximum Risk Target:** Rp386.638
+* **Portfolio Gross Exposure Before:** Rp33.872.283
+* **Portfolio Gross Exposure After:** Rp53.204.175
