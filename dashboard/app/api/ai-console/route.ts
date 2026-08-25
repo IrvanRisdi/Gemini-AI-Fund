@@ -12,6 +12,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Pertanyaan tidak valid' }, { status: 400 });
     }
 
+    // 1. Ambil dan bersihkan API Key dari Vercel Environment Variables
     const rawApiKey = process.env.GEMINI_API_KEY || '';
     const apiKey = rawApiKey.trim().replace(/^["']|["']$/g, '');
 
@@ -22,19 +23,19 @@ export async function POST(req: Request) {
     }
 
     const systemPrompt = `
-Anda adalah Gemini AI Console — asisten riset dan analis trading AI interaktif untuk platform "Gemini AI-Fund".
-Berikut adalah status portofolio paper trading real-time:
+Anda adalah Gemini Desk Analyst (Chief AI Investment Officer) untuk platform kuantitatif "Gemini AI-Fund".
+Anda mengawasi 50 persona agen multi-strategi di pasar kripto IDR Indodax.
 
-=== DATA PORTOFOLIO DESK ===
+=== DATA PORTOFOLIO DESK REAL-TIME ===
 * Last Cycle: ${snapshot?.lastCycle || 'N/A'}
-* Mode: ${snapshot?.deskMode || 'paper'}
+* Mode: ${snapshot?.deskMode || 'paper (local-simulation)'}
 * Total Equity (Mark-to-Market): Rp${Math.round(snapshot?.totalEquity || 0).toLocaleString('id-ID')}
-* Total Kas: Rp${Math.round(snapshot?.totalCash || 0).toLocaleString('id-ID')}
+* Total Saldo Kas: Rp${Math.round(snapshot?.totalCash || 0).toLocaleString('id-ID')}
 * Total Floating PnL: Rp${Math.round(snapshot?.totalUnrealizedPnl || 0).toLocaleString('id-ID')}
-* Total Agen Aktif: ${snapshot?.agents?.length || 0}
+* Total Agen Aktif: ${snapshot?.agents?.length || 0} Agen
 * Sinyal Terakhir Terdeteksi: ${JSON.stringify(snapshot?.latestScanCandidates || [], null, 2)}
 
-=== STATUS AGEN & POSISI TERBUKA ===
+=== STATUS BUKU & POSISI AGEN ===
 ${(snapshot?.agents || [])
   .map(
     (a: any) =>
@@ -42,32 +43,42 @@ ${(snapshot?.agents || [])
         a.openPositions && a.openPositions.length > 0
           ? a.openPositions.map((p: any) => `${p.side?.toUpperCase()} @ Rp${p.entryPrice?.toLocaleString('id-ID')}`).join(', ')
           : 'FLAT (Tidak ada posisi)'
-      }, Aksi Terakhir: ${a.lastAction}`
+      }, Aksi: ${a.lastAction}`
   )
   .join('\n')}
 
-=== PANDUAN FORMAT JAWABAN (SANGAT PENTING) ===
-1. Tulis jawaban dalam Bahasa Indonesia yang sangat rapi, bersih, dan mudah dibaca di layar HP/smartphone.
-2. JANGAN gunakan deretan tanda pagar berlebihan (###). Gunakan judul singkat dan jelas.
-3. JANGAN gunakan bintang tebal yang bertumpuk (***). Gunakan tebal standar (**teks**) hanya untuk angka atau poin kunci.
-4. Gunakan poin bullet sederhana (* ) atau nomor (1. ) agar terstruktur.
-5. Langsung ke inti penjelasan tanpa basa-basi bertele-tele.
+=== PANDUAN ANALISIS (SKILL GEMINI ANALYST) ===
+1. Gunakan Bahasa Indonesia yang lugas, presisi, berwibawa, dan profesional.
+2. Langsung jawab inti pertanyaan tanpa basa-basi pembuka ("Halo saya Gemini...", "Tentu saya akan bantu...").
+3. Jika ditanya tentang posisi terbuka, sebutkan nama koin, jenis posisi (LONG/SHORT), harga masuk, dan alasan strategi secara singkat.
+4. Jika ditanya tentang sinyal pasar, analisis konfluensi multi-agen (misal: konfirmasi breakout volume + liquidity sweep SMC).
+5. Format jawaban secara bersih: gunakan poin nomor (1. 2. 3.) atau bullet sederhana (- ), dan tebal (**teks**) pada angka kunci. Hindari simbol pagar bertumpuk.
 `;
 
-    const endpoints = [
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+    // Daftar Model Resmi Google AI Studio Sesuai Dokumentasi
+    const modelCandidates = [
+      // 1. Model Generasi Terbaru (Prioritas Utama)
+      'gemini-3.5-flash-lite',
+      'gemini-3.1-flash-lite',
+      // 2. Seri Gemini 2.5 (High Performance & Low Latency)
+      'gemini-2.5-flash-lite',
+      'gemini-2.5-flash',
+      'gemini-2.5-pro',
+      // 3. Seri Gemini 2.0 & Flash Baselines
+      'gemini-2.0-flash',
+      'gemini-1.5-flash-latest',
+      'gemini-1.5-flash',
+      'gemini-1.5-pro',
+      'gemini-pro',
     ];
 
     let answer = '';
     let apiErrorMessage = '';
 
-    for (const url of endpoints) {
+    for (const model of modelCandidates) {
       try {
-        const res = await fetch(url, {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const res = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -81,7 +92,7 @@ ${(snapshot?.agents || [])
               },
             ],
             generationConfig: {
-              temperature: 0.3,
+              temperature: 0.25,
               maxOutputTokens: 1000,
             },
           }),
@@ -93,7 +104,7 @@ ${(snapshot?.agents || [])
           if (answer) break;
         } else {
           const errJson = await res.json().catch(() => null);
-          apiErrorMessage = errJson?.error?.message || `HTTP ${res.status} (${res.statusText})`;
+          apiErrorMessage = errJson?.error?.message || `HTTP ${res.status} on ${model}`;
         }
       } catch (e: any) {
         apiErrorMessage = e?.message || 'Network fetch error';
@@ -102,7 +113,7 @@ ${(snapshot?.agents || [])
 
     if (!answer) {
       return NextResponse.json({
-        response: `⚠️ **Kendala Google AI API:** ${apiErrorMessage}\n\n**Saran Perbaikan:**\n1. Pastikan Anda menyalin API Key dari situs resmi: **[https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)**.\n2. Di Vercel: Masuk ke **Settings -> Environment Variables** -> Pastikan key \`GEMINI_API_KEY\` terpasang tanpa spasi tambahan.`,
+        response: `⚠️ **Kendala Google AI API:** ${apiErrorMessage}\n\nPastikan API Key di [Google AI Studio](https://aistudio.google.com/) aktif dan valid.`,
       });
     }
 
