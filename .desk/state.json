@@ -381,7 +381,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened SHORT SOL/IDR @ Rp1.793.743 | SL Rp1.829.618 | TP Rp1.704.056 | 1.00x"
+      "last_action": "Opened SHORT XRP/IDR @ Rp26.186 | SL Rp26.710 | TP Rp24.877 | 1.00x"
     },
     "breakout-specialist": {
       "status": "active",
@@ -495,7 +495,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Closed LONG LTC/IDR (Rp-464.882) — Stop Loss hit @ Rp913.000 (2026-08-25T09:44 UTC)"
+      "last_action": "Opened LONG AVAX/IDR @ Rp132.237 | SL Rp129.592 | TP Rp138.849 | 1.00x"
     },
     "fibonacci-trader": {
       "status": "active",
@@ -523,7 +523,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened SHORT XRP/IDR @ Rp26.913 | SL Rp27.451 | TP Rp25.567 | 1.00x"
+      "last_action": "Closed LONG BNB/IDR (Rp-412.032) — Stop Loss hit @ Rp12.368.645 (2026-08-25T10:15 UTC)"
     },
     "candlestick-trader": {
       "status": "active",

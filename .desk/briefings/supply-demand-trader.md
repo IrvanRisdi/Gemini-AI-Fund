@@ -347,3 +347,19 @@ _None._
 * **Notional:** Rp18.453.800
 * **Margin Used:** Rp1.845.380
 * **New Balance:** Rp15.189.807
+
+
+---
+### 2026-08-25T10:15 UTC — Position Opened: LONG AVAX/IDR
+
+* **Entry Price:** Rp132.237
+* **Stop Loss:** Rp129.592
+* **Target:** Rp138.849
+* **Reason:** fresh supply zone (proximal 132893, distal 133441) retested for the first time and held, 3.3x ATR departure
+* **Notional:** Rp14.644.768
+* **Margin Used:** Rp1.464.477
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp292.895
+* **Maximum Risk Target:** Rp292.895
+* **Portfolio Gross Exposure Before:** Rp128.338.823
+* **Portfolio Gross Exposure After:** Rp142.983.592

@@ -144,3 +144,25 @@ _None._
 * **Maximum Risk Target:** Rp365.120
 * **Portfolio Gross Exposure Before:** Rp40.966.170
 * **Portfolio Gross Exposure After:** Rp59.222.149
+
+
+---
+### 2026-08-25T10:15 UTC — Position Closed: LONG SOL/IDR
+
+* **Exit Price:** Rp1.755.538
+* **Realized PnL:** Rp-399.486
+* **Reason:** Stop Loss hit @ Rp1.755.538
+* **Notional:** Rp17.801.179
+* **Margin Used:** Rp1.780.118
+* **New Balance:** Rp17.795.739
+
+
+---
+### 2026-08-25T10:15 UTC — Position Closed: LONG BNB/IDR
+
+* **Exit Price:** Rp12.368.645
+* **Realized PnL:** Rp-412.032
+* **Reason:** Stop Loss hit @ Rp12.368.645
+* **Notional:** Rp17.788.633
+* **Margin Used:** Rp1.778.863
+* **New Balance:** Rp17.383.707

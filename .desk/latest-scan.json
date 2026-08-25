@@ -1,36 +1,34 @@
 {
-  "timestamp": "2026-08-25T09:44:53.519Z",
+  "timestamp": "2026-08-25T10:15:26.703Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "dogeidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
+      "pair": "xrpidr",
+      "agent": "smc-trader",
+      "reason": "buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)",
       "data": {
-        "prevOpen": 1610,
-        "prevClose": 1611,
-        "lastOpen": 1612,
-        "lastClose": 1607
-      }
-    },
-    {
-      "pair": "tonidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
-      "data": {
-        "volRatio": 24.77039644773332,
-        "close": 29500,
-        "resistance20": 26412
+        "sweepVolRatio": 0.11628232387060318,
+        "poolPrice": 26442
       }
     },
     {
       "pair": "tonidr",
       "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.85x the longer-window baseline",
+      "reason": "realized vol expanding — short-window vol is 2.09x the longer-window baseline",
       "data": {
-        "rvShort": 0.04521244791087175,
-        "rvLong": 0.0244220989684865,
-        "ratio": 1.8512924695462276
+        "rvShort": 0.06233165326018052,
+        "rvLong": 0.029810050986127965,
+        "ratio": 2.0909609745111273
+      }
+    },
+    {
+      "pair": "avaxidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 132893, distal 133441) retested for the first time and held, 3.3x ATR departure",
+      "data": {
+        "zoneProximal": 132893,
+        "zoneDistal": 133441,
+        "departureToAtr": 3.345108156380234
       }
     }
   ],
