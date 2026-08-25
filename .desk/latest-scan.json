@@ -1,47 +1,25 @@
 {
-  "timestamp": "2026-08-25T10:52:47.073Z",
+  "timestamp": "2026-08-25T11:36:28.140Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "xrpidr",
-      "agent": "candlestick-trader",
-      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
+      "pair": "solidr",
+      "agent": "jesse-livermore",
+      "reason": "pivot break down with volume confirmation",
       "data": {
-        "prevOpen": 26186,
-        "prevClose": 26182,
-        "lastOpen": 26182,
-        "lastClose": 26193
+        "volRatio": 2.1227460107650575,
+        "close": 1744560,
+        "support20": 1751355
       }
     },
     {
-      "pair": "pepeidr",
-      "agent": "wyckoff-trader",
-      "reason": "possible Spring: wicked below the 20-bar range low (0.07107) on below-average volume (0.09x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+      "pair": "solidr",
+      "agent": "breakout-specialist",
+      "reason": "squeeze (ATR ratio 0.67, bandwidth pctile 65) resolving down through range low, volume confirms",
       "data": {
-        "rangeLow": 0.07107,
-        "rangeHigh": 0.075194,
-        "volRatio": 0.08917986831081263
-      }
-    },
-    {
-      "pair": "suiidr",
-      "agent": "fibonacci-trader",
-      "reason": "50.0% retracement (14206.500000) of swing high 14313->low 14100 tagged with a bearish reaction candle",
-      "data": {
-        "level": 0.5,
-        "price": 14206.5,
-        "swingHigh": 14313,
-        "swingLow": 14100
-      }
-    },
-    {
-      "pair": "tonidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 2.07x the longer-window baseline",
-      "data": {
-        "rvShort": 0.06164856291644204,
-        "rvLong": 0.029816893075985763,
-        "ratio": 2.06757165340252
+        "atrRatio": 0.674030480989749,
+        "bandwidthPercentile": 65,
+        "volRatio": 2.1227460107650575
       }
     }
   ],
