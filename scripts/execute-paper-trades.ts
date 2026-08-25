@@ -56,7 +56,7 @@ async function main() {
   if (!state.desk) state.desk = { created: '2026-07-13', mode: 'paper' };
   state.desk.last_session = now.split('T')[0];
 
-  // 1. Ambil harga live pasar dari Indodax
+  // 1. Ambil harga pasar live dari Indodax
   const prices = await fetchBulkIdrPrices();
   let tradesExecuted = 0;
 
@@ -145,8 +145,8 @@ async function main() {
 
     // Hindari membuka posisi ganda di pair yang sama
     if (agentBook.positions[instrument]) continue;
-    // Batasi maksimal 3 posisi terbuka per agen
-    if (Object.keys(agentBook.positions).length >= 3) continue;
+
+    // Boleh membuka posisi multi-aset di seluruh 19 pairs yang dipantau (maks. 1 posisi per koin)
 
     // Manajemen risiko: Risiko 2% modal per trade
     const balance = agentBook.balance.IDR;
