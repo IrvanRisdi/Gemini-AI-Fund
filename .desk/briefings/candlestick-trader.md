@@ -120,3 +120,19 @@ _None._
 * **Notional:** Rp4.518.052
 * **Margin Used:** Rp451.805
 * **New Balance:** Rp17.613.782
+
+
+---
+### 2026-08-25T05:19 UTC — Position Opened: SHORT ADA/IDR
+
+* **Entry Price:** Rp3.992
+* **Stop Loss:** Rp4.072
+* **Target:** Rp3.792
+* **Reason:** Bullish Engulfing after a short downtrend (Level 1 reversal pattern)
+* **Notional:** Rp17.538.735
+* **Margin Used:** Rp1.753.874
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp350.775
+* **Maximum Risk Target:** Rp350.775
+* **Portfolio Gross Exposure Before:** Rp8.927.781
+* **Portfolio Gross Exposure After:** Rp26.466.516

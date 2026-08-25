@@ -1,55 +1,26 @@
 {
-  "timestamp": "2026-08-25T04:48:50.298Z",
+  "timestamp": "2026-08-25T05:19:06.162Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "trxidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 6095, distal 6092) retested for the first time and held, 2.4x ATR departure",
+      "pair": "adaidr",
+      "agent": "candlestick-trader",
+      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
       "data": {
-        "zoneProximal": 6095,
-        "zoneDistal": 6092,
-        "departureToAtr": 2.382978723404255
-      }
-    },
-    {
-      "pair": "ltcidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.76x the longer-window baseline",
-      "data": {
-        "rvShort": 0.010040639219239271,
-        "rvLong": 0.005709325999647534,
-        "ratio": 1.7586382735648884
+        "prevOpen": 3989,
+        "prevClose": 3988,
+        "lastOpen": 3988,
+        "lastClose": 3992
       }
     },
     {
       "pair": "hbaridr",
       "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.84x the longer-window baseline",
+      "reason": "realized vol expanding — short-window vol is 1.64x the longer-window baseline",
       "data": {
-        "rvShort": 0.011232534922187573,
-        "rvLong": 0.006118822965440311,
-        "ratio": 1.8357345825545188
-      }
-    },
-    {
-      "pair": "hbaridr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 1462, distal 1475) retested for the first time and held, 2.6x ATR departure",
-      "data": {
-        "zoneProximal": 1462,
-        "zoneDistal": 1475,
-        "departureToAtr": 2.606896551724138
-      }
-    },
-    {
-      "pair": "shibidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 0.1002, distal 0.101639) retested for the first time and held, 2.0x ATR departure",
-      "data": {
-        "zoneProximal": 0.1002,
-        "zoneDistal": 0.101639,
-        "departureToAtr": 2.0412416205187878
+        "rvShort": 0.010054190801871404,
+        "rvLong": 0.006112341379192893,
+        "ratio": 1.644900076441577
       }
     }
   ],
