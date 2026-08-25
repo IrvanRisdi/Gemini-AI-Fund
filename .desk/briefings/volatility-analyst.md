@@ -95,3 +95,51 @@ _None._
 * **Maximum Risk Target:** Rp358.335
 * **Portfolio Gross Exposure Before:** Rp31.426.567
 * **Portfolio Gross Exposure After:** Rp49.343.308
+
+
+---
+### 2026-08-25T03:08 UTC — Position Opened: SHORT BTC/IDR
+
+* **Entry Price:** Rp1.424.956.000
+* **Stop Loss:** Rp1.453.455.120
+* **Target:** Rp1.353.708.200
+* **Reason:** realized vol expanding — short-window vol is 1.72x the longer-window baseline
+* **Notional:** Rp17.837.084
+* **Margin Used:** Rp1.783.708
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp356.742
+* **Maximum Risk Target:** Rp356.742
+* **Portfolio Gross Exposure Before:** Rp49.655.601
+* **Portfolio Gross Exposure After:** Rp67.492.685
+
+
+---
+### 2026-08-25T03:08 UTC — Position Opened: SHORT ADA/IDR
+
+* **Entry Price:** Rp4.025
+* **Stop Loss:** Rp4.106
+* **Target:** Rp3.824
+* **Reason:** realized vol expanding — short-window vol is 1.78x the longer-window baseline
+* **Notional:** Rp17.837.084
+* **Margin Used:** Rp1.783.708
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp356.742
+* **Maximum Risk Target:** Rp356.742
+* **Portfolio Gross Exposure Before:** Rp67.492.685
+* **Portfolio Gross Exposure After:** Rp85.329.769
+
+
+---
+### 2026-08-25T03:08 UTC — Position Opened: SHORT LTC/IDR
+
+* **Entry Price:** Rp936.000
+* **Stop Loss:** Rp954.720
+* **Target:** Rp889.200
+* **Reason:** realized vol expanding — short-window vol is 1.63x the longer-window baseline
+* **Notional:** Rp17.837.084
+* **Margin Used:** Rp1.783.708
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp356.742
+* **Maximum Risk Target:** Rp356.742
+* **Portfolio Gross Exposure Before:** Rp85.329.769
+* **Portfolio Gross Exposure After:** Rp103.166.853

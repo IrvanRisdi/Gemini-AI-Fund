@@ -121,3 +121,35 @@ _None._
 * **Maximum Risk Target:** Rp365.270
 * **Portfolio Gross Exposure Before:** Rp50.290.494
 * **Portfolio Gross Exposure After:** Rp68.553.993
+
+
+---
+### 2026-08-25T03:08 UTC — Position Opened: LONG XRP/IDR
+
+* **Entry Price:** Rp26.999
+* **Stop Loss:** Rp26.459
+* **Target:** Rp28.349
+* **Reason:** fresh supply zone (proximal 27047, distal 27296) retested for the first time and held, 2.1x ATR departure
+* **Notional:** Rp18.918.682
+* **Margin Used:** Rp1.891.868
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp378.374
+* **Maximum Risk Target:** Rp378.374
+* **Portfolio Gross Exposure Before:** Rp69.209.177
+* **Portfolio Gross Exposure After:** Rp88.127.859
+
+
+---
+### 2026-08-25T03:08 UTC — Position Opened: LONG LTC/IDR
+
+* **Entry Price:** Rp936.000
+* **Stop Loss:** Rp917.280
+* **Target:** Rp982.800
+* **Reason:** fresh supply zone (proximal 930000, distal 937000) retested for the first time and held, 2.6x ATR departure
+* **Notional:** Rp18.918.682
+* **Margin Used:** Rp1.891.868
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp378.374
+* **Maximum Risk Target:** Rp378.374
+* **Portfolio Gross Exposure Before:** Rp88.127.859
+* **Portfolio Gross Exposure After:** Rp107.046.542

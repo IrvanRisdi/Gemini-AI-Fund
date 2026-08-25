@@ -85,3 +85,14 @@ _None._
 * **Notional:** Rp4.727.285
 * **Margin Used:** Rp472.728
 * **New Balance:** Rp17.995.977
+
+
+---
+### 2026-08-25T03:08 UTC — Position Closed: LONG BTC/IDR
+
+* **Exit Price:** Rp1.424.956.000
+* **Realized PnL:** +Rp199.249
+* **Reason:** Take Profit hit @ Rp1.424.956.000
+* **Notional:** Rp4.689.804
+* **Margin Used:** Rp468.980
+* **New Balance:** Rp18.195.225

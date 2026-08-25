@@ -129,3 +129,14 @@ _None._
 * **Maximum Risk Target:** Rp365.572
 * **Portfolio Gross Exposure Before:** Rp11.127.021
 * **Portfolio Gross Exposure After:** Rp29.405.611
+
+
+---
+### 2026-08-25T03:08 UTC — Position Closed: SHORT SUI/IDR
+
+* **Exit Price:** Rp14.698
+* **Realized PnL:** Rp-152.809
+* **Reason:** Stop Loss hit @ Rp14.698
+* **Notional:** Rp4.698.726
+* **Margin Used:** Rp469.873
+* **New Balance:** Rp18.030.858

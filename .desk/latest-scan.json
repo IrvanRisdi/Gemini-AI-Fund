@@ -1,126 +1,85 @@
 {
-  "timestamp": "2026-08-25T02:05:36.483Z",
+  "timestamp": "2026-08-25T03:08:53.422Z",
   "pairsScanned": 19,
   "candidates": [
     {
       "pair": "btcidr",
-      "agent": "fibonacci-trader",
-      "reason": "38.2% retracement (1402855454.000000) of swing low 1391297000->high 1410000000 tagged with a bullish reaction candle",
-      "data": {
-        "level": 0.382,
-        "price": 1402855454,
-        "swingHigh": 1410000000,
-        "swingLow": 1391297000
-      }
-    },
-    {
-      "pair": "solidr",
       "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.96x the longer-window baseline",
+      "reason": "realized vol expanding — short-window vol is 1.72x the longer-window baseline",
       "data": {
-        "rvShort": 0.012183599067332638,
-        "rvLong": 0.006203173782820656,
-        "ratio": 1.9640912045821506
+        "rvShort": 0.0055429000860306625,
+        "rvLong": 0.003221139994772613,
+        "ratio": 1.7207883218444058
       }
     },
     {
-      "pair": "solidr",
+      "pair": "ethidr",
+      "agent": "volatility-analyst",
+      "reason": "realized vol expanding — short-window vol is 1.74x the longer-window baseline",
+      "data": {
+        "rvShort": 0.005894584375131429,
+        "rvLong": 0.0033873451600457045,
+        "ratio": 1.7401782507017665
+      }
+    },
+    {
+      "pair": "xrpidr",
       "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 1775083, distal 1756564) retested for the first time and held, 3.1x ATR departure",
+      "reason": "fresh supply zone (proximal 27047, distal 27296) retested for the first time and held, 2.1x ATR departure",
       "data": {
-        "zoneProximal": 1775083,
-        "zoneDistal": 1756564,
-        "departureToAtr": 3.0866123243098187
+        "zoneProximal": 27047,
+        "zoneDistal": 27296,
+        "departureToAtr": 2.1253812267028125
       }
     },
     {
-      "pair": "linkidr",
+      "pair": "pepeidr",
       "agent": "wyckoff-trader",
-      "reason": "possible UTAD: wicked above the 20-bar range high (208931) on below-average volume (0.32x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+      "reason": "possible UTAD: wicked above the 20-bar range high (0.0745) on below-average volume (0.62x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
       "data": {
-        "rangeHigh": 208931,
-        "rangeLow": 204155,
-        "volRatio": 0.32206106676312213
+        "rangeHigh": 0.0745,
+        "rangeLow": 0.070871,
+        "volRatio": 0.6234765938850374
       }
     },
     {
       "pair": "adaidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 3950, distal 3917) retested for the first time and held, 4.4x ATR departure",
+      "agent": "volatility-analyst",
+      "reason": "realized vol expanding — short-window vol is 1.78x the longer-window baseline",
       "data": {
-        "zoneProximal": 3950,
-        "zoneDistal": 3917,
-        "departureToAtr": 4.425287356321839
-      }
-    },
-    {
-      "pair": "tonidr",
-      "agent": "momentum-trader",
-      "reason": "bullish breakout: ADX>25, EMA9>EMA21, RSI in 50-80, close above 20-bar resistance, volume>1.5x",
-      "data": {
-        "adx14": 35.7285250114246,
-        "rsi14": 67.12389615769335,
-        "volRatio": 6.067914978042044
-      }
-    },
-    {
-      "pair": "tonidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
-      "data": {
-        "volRatio": 6.067914978042044,
-        "close": 26410,
-        "resistance20": 25840
+        "rvShort": 0.009481731769102124,
+        "rvLong": 0.005341395084755753,
+        "ratio": 1.7751414412618192
       }
     },
     {
       "pair": "tonidr",
       "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.73x the longer-window baseline",
+      "reason": "realized vol expanding — short-window vol is 1.94x the longer-window baseline",
       "data": {
-        "rvShort": 0.012911584690668769,
-        "rvLong": 0.0074625825963215466,
-        "ratio": 1.7301764535287212
-      }
-    },
-    {
-      "pair": "tonidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh demand zone (proximal 25840, distal 25608) retested for the first time and held, 11.8x ATR departure",
-      "data": {
-        "zoneProximal": 25840,
-        "zoneDistal": 25608,
-        "departureToAtr": 11.769392033542978
+        "rvShort": 0.014669918931236283,
+        "rvLong": 0.007562647613206565,
+        "ratio": 1.9397861280245785
       }
     },
     {
       "pair": "ltcidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
+      "agent": "volatility-analyst",
+      "reason": "realized vol expanding — short-window vol is 1.63x the longer-window baseline",
       "data": {
-        "volRatio": 13.095878974568118,
-        "close": 928000,
-        "resistance20": 927000
+        "rvShort": 0.008001638516637521,
+        "rvLong": 0.0049187781379938225,
+        "ratio": 1.6267532895681847
       }
     },
     {
-      "pair": "hbaridr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break up with volume confirmation",
+      "pair": "ltcidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 930000, distal 937000) retested for the first time and held, 2.6x ATR departure",
       "data": {
-        "volRatio": 17.1702895991614,
-        "close": 1428,
-        "resistance20": 1425
-      }
-    },
-    {
-      "pair": "hbaridr",
-      "agent": "breakout-specialist",
-      "reason": "squeeze (ATR ratio 0.69, bandwidth pctile 68) resolving up through range high, volume confirms",
-      "data": {
-        "atrRatio": 0.6862745098039216,
-        "bandwidthPercentile": 67.5,
-        "volRatio": 17.1702895991614
+        "zoneProximal": 930000,
+        "zoneDistal": 937000,
+        "departureToAtr": 2.6101694915254234
       }
     }
   ],

@@ -381,7 +381,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (BNB/IDR) — SHORT entry @ Rp12.329.598, stop Rp12.576.189,96 (2026-08-24T14:04 UTC)"
+      "last_action": "Closed SHORT BNB/IDR (Rp-103.039) — Stop Loss hit @ Rp12.611.917 (2026-08-25T03:08 UTC)"
     },
     "breakout-specialist": {
       "status": "active",
@@ -409,7 +409,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened LONG HBAR/IDR @ Rp1.429 | SL Rp1.400 | TP Rp1.500 | 1.00x"
+      "last_action": "Closed SHORT SUI/IDR (Rp-152.809) — Stop Loss hit @ Rp14.698 (2026-08-25T03:08 UTC)"
     },
     "volatility-analyst": {
       "status": "fired",
@@ -437,7 +437,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened SHORT TON/IDR @ Rp26.410 | SL Rp26.938 | TP Rp25.090 | 1.00x",
+      "last_action": "Opened SHORT LTC/IDR @ Rp936.000 | SL Rp954.720 | TP Rp889.200 | 1.00x",
       "fired_date": "2026-08-21",
       "fire_reason": "User request 2026-08-21 — making room for the four new pattern-based specialists. Never traded by design (no place_order in its own SKILL.md, pure regime-classification role); freeing its book slot rather than leaving it permanently flat."
     },
@@ -467,7 +467,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened LONG LINK/IDR @ Rp206.650 | SL Rp202.517 | TP Rp216.983 | 1.00x"
+      "last_action": "Opened LONG PEPE/IDR @ Rp0 | SL Rp0 | TP Rp0 | 1.00x"
     },
     "supply-demand-trader": {
       "status": "active",
@@ -495,7 +495,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened LONG TON/IDR @ Rp26.410 | SL Rp25.882 | TP Rp27.731 | 1.00x"
+      "last_action": "Opened LONG LTC/IDR @ Rp936.000 | SL Rp917.280 | TP Rp982.800 | 1.00x"
     },
     "fibonacci-trader": {
       "status": "active",
@@ -523,7 +523,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Closed LONG SOL/IDR (+Rp262.495) — Take Profit hit @ Rp1.772.611 (2026-08-25T02:05 UTC)"
+      "last_action": "Closed LONG BTC/IDR (+Rp199.249) — Take Profit hit @ Rp1.424.956.000 (2026-08-25T03:08 UTC)"
     },
     "candlestick-trader": {
       "status": "active",
@@ -551,7 +551,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "1 open (HYPE/IDR) — SHORT entry @ Rp1.397.454, stop Rp1.425.403,08 (2026-08-24T15:03 UTC)"
+      "last_action": "Closed SHORT HYPE/IDR (Rp-91.685) — Stop Loss hit @ Rp1.426.400 (2026-08-25T03:08 UTC)"
     }
   },
   "exchanges": {}

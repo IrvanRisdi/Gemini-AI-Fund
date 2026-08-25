@@ -109,3 +109,14 @@ _None._
 * **Target:** Rp1.327.581,3
 * **Reason:** Bearish Engulfing after a short uptrend (Level 1 reversal pattern)
 * **Allocated:** Rp4.426.367
+
+
+---
+### 2026-08-25T03:08 UTC — Position Closed: SHORT HYPE/IDR
+
+* **Exit Price:** Rp1.426.400
+* **Realized PnL:** Rp-91.685
+* **Reason:** Stop Loss hit @ Rp1.426.400
+* **Notional:** Rp4.518.052
+* **Margin Used:** Rp451.805
+* **New Balance:** Rp17.613.782

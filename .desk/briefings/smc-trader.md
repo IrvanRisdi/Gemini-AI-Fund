@@ -111,3 +111,14 @@ _None._
 * **Target:** Rp11.713.118,1
 * **Reason:** buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)
 * **Allocated:** Rp4.500.000
+
+
+---
+### 2026-08-25T03:08 UTC — Position Closed: SHORT BNB/IDR
+
+* **Exit Price:** Rp12.611.917
+* **Realized PnL:** Rp-103.039
+* **Reason:** Stop Loss hit @ Rp12.611.917
+* **Notional:** Rp4.603.039
+* **Margin Used:** Rp460.304
+* **New Balance:** Rp17.896.961

@@ -68,3 +68,19 @@ _None._
 * **Maximum Risk Target:** Rp359.045
 * **Portfolio Gross Exposure Before:** Rp9.043.889
 * **Portfolio Gross Exposure After:** Rp26.996.126
+
+
+---
+### 2026-08-25T03:08 UTC — Position Opened: LONG PEPE/IDR
+
+* **Entry Price:** Rp0
+* **Stop Loss:** Rp0
+* **Target:** Rp0
+* **Reason:** possible UTAD: wicked above the 20-bar range high (0.0745) on below-average volume (0.62x), closed back inside — Phase C test candidate, needs the Test bar to confirm
+* **Notional:** Rp18.362.204
+* **Margin Used:** Rp1.836.220
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp367.244
+* **Maximum Risk Target:** Rp367.244
+* **Portfolio Gross Exposure Before:** Rp27.406.094
+* **Portfolio Gross Exposure After:** Rp45.768.298

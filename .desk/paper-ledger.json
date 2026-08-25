@@ -4,7 +4,7 @@
   "created": "2026-07-13",
   "loop_restarted": "2026-07-14T02:45:00Z",
   "restart_reason": "Tokocrypto (prior data source) became unreachable (3 consecutive connection failures) after a short working period. Switched to Indodax, verified reachable from this network when OKX/Binance/Tokocrypto all failed simultaneously. Indodax's USDT pairs are too illiquid for technical indicators (16-19 of 20 candles flat on BTC/USDT and ETH/USDT; SOL/USDT doesn't exist at all) so the universe moved to IDR-quoted pairs instead. Ledger reset to a fresh IDR-denominated balance; prior Tokocrypto-era and OKX-era history preserved in each agent's briefing under dated dividers.",
-  "last_cycle": "2026-08-25T02:05:36.966Z",
+  "last_cycle": "2026-08-25T03:08:54.120Z",
   "roster_change_2026-08-21T12:52:00Z": "Fired pairs-trader and volatility-analyst per user request, hired wyckoff-trader, supply-demand-trader, fibonacci-trader, and candlestick-trader (new SKILL.md personas, authored from four trading books: the StockCharts Wyckoff Method tutorial, the Set-and-Forget supply/demand methodology, a Fibonacci strategy guide, and a candlestick pattern dictionary). Both firings were clean — pairs-trader and volatility-analyst were flat (no open positions) at the time. Before hiring, added mechanical Tier-1 coverage for all four new agents to scripts/scan-signals.ts (checkWyckoffTrader: Spring/UTAD proxy — range-extreme wick+reclaim on below-average volume; checkSupplyDemandTrader: single-base zone with >=2xATR departure, first retest; checkFibonacciTrader: price tagging a 38.2/50/61.8% retracement band of the last swing with a reversal-candle reaction; checkCandlestickTrader: Bullish/Bearish Engulfing with short-term trend context) — same standard applied when breakout-specialist/volatility-analyst/pairs-trader were hired on 2026-08-20T01:10:00Z and the reason scalper/swing-trader were fired: no agent goes on this desk's book without Tier-1 scan coverage. Verified the scan runs clean and produces sane (non-empty, non-noisy) candidates for the new checks before hiring. All four new agents assigned the full 19-pair universe via bin/desk-state update, starting balance Rp18,000,000 each, matching every other book. Active book-holding roster is now 9: momentum-trader, mean-reversion-trader, jesse-livermore, smc-trader, breakout-specialist, wyckoff-trader, supply-demand-trader, fibonacci-trader, candlestick-trader (+ risk-manager, portfolio-manager in oversight roles).",
   "loop_correction_2026-08-20T01:24:00Z": "First Tier-1 candidate of the new architecture flagged volatility-analyst on TON/IDR (vol expansion). Discovered on escalation: volatility-analyst's own SKILL.md has no place_order tool — it is a pure regime-classification/research role by design ('you never say it's going up or down'), not a directional trader, despite being given a Rp18,000,000 book like the other 6. Correction going forward: a volatility-analyst Tier-1 candidate should always resolve to a briefing analysis entry, never a trade proposal — there is nothing to risk-manager-gate. Its book is expected to stay flat indefinitely; that is by design, not a missed signal.",
   "loop_cadence_note": "Loop switched from 15-minute to hourly cadence on 2026-07-20 per user request (cron job recreated at '7 * * * *', session-only, auto-expires after 7 days). Superseded 2026-08-20 (see loop_architecture_note) — back to 15-minute cadence, but now cheap-scan-gated.",
@@ -1082,7 +1082,7 @@
     "breakout-specialist": {
       "hired": "2026-08-20T01:10:00Z",
       "balance": {
-        "IDR": 18183667.211081732
+        "IDR": 18030857.912085652
       },
       "positions": {
         "AVAX/IDR": {
@@ -1100,15 +1100,6 @@
           "stopPrice": 1690500,
           "targetPrice": 1811250,
           "opened": "2026-08-24T22:03:42.287Z",
-          "sizingNote": "Allocated Rp4.545.917 (Risk Rp363.673)"
-        },
-        "SUI/IDR": {
-          "side": "short",
-          "size": 319.68472593322315,
-          "entryPrice": 14220,
-          "stopPrice": 14504.4,
-          "targetPrice": 13509,
-          "opened": "2026-08-24T23:29:18.113Z",
           "sizingNote": "Allocated Rp4.545.917 (Risk Rp363.673)"
         },
         "HBAR/IDR": {
@@ -1333,6 +1324,18 @@
           "reason": "squeeze (ATR ratio 0.69, bandwidth pctile 68) resolving up through range high, volume confirms",
           "notionalValue": 18278589.38203244,
           "marginUsed": 1827858.938203244
+        },
+        {
+          "timestamp": "2026-08-25T03:08:54.120Z",
+          "instrument": "SUI/IDR",
+          "side": "short",
+          "type": "close",
+          "size": 319.68472593322315,
+          "price": 14698,
+          "realizedPnlIdr": -152809.29899608067,
+          "reason": "Stop Loss hit @ Rp14.698",
+          "notionalValue": 4698726.101766514,
+          "marginUsed": 469872.6101766514
         }
       ]
     },
@@ -1395,6 +1398,42 @@
           "marginUsed": 1791674.1555130929,
           "leverage": 0.9999999999999998,
           "sizingNote": "Notional Rp17.916.742 | Margin Rp1.791.674 | Leverage 1.00x | Risk Rp358.335"
+        },
+        "BTC/IDR": {
+          "side": "short",
+          "size": 0.012517638342927136,
+          "entryPrice": 1424956000,
+          "stopPrice": 1453455120,
+          "targetPrice": 1353708200,
+          "opened": "2026-08-25T03:08:54.120Z",
+          "notionalValue": 17837083.86258408,
+          "marginUsed": 1783708.386258408,
+          "leverage": 1,
+          "sizingNote": "Notional Rp17.837.084 | Margin Rp1.783.708 | Leverage 1.00x | Risk Rp356.742"
+        },
+        "ADA/IDR": {
+          "side": "short",
+          "size": 4431.573630455672,
+          "entryPrice": 4025,
+          "stopPrice": 4105.5,
+          "targetPrice": 3823.75,
+          "opened": "2026-08-25T03:08:54.120Z",
+          "notionalValue": 17837083.86258408,
+          "marginUsed": 1783708.386258408,
+          "leverage": 1,
+          "sizingNote": "Notional Rp17.837.084 | Margin Rp1.783.708 | Leverage 1.00x | Risk Rp356.742"
+        },
+        "LTC/IDR": {
+          "side": "short",
+          "size": 19.056713528401797,
+          "entryPrice": 936000,
+          "stopPrice": 954720,
+          "targetPrice": 889200,
+          "opened": "2026-08-25T03:08:54.120Z",
+          "notionalValue": 17837083.86258408,
+          "marginUsed": 1783708.386258408,
+          "leverage": 1,
+          "sizingNote": "Notional Rp17.837.084 | Margin Rp1.783.708 | Leverage 1.00x | Risk Rp356.742"
         }
       },
       "trades": [
@@ -1465,6 +1504,39 @@
           "reason": "realized vol expanding — short-window vol is 1.73x the longer-window baseline",
           "notionalValue": 17916741.55513093,
           "marginUsed": 1791674.1555130929
+        },
+        {
+          "timestamp": "2026-08-25T03:08:54.120Z",
+          "instrument": "BTC/IDR",
+          "side": "short",
+          "type": "open",
+          "size": 0.012517638342927136,
+          "price": 1424956000,
+          "reason": "realized vol expanding — short-window vol is 1.72x the longer-window baseline",
+          "notionalValue": 17837083.86258408,
+          "marginUsed": 1783708.386258408
+        },
+        {
+          "timestamp": "2026-08-25T03:08:54.120Z",
+          "instrument": "ADA/IDR",
+          "side": "short",
+          "type": "open",
+          "size": 4431.573630455672,
+          "price": 4025,
+          "reason": "realized vol expanding — short-window vol is 1.78x the longer-window baseline",
+          "notionalValue": 17837083.86258408,
+          "marginUsed": 1783708.386258408
+        },
+        {
+          "timestamp": "2026-08-25T03:08:54.120Z",
+          "instrument": "LTC/IDR",
+          "side": "short",
+          "type": "open",
+          "size": 19.056713528401797,
+          "price": 936000,
+          "reason": "realized vol expanding — short-window vol is 1.63x the longer-window baseline",
+          "notionalValue": 17837083.86258408,
+          "marginUsed": 1783708.386258408
         }
       ]
     },
@@ -1503,6 +1575,18 @@
           "marginUsed": 1795223.7100382682,
           "leverage": 1,
           "sizingNote": "Notional Rp17.952.237 | Margin Rp1.795.224 | Leverage 1.00x | Risk Rp359.045"
+        },
+        "PEPE/IDR": {
+          "side": "long",
+          "size": 245681085.8334252,
+          "entryPrice": 0.07474,
+          "stopPrice": 0.0732452,
+          "targetPrice": 0.078477,
+          "opened": "2026-08-25T03:08:54.120Z",
+          "notionalValue": 18362204.3551902,
+          "marginUsed": 1836220.4355190198,
+          "leverage": 1,
+          "sizingNote": "Notional Rp18.362.204 | Margin Rp1.836.220 | Leverage 1.00x | Risk Rp367.244"
         }
       },
       "trades": [
@@ -1553,6 +1637,17 @@
           "reason": "possible UTAD: wicked above the 20-bar range high (208931) on below-average volume (0.32x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
           "notionalValue": 17952237.100382682,
           "marginUsed": 1795223.7100382682
+        },
+        {
+          "timestamp": "2026-08-25T03:08:54.120Z",
+          "instrument": "PEPE/IDR",
+          "side": "long",
+          "type": "open",
+          "size": 245681085.8334252,
+          "price": 0.07474,
+          "reason": "possible UTAD: wicked above the 20-bar range high (0.0745) on below-average volume (0.62x), closed back inside — Phase C test candidate, needs the Test bar to confirm",
+          "notionalValue": 18362204.3551902,
+          "marginUsed": 1836220.4355190198
         }
       ]
     },
@@ -1624,6 +1719,30 @@
           "marginUsed": 1826349.8125286303,
           "leverage": 1,
           "sizingNote": "Notional Rp18.263.498 | Margin Rp1.826.350 | Leverage 1.00x | Risk Rp365.270"
+        },
+        "XRP/IDR": {
+          "side": "long",
+          "size": 700.7178923793532,
+          "entryPrice": 26999,
+          "stopPrice": 26459.02,
+          "targetPrice": 28348.95,
+          "opened": "2026-08-25T03:08:54.120Z",
+          "notionalValue": 18918682.376350157,
+          "marginUsed": 1891868.2376350157,
+          "leverage": 1,
+          "sizingNote": "Notional Rp18.918.682 | Margin Rp1.891.868 | Leverage 1.00x | Risk Rp378.374"
+        },
+        "LTC/IDR": {
+          "side": "long",
+          "size": 20.212267496100594,
+          "entryPrice": 936000,
+          "stopPrice": 917280,
+          "targetPrice": 982800,
+          "opened": "2026-08-25T03:08:54.120Z",
+          "notionalValue": 18918682.376350157,
+          "marginUsed": 1891868.2376350157,
+          "leverage": 1,
+          "sizingNote": "Notional Rp18.918.682 | Margin Rp1.891.868 | Leverage 1.00x | Risk Rp378.374"
         }
       },
       "trades": [
@@ -1686,24 +1805,37 @@
           "reason": "fresh demand zone (proximal 25840, distal 25608) retested for the first time and held, 11.8x ATR departure",
           "notionalValue": 18263498.125286303,
           "marginUsed": 1826349.8125286303
+        },
+        {
+          "timestamp": "2026-08-25T03:08:54.120Z",
+          "instrument": "XRP/IDR",
+          "side": "long",
+          "type": "open",
+          "size": 700.7178923793532,
+          "price": 26999,
+          "reason": "fresh supply zone (proximal 27047, distal 27296) retested for the first time and held, 2.1x ATR departure",
+          "notionalValue": 18918682.376350157,
+          "marginUsed": 1891868.2376350157
+        },
+        {
+          "timestamp": "2026-08-25T03:08:54.120Z",
+          "instrument": "LTC/IDR",
+          "side": "long",
+          "type": "open",
+          "size": 20.212267496100594,
+          "price": 936000,
+          "reason": "fresh supply zone (proximal 930000, distal 937000) retested for the first time and held, 2.6x ATR departure",
+          "notionalValue": 18918682.376350157,
+          "marginUsed": 1891868.2376350157
         }
       ]
     },
     "fibonacci-trader": {
       "hired": "2026-08-21T12:52:00Z",
       "balance": {
-        "IDR": 17995976.687092245
+        "IDR": 18195225.452486195
       },
       "positions": {
-        "BTC/IDR": {
-          "side": "long",
-          "size": 0.0032911920283110138,
-          "entryPrice": 1364416000,
-          "stopPrice": 1337127680,
-          "targetPrice": 1418992640,
-          "opened": "2026-08-24T08:29:37.335Z",
-          "sizingNote": "Allocated Rp4.490.555 (Risk Rp359.244)"
-        },
         "DOGE/IDR": {
           "side": "short",
           "size": 2719.8591205896764,
@@ -1801,13 +1933,25 @@
           "reason": "Take Profit hit @ Rp1.772.611",
           "notionalValue": 4727284.803480753,
           "marginUsed": 472728.4803480753
+        },
+        {
+          "timestamp": "2026-08-25T03:08:54.120Z",
+          "instrument": "BTC/IDR",
+          "side": "long",
+          "type": "close",
+          "size": 0.0032911920283110138,
+          "price": 1424956000,
+          "realizedPnlIdr": 199248.76539394876,
+          "reason": "Take Profit hit @ Rp1.424.956.000",
+          "notionalValue": 4689803.827893949,
+          "marginUsed": 468980.38278939493
         }
       ]
     },
     "candlestick-trader": {
       "hired": "2026-08-21T12:52:00Z",
       "balance": {
-        "IDR": 17705467.409747392
+        "IDR": 17613782.377602767
       },
       "positions": {
         "TON/IDR": {
@@ -1825,15 +1969,6 @@
           "entryPrice": 12460902,
           "stopPrice": 12710120.04,
           "targetPrice": 11837856.9,
-          "opened": "2026-08-24T15:03:23.491Z",
-          "sizingNote": "Allocated Rp4.426.367 (Risk Rp354.109)"
-        },
-        "HYPE/IDR": {
-          "side": "short",
-          "size": 3.167450844490658,
-          "entryPrice": 1397454,
-          "stopPrice": 1425403.08,
-          "targetPrice": 1327581.3,
           "opened": "2026-08-24T15:03:23.491Z",
           "sizingNote": "Allocated Rp4.426.367 (Risk Rp354.109)"
         }
@@ -1922,6 +2057,18 @@
           "size": 3.167450844490658,
           "price": 1397454,
           "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)"
+        },
+        {
+          "timestamp": "2026-08-25T03:08:54.120Z",
+          "instrument": "HYPE/IDR",
+          "side": "short",
+          "type": "close",
+          "size": 3.167450844490658,
+          "price": 1426400,
+          "realizedPnlIdr": -91685.03214462659,
+          "reason": "Stop Loss hit @ Rp1.426.400",
+          "notionalValue": 4518051.884581475,
+          "marginUsed": 451805.18845814746
         }
       ]
     },
@@ -1940,7 +2087,7 @@
       "active": true,
       "hired": "2026-07-15T06:30:00Z",
       "balance": {
-        "IDR": 18000000
+        "IDR": 17896960.509174753
       },
       "positions": {
         "TRX/IDR": {
@@ -1958,15 +2105,6 @@
           "entryPrice": 1606,
           "stopPrice": 1638.12,
           "targetPrice": 1525.7,
-          "opened": "2026-08-24T14:04:56.138Z",
-          "sizingNote": "Allocated Rp4.500.000 (Risk Rp360.000)"
-        },
-        "BNB/IDR": {
-          "side": "short",
-          "size": 0.364975403091001,
-          "entryPrice": 12329598,
-          "stopPrice": 12576189.96,
-          "targetPrice": 11713118.1,
           "opened": "2026-08-24T14:04:56.138Z",
           "sizingNote": "Allocated Rp4.500.000 (Risk Rp360.000)"
         }
@@ -1998,6 +2136,18 @@
           "size": 0.364975403091001,
           "price": 12329598,
           "reason": "buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)"
+        },
+        {
+          "timestamp": "2026-08-25T03:08:54.120Z",
+          "instrument": "BNB/IDR",
+          "side": "short",
+          "type": "close",
+          "size": 0.364975403091001,
+          "price": 12611917,
+          "realizedPnlIdr": -103039.49082524831,
+          "reason": "Stop Loss hit @ Rp12.611.917",
+          "notionalValue": 4603039.490825248,
+          "marginUsed": 460303.9490825248
         }
       ]
     }
