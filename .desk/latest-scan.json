@@ -1,36 +1,36 @@
 {
-  "timestamp": "2026-08-25T08:53:12.709Z",
+  "timestamp": "2026-08-25T09:44:53.519Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "trxidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break down with volume confirmation",
-      "data": {
-        "volRatio": 1.710076579891068,
-        "close": 6064,
-        "support20": 6079
-      }
-    },
-    {
-      "pair": "tonidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 26290, distal 26290) retested for the first time and held, 2.6x ATR departure",
-      "data": {
-        "zoneProximal": 26290,
-        "zoneDistal": 26290,
-        "departureToAtr": 2.6421404682274248
-      }
-    },
-    {
-      "pair": "tonidr",
+      "pair": "dogeidr",
       "agent": "candlestick-trader",
       "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
       "data": {
-        "prevOpen": 26058,
-        "prevClose": 26070,
-        "lastOpen": 26290,
-        "lastClose": 25520
+        "prevOpen": 1610,
+        "prevClose": 1611,
+        "lastOpen": 1612,
+        "lastClose": 1607
+      }
+    },
+    {
+      "pair": "tonidr",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
+      "data": {
+        "volRatio": 24.77039644773332,
+        "close": 29500,
+        "resistance20": 26412
+      }
+    },
+    {
+      "pair": "tonidr",
+      "agent": "volatility-analyst",
+      "reason": "realized vol expanding — short-window vol is 1.85x the longer-window baseline",
+      "data": {
+        "rvShort": 0.04521244791087175,
+        "rvLong": 0.0244220989684865,
+        "ratio": 1.8512924695462276
       }
     }
   ],

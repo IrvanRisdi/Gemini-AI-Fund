@@ -514,3 +514,19 @@ _None._
 * **Maximum Risk Target:** Rp366.988
 * **Portfolio Gross Exposure Before:** Rp109.353.846
 * **Portfolio Gross Exposure After:** Rp127.703.239
+
+
+---
+### 2026-08-25T09:44 UTC — Position Opened: LONG TON/IDR
+
+* **Entry Price:** Rp26.403
+* **Stop Loss:** Rp25.875
+* **Target:** Rp27.723
+* **Reason:** pivot break up with volume confirmation
+* **Notional:** Rp18.188.548
+* **Margin Used:** Rp1.818.855
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp363.771
+* **Maximum Risk Target:** Rp363.771
+* **Portfolio Gross Exposure Before:** Rp127.608.641
+* **Portfolio Gross Exposure After:** Rp145.797.189

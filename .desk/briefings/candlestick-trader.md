@@ -184,3 +184,19 @@ _None._
 * **Maximum Risk Target:** Rp354.909
 * **Portfolio Gross Exposure Before:** Rp61.541.801
 * **Portfolio Gross Exposure After:** Rp79.287.273
+
+
+---
+### 2026-08-25T09:44 UTC — Position Opened: SHORT DOGE/IDR
+
+* **Entry Price:** Rp1.612
+* **Stop Loss:** Rp1.644
+* **Target:** Rp1.531
+* **Reason:** Bearish Engulfing after a short uptrend (Level 1 reversal pattern)
+* **Notional:** Rp19.282.870
+* **Margin Used:** Rp1.928.287
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp385.657
+* **Maximum Risk Target:** Rp385.657
+* **Portfolio Gross Exposure Before:** Rp77.749.875
+* **Portfolio Gross Exposure After:** Rp97.032.745

@@ -336,3 +336,14 @@ _None._
 * **Maximum Risk Target:** Rp311.023
 * **Portfolio Gross Exposure Before:** Rp132.147.855
 * **Portfolio Gross Exposure After:** Rp147.699.011
+
+
+---
+### 2026-08-25T09:44 UTC — Position Closed: LONG LTC/IDR
+
+* **Exit Price:** Rp913.000
+* **Realized PnL:** Rp-464.882
+* **Reason:** Stop Loss hit @ Rp913.000
+* **Notional:** Rp18.453.800
+* **Margin Used:** Rp1.845.380
+* **New Balance:** Rp15.189.807
