@@ -44,7 +44,15 @@ function bollinger(values: number[]) {
   const window = values.slice(-20); const mid = mean(window); const deviation = Math.sqrt(mean(window.map(value => (value - mid) ** 2)));
   return { mid, lower: mid - 2 * deviation };
 }
-function valid(setup: Omit<Setup, 'agent' | 'expiryBars'>) { return setup.entryHigh > setup.stop && (setup.target - setup.entryHigh) / (setup.entryHigh - setup.stop) >= 1.5; }
+function valid(setup: Pick<Setup, 'entryHigh' | 'stop' | 'target'>) {
+  const risk = (setup.entryHigh - setup.stop) / setup.entryHigh;
+  const reward = (setup.target - setup.entryHigh) / setup.entryHigh;
+  return setup.entryHigh > setup.stop && reward >= Math.max(risk * 1.8, 0.012);
+}
+function limitBand(entry: number, atrValue: number, floor: number, ceiling: number) {
+  const high = Math.min(ceiling, entry);
+  return { low: Math.max(floor, high - atrValue * 0.5), high };
+}
 function demandZone(candles: OHLCV[], price: number) {
   const recent = candles.slice(-32); const low = Math.min(...recent.map(c => c.low)); const high = Math.max(...recent.map(c => c.high)); const zoneHigh = low + (high - low) * 0.22;
   return price >= low * 0.995 && price <= zoneHigh * 1.02 ? { low, high: zoneHigh } : null;
@@ -62,25 +70,26 @@ function setups(one: OHLCV[], four: OHLCV[]): Setup[] {
   const resistance = Math.max(...prior.map(c => c.high)); const support = Math.min(...prior.map(c => c.low)); const a = atr(one); const volume = current.volume / mean(prior.map(c => c.volume));
   const trendUp = ema(fourCloses, 9) > ema(fourCloses, 21) && latestAdx(four) >= 22; const fourAdx = latestAdx(four); const out: Setup[] = [];
   if (trendUp && current.close > resistance && volume >= 1.5) {
-    const entry = resistance; const stop = Math.min(support, entry - 1.2 * a); const target = entry + Math.max(resistance - support, (entry - stop) * 1.5);
-    if (valid({ entryHigh: entry, stop, target })) out.push({ agent: 'breakout-specialist', entryLow: entry * .997, entryHigh: entry * 1.003, stop, target, expiryBars: 12 });
+    const entry = Math.max(resistance, current.close - a * .45); const stop = Math.min(support, entry - 1.35 * a); const target = entry + Math.max(resistance - support, (entry - stop) * 1.8);
+    const band = limitBand(entry, a, resistance, current.close); const extension = (current.close - resistance) / a;
+    if (extension <= 1.25 && valid({ entryHigh: band.high, stop, target })) out.push({ agent: 'breakout-specialist', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 4 });
   }
   if (trendUp && current.close > resistance && volume >= 2 && fourAdx >= 25) {
-    const entry = current.close * 1.002; const stop = Math.max(resistance * .992, entry - 1.5 * a); const target = entry + (entry - stop) * 2;
-    if (valid({ entryHigh: entry, stop, target })) out.push({ agent: 'aggressive-breakout-trader', entryLow: entry, entryHigh: entry, stop, target, expiryBars: 6 });
+    const entry = current.close * 1.0015; const stop = Math.max(resistance * .992, entry - 1.6 * a); const target = entry + (entry - stop) * 2.2; const extension = (current.close - resistance) / a;
+    if (extension <= .9 && valid({ entryHigh: entry, stop, target })) out.push({ agent: 'aggressive-breakout-trader', entryLow: entry, entryHigh: entry, stop, target, expiryBars: 3 });
   }
   const bb = bollinger(closes);
   if (fourAdx < 20 && ema(fourCloses, 9) <= ema(fourCloses, 21) * 1.01 && rsi(closes) < 30 && current.close <= bb.lower) {
-    const entry = Math.min(current.close, bb.lower); const stop = entry - 1.5 * a;
-    if (valid({ entryHigh: entry, stop, target: bb.mid })) out.push({ agent: 'mean-reversion-trader', entryLow: entry * .992, entryHigh: entry, stop, target: bb.mid, expiryBars: 12 });
+    const entry = current.close; const stop = entry - 1.8 * a; const band = limitBand(entry, a, entry - a * .45, entry);
+    if (valid({ entryHigh: band.high, stop, target: bb.mid })) out.push({ agent: 'mean-reversion-trader', entryLow: band.low, entryHigh: band.high, stop, target: bb.mid, expiryBars: 6 });
   }
   const zone = demandZone(one, current.close); const trigger = fibConfluence(four, current.close) || bullishEngulfing(one);
   if (zone && trigger) {
-    const stop = zone.low - a * .25; const target = Math.max(resistance, zone.high + (zone.high - stop) * 1.5);
-    if (valid({ entryHigh: zone.high, stop, target })) {
+    const entry = Math.min(zone.high, current.close); const band = limitBand(entry, a, zone.low, entry); const stop = zone.low - a * .5; const target = Math.max(resistance, band.high + (band.high - stop) * 1.8);
+    if (valid({ entryHigh: band.high, stop, target })) {
       const recent = one.slice(-7, -1); const swept = recent.at(-2)!.low < Math.min(...recent.slice(0, -2).map(c => c.low)); const choch = current.close > Math.max(...recent.slice(0, -1).map(c => c.high));
-      if (swept && choch) out.push({ agent: 'smc-trader', entryLow: zone.low, entryHigh: zone.high, stop, target, expiryBars: 16 });
-      const [spring, test] = one.slice(-3, -1); if (spring && test && spring.low < support && spring.close > support && test.low >= spring.low && test.close > test.open) out.push({ agent: 'wyckoff-trader', entryLow: zone.low, entryHigh: zone.high, stop, target, expiryBars: 16 });
+      if (swept && choch) out.push({ agent: 'smc-trader', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 8 });
+      const [spring, test] = one.slice(-3, -1); if (spring && test && spring.low < support && spring.close > support && test.low >= spring.low && test.close > test.open) out.push({ agent: 'wyckoff-trader', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 8 });
     }
   }
   return out;
