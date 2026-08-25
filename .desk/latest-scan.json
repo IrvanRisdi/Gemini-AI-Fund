@@ -1,137 +1,55 @@
 {
-  "timestamp": "2026-08-25T04:03:15.482Z",
+  "timestamp": "2026-08-25T04:48:50.298Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "btcidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.86x the longer-window baseline",
+      "pair": "trxidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh demand zone (proximal 6095, distal 6092) retested for the first time and held, 2.4x ATR departure",
       "data": {
-        "rvShort": 0.0056139868312210794,
-        "rvLong": 0.0030225562596960824,
-        "ratio": 1.857363883041689
-      }
-    },
-    {
-      "pair": "ethidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.72x the longer-window baseline",
-      "data": {
-        "rvShort": 0.005539019544630766,
-        "rvLong": 0.0032180668769000624,
-        "ratio": 1.721225740953668
-      }
-    },
-    {
-      "pair": "solidr",
-      "agent": "fibonacci-trader",
-      "reason": "38.2% retracement (1790506.920000) of swing low 1767060->high 1805000 tagged with a bullish reaction candle",
-      "data": {
-        "level": 0.382,
-        "price": 1790506.92,
-        "swingHigh": 1805000,
-        "swingLow": 1767060
-      }
-    },
-    {
-      "pair": "xrpidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.77x the longer-window baseline",
-      "data": {
-        "rvShort": 0.010495706695140624,
-        "rvLong": 0.005919541897853354,
-        "ratio": 1.7730606314226374
-      }
-    },
-    {
-      "pair": "dogeidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.80x the longer-window baseline",
-      "data": {
-        "rvShort": 0.009422301213636585,
-        "rvLong": 0.005225575112766309,
-        "ratio": 1.8031127694667501
-      }
-    },
-    {
-      "pair": "pepeidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.80x the longer-window baseline",
-      "data": {
-        "rvShort": 0.011109486262611571,
-        "rvLong": 0.006188038193719906,
-        "ratio": 1.7953163692309344
-      }
-    },
-    {
-      "pair": "bnbidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.67x the longer-window baseline",
-      "data": {
-        "rvShort": 0.005879520591009797,
-        "rvLong": 0.0035272244713705435,
-        "ratio": 1.666897198840663
-      }
-    },
-    {
-      "pair": "bnbidr",
-      "agent": "fibonacci-trader",
-      "reason": "38.2% retracement (12631257.954000) of swing low 12520047->high 12700000 tagged with a bullish reaction candle",
-      "data": {
-        "level": 0.382,
-        "price": 12631257.954,
-        "swingHigh": 12700000,
-        "swingLow": 12520047
-      }
-    },
-    {
-      "pair": "adaidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.94x the longer-window baseline",
-      "data": {
-        "rvShort": 0.009839171905418906,
-        "rvLong": 0.0050682271211218745,
-        "ratio": 1.9413439197336053
+        "zoneProximal": 6095,
+        "zoneDistal": 6092,
+        "departureToAtr": 2.382978723404255
       }
     },
     {
       "pair": "ltcidr",
       "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.65x the longer-window baseline",
+      "reason": "realized vol expanding — short-window vol is 1.76x the longer-window baseline",
       "data": {
-        "rvShort": 0.008178826238329679,
-        "rvLong": 0.004945491609224064,
-        "ratio": 1.653794381750638
+        "rvShort": 0.010040639219239271,
+        "rvLong": 0.005709325999647534,
+        "ratio": 1.7586382735648884
       }
     },
     {
       "pair": "hbaridr",
       "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.85x the longer-window baseline",
+      "reason": "realized vol expanding — short-window vol is 1.84x the longer-window baseline",
       "data": {
-        "rvShort": 0.00965906651877714,
-        "rvLong": 0.005223251458417449,
-        "ratio": 1.8492440189168422
+        "rvShort": 0.011232534922187573,
+        "rvLong": 0.006118822965440311,
+        "ratio": 1.8357345825545188
       }
     },
     {
       "pair": "hbaridr",
       "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 1475, distal 1487) retested for the first time and held, 2.1x ATR departure",
+      "reason": "fresh supply zone (proximal 1462, distal 1475) retested for the first time and held, 2.6x ATR departure",
       "data": {
-        "zoneProximal": 1475,
-        "zoneDistal": 1487,
-        "departureToAtr": 2.128
+        "zoneProximal": 1462,
+        "zoneDistal": 1475,
+        "departureToAtr": 2.606896551724138
       }
     },
     {
-      "pair": "avaxidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.80x the longer-window baseline",
+      "pair": "shibidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 0.1002, distal 0.101639) retested for the first time and held, 2.0x ATR departure",
       "data": {
-        "rvShort": 0.006821745403186911,
-        "rvLong": 0.0037921063118566806,
-        "ratio": 1.7989330578252871
+        "zoneProximal": 0.1002,
+        "zoneDistal": 0.101639,
+        "departureToAtr": 2.0412416205187878
       }
     }
   ],

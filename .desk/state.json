@@ -72,7 +72,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened LONG TON/IDR @ Rp26.410 | SL Rp25.882 | TP Rp27.731 | 1.00x"
+      "last_action": "Closed LONG TON/IDR (Rp-512.392) — Stop Loss hit @ Rp25.658 (2026-08-25T04:48 UTC)"
     },
     "mean-reversion-trader": {
       "status": "active",
@@ -228,7 +228,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened LONG HBAR/IDR @ Rp1.429 | SL Rp1.400 | TP Rp1.500 | 1.00x"
+      "last_action": "Closed LONG TON/IDR (Rp-550.458) — Stop Loss hit @ Rp25.658 (2026-08-25T04:48 UTC)"
     },
     "george-soros": {
       "status": "fired",
@@ -495,7 +495,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened LONG HBAR/IDR @ Rp1.468 | SL Rp1.439 | TP Rp1.541 | 1.00x"
+      "last_action": "Opened LONG SHIB/IDR @ Rp0 | SL Rp0 | TP Rp0 | 1.00x"
     },
     "fibonacci-trader": {
       "status": "active",

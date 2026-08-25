@@ -169,3 +169,46 @@ _None._
 * **Maximum Risk Target:** Rp370.639
 * **Portfolio Gross Exposure Before:** Rp106.659.830
 * **Portfolio Gross Exposure After:** Rp125.191.800
+
+
+---
+### 2026-08-25T04:48 UTC — Position Closed: LONG TON/IDR
+
+* **Exit Price:** Rp25.658
+* **Realized PnL:** Rp-520.036
+* **Reason:** Stop Loss hit @ Rp25.658
+* **Notional:** Rp17.743.462
+* **Margin Used:** Rp1.774.346
+* **New Balance:** Rp17.479.964
+
+
+---
+### 2026-08-25T04:48 UTC — Position Opened: LONG TRX/IDR
+
+* **Entry Price:** Rp6.093
+* **Stop Loss:** Rp5.971
+* **Target:** Rp6.398
+* **Reason:** fresh demand zone (proximal 6095, distal 6092) retested for the first time and held, 2.4x ATR departure
+* **Notional:** Rp17.474.683
+* **Margin Used:** Rp1.747.468
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp349.494
+* **Maximum Risk Target:** Rp349.494
+* **Portfolio Gross Exposure Before:** Rp106.391.051
+* **Portfolio Gross Exposure After:** Rp123.865.735
+
+
+---
+### 2026-08-25T04:48 UTC — Position Opened: LONG SHIB/IDR
+
+* **Entry Price:** Rp0
+* **Stop Loss:** Rp0
+* **Target:** Rp0
+* **Reason:** fresh supply zone (proximal 0.1002, distal 0.101639) retested for the first time and held, 2.0x ATR departure
+* **Notional:** Rp17.474.683
+* **Margin Used:** Rp1.747.468
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp349.494
+* **Maximum Risk Target:** Rp349.494
+* **Portfolio Gross Exposure Before:** Rp123.865.735
+* **Portfolio Gross Exposure After:** Rp141.340.418
