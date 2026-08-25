@@ -84,12 +84,23 @@ function setups(one: OHLCV[], four: OHLCV[]): Setup[] {
     if (valid({ entryHigh: band.high, stop, target: bb.mid })) out.push({ agent: 'mean-reversion-trader', entryLow: band.low, entryHigh: band.high, stop, target: bb.mid, expiryBars: 6 });
   }
   const zone = demandZone(one, current.close); const trigger = fibConfluence(four, current.close) || bullishEngulfing(one);
+  const wyckoffHistory = one.slice(-24, -3); const [spring, reclaim, test] = one.slice(-3);
+  if (wyckoffHistory.length >= 18 && spring && reclaim && test) {
+    const rangeLow = Math.min(...wyckoffHistory.map(bar => bar.low)); const rangeHigh = Math.max(...wyckoffHistory.map(bar => bar.high));
+    const averageVolume = mean(wyckoffHistory.map(bar => bar.volume));
+    const ranging4h = fourAdx < 30 && Math.abs(ema(fourCloses, 9) - ema(fourCloses, 21)) / ema(fourCloses, 21) < .025;
+    const validSpring = spring.low < rangeLow && spring.close > rangeLow && spring.volume >= averageVolume * 1.1;
+    const validReclaim = reclaim.close > rangeLow && reclaim.close > reclaim.open;
+    const validTest = test.low >= spring.low && test.close > test.open && test.close >= rangeLow;
+    const entry = test.close; const band = limitBand(entry, a, Math.max(rangeLow, entry - a * .5), entry); const stop = spring.low - a * .4;
+    const target = Math.max((rangeLow + rangeHigh) / 2, band.high + (band.high - stop) * 2);
+    if (ranging4h && validSpring && validReclaim && validTest && valid({ entryHigh: band.high, stop, target })) out.push({ agent: 'wyckoff-trader', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 8 });
+  }
   if (zone && trigger) {
     const entry = Math.min(zone.high, current.close); const band = limitBand(entry, a, zone.low, entry); const stop = zone.low - a * .5; const target = Math.max(resistance, band.high + (band.high - stop) * 1.8);
     if (valid({ entryHigh: band.high, stop, target })) {
       const recent = one.slice(-7, -1); const swept = recent.at(-2)!.low < Math.min(...recent.slice(0, -2).map(c => c.low)); const choch = current.close > Math.max(...recent.slice(0, -1).map(c => c.high));
       if (swept && choch) out.push({ agent: 'smc-trader', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 8 });
-      const [spring, test] = one.slice(-3, -1); if (spring && test && spring.low < support && spring.close > support && test.low >= spring.low && test.close > test.open) out.push({ agent: 'wyckoff-trader', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 8 });
     }
   }
   return out;
@@ -124,6 +135,18 @@ function metrics(trades: Trade[]): Result {
   let equity = 1; let peak = 1; let maxDrawdown = 0; for (const trade of trades) { equity *= 1 + trade.netReturn; peak = Math.max(peak, equity); maxDrawdown = Math.max(maxDrawdown, 1 - equity / peak); }
   return { trades: trades.length, wins: trades.filter(t => t.netReturn > 0).length, winRate: trades.filter(t => t.netReturn > 0).length / trades.length, avgNetReturn: mean(trades.map(t => t.netReturn)), profitFactor: losses ? profits / losses : profits ? Infinity : 0, maxDrawdown, signalsPerMonth: trades.length / 12 };
 }
+function equityCurve(trades: Trade[]) {
+  let equity = 1;
+  return [...trades].sort((a, b) => a.closedAt - b.closedAt).map((trade) => {
+    equity *= 1 + trade.netReturn;
+    return { timestamp: trade.closedAt, equity };
+  });
+}
+function pairEntries(trades: Trade[]) {
+  return Object.entries(trades.reduce<Record<string, number>>((counts, trade) => {
+    counts[trade.pair] = (counts[trade.pair] ?? 0) + 1; return counts;
+  }, {})).sort(([, left], [, right]) => right - left).map(([pair, trades]) => ({ pair, trades }));
+}
 async function mapLimit<T, R>(items: T[], concurrency: number, task: (item: T) => Promise<R>) { const result: R[] = []; for (let i = 0; i < items.length; i += concurrency) result.push(...await Promise.all(items.slice(i, i + concurrency).map(task))); return result; }
 
 async function main() {
@@ -131,7 +154,7 @@ async function main() {
   const datasets = await mapLimit(PAIRS, 3, async pair => ({ pair, one: await fetchOhlcv(pair, '1h', bars), four: await fetchOhlcv(pair, '4h', Math.ceil(bars / 4) + 80) }));
   const all = AGENTS.flatMap(agent => datasets.flatMap(data => simulate(agent, data.pair, data.one, data.four)));
   const split = datasets[0]?.one[Math.floor(datasets[0].one.length * .7)]?.timestamp ?? 0;
-  const report = { generatedAt: new Date().toISOString(), assumptions: { bars, feePerSide: FEE_PER_SIDE, pendingOrders: true, sameCandleResolution: 'stop-first (conservative)', inSampleEnd: new Date(split).toISOString() }, byAgent: Object.fromEntries(AGENTS.map(agent => { const trades = all.filter(t => t.agent === agent); return [agent, { all: metrics(trades), inSample: metrics(trades.filter(t => t.openedAt < split)), outOfSample: metrics(trades.filter(t => t.openedAt >= split)) }]; })), totalTrades: all.length };
+  const report = { generatedAt: new Date().toISOString(), assumptions: { bars, feePerSide: FEE_PER_SIDE, pendingOrders: true, sameCandleResolution: 'stop-first (conservative)', inSampleEnd: new Date(split).toISOString() }, byAgent: Object.fromEntries(AGENTS.map(agent => { const trades = all.filter(t => t.agent === agent); const outOfSample = trades.filter(t => t.openedAt >= split); return [agent, { all: metrics(trades), inSample: metrics(trades.filter(t => t.openedAt < split)), outOfSample: metrics(outOfSample), equityCurve: equityCurve(outOfSample), pairEntries: pairEntries(outOfSample) }]; })), totalTrades: all.length };
   const destination = process.env.BACKTEST_OUTPUT ?? path.resolve(process.cwd(), '..', 'outputs', `spot-paper-v2-backtest-${new Date().toISOString().slice(0, 10)}.json`);
   fs.mkdirSync(path.dirname(destination), { recursive: true }); fs.writeFileSync(destination, JSON.stringify({ ...report, trades: all }, null, 2));
   console.table(Object.entries(report.byAgent).map(([agent, value]) => ({ agent, trades: value.outOfSample.trades, winRate: `${(value.outOfSample.winRate * 100).toFixed(1)}%`, avgNet: `${(value.outOfSample.avgNetReturn * 100).toFixed(2)}%`, profitFactor: Number.isFinite(value.outOfSample.profitFactor) ? value.outOfSample.profitFactor.toFixed(2) : '∞', maxDD: `${(value.outOfSample.maxDrawdown * 100).toFixed(1)}%`, tradesPerMonth: value.all.signalsPerMonth.toFixed(1) })));
