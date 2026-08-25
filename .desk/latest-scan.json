@@ -1,1 +1,7 @@
-{ "timestamp": "2026-08-25T00:00:00.000Z", "mode": "spot-only-v2", "pairsScanned": 0, "candidates": [], "errors": [] }
+{
+  "timestamp": "2026-08-25T09:36:31.145Z",
+  "mode": "spot-only-v2",
+  "pairsScanned": 19,
+  "candidates": [],
+  "errors": []
+}

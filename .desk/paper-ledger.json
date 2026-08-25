@@ -1,17 +1,52 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-25T00:00:00.000Z",
+  "last_cycle": "2026-08-25T09:36:42.945Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
   "fee_rate": 0.003,
   "slippage_note": "Pending orders use the live trigger price within the specified zone; results remain a simulation.",
   "agents": {
-    "breakout-specialist": { "balance": { "IDR": 50000000 }, "positions": {}, "pendingOrders": [], "trades": [] },
-    "mean-reversion-trader": { "balance": { "IDR": 50000000 }, "positions": {}, "pendingOrders": [], "trades": [] },
-    "smc-trader": { "balance": { "IDR": 50000000 }, "positions": {}, "pendingOrders": [], "trades": [] },
-    "wyckoff-trader": { "balance": { "IDR": 50000000 }, "positions": {}, "pendingOrders": [], "trades": [] },
-    "aggressive-breakout-trader": { "balance": { "IDR": 50000000 }, "positions": {}, "pendingOrders": [], "trades": [] }
+    "breakout-specialist": {
+      "balance": {
+        "IDR": 50000000
+      },
+      "positions": {},
+      "pendingOrders": [],
+      "trades": []
+    },
+    "mean-reversion-trader": {
+      "balance": {
+        "IDR": 50000000
+      },
+      "positions": {},
+      "pendingOrders": [],
+      "trades": []
+    },
+    "smc-trader": {
+      "balance": {
+        "IDR": 50000000
+      },
+      "positions": {},
+      "pendingOrders": [],
+      "trades": []
+    },
+    "wyckoff-trader": {
+      "balance": {
+        "IDR": 50000000
+      },
+      "positions": {},
+      "pendingOrders": [],
+      "trades": []
+    },
+    "aggressive-breakout-trader": {
+      "balance": {
+        "IDR": 50000000
+      },
+      "positions": {},
+      "pendingOrders": [],
+      "trades": []
+    }
   }
 }

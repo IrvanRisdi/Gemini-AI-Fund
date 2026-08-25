@@ -1,19 +1,204 @@
 {
-  "desk": { "created": "2026-08-25", "last_session": "2026-08-25", "mode": "paper · spot-only v2" },
+  "desk": {
+    "created": "2026-08-25",
+    "last_session": "2026-08-25",
+    "mode": "paper · spot-only v2"
+  },
   "agents": {
-    "breakout-specialist": { "status": "active", "hired": "2026-08-25", "role": "primary", "last_action": "Fresh book — awaiting validated setup", "assets_covered": ["BTC/IDR", "ETH/IDR", "SOL/IDR", "XRP/IDR", "DOGE/IDR", "PEPE/IDR", "SUI/IDR", "BNB/IDR", "TRX/IDR", "HYPE/IDR", "LINK/IDR", "ADA/IDR", "BCH/IDR", "TON/IDR", "LTC/IDR", "HBAR/IDR", "AVAX/IDR", "SHIB/IDR", "UNI/IDR"] },
-    "mean-reversion-trader": { "status": "active", "hired": "2026-08-25", "role": "primary", "last_action": "Fresh book — range-only setups", "assets_covered": ["BTC/IDR", "ETH/IDR", "SOL/IDR", "XRP/IDR", "DOGE/IDR", "PEPE/IDR", "SUI/IDR", "BNB/IDR", "TRX/IDR", "HYPE/IDR", "LINK/IDR", "ADA/IDR", "BCH/IDR", "TON/IDR", "LTC/IDR", "HBAR/IDR", "AVAX/IDR", "SHIB/IDR", "UNI/IDR"] },
-    "smc-trader": { "status": "active", "hired": "2026-08-25", "role": "primary", "last_action": "Fresh book — awaiting structure confluence", "assets_covered": ["BTC/IDR", "ETH/IDR", "SOL/IDR", "XRP/IDR", "DOGE/IDR", "PEPE/IDR", "SUI/IDR", "BNB/IDR", "TRX/IDR", "HYPE/IDR", "LINK/IDR", "ADA/IDR", "BCH/IDR", "TON/IDR", "LTC/IDR", "HBAR/IDR", "AVAX/IDR", "SHIB/IDR", "UNI/IDR"] },
-    "wyckoff-trader": { "status": "active", "hired": "2026-08-25", "role": "primary", "last_action": "Fresh book — awaiting Spring/Test or UTAD/Test", "assets_covered": ["BTC/IDR", "ETH/IDR", "SOL/IDR", "XRP/IDR", "DOGE/IDR", "PEPE/IDR", "SUI/IDR", "BNB/IDR", "TRX/IDR", "HYPE/IDR", "LINK/IDR", "ADA/IDR", "BCH/IDR", "TON/IDR", "LTC/IDR", "HBAR/IDR", "AVAX/IDR", "SHIB/IDR", "UNI/IDR"] },
-    "aggressive-breakout-trader": { "status": "active", "hired": "2026-08-25", "role": "primary", "last_action": "Fresh book — premium breakout only", "assets_covered": ["BTC/IDR", "ETH/IDR", "SOL/IDR", "XRP/IDR", "DOGE/IDR", "PEPE/IDR", "SUI/IDR", "BNB/IDR", "TRX/IDR", "HYPE/IDR", "LINK/IDR", "ADA/IDR", "BCH/IDR", "TON/IDR", "LTC/IDR", "HBAR/IDR", "AVAX/IDR", "SHIB/IDR", "UNI/IDR"] },
-    "supply-demand-trader": { "status": "active", "hired": "2026-08-25", "role": "confirmation", "last_action": "Validates fresh zones; no independent book", "assets_covered": [] },
-    "fibonacci-trader": { "status": "active", "hired": "2026-08-25", "role": "confirmation", "last_action": "Provides Fib confluence; no independent book", "assets_covered": [] },
-    "candlestick-trader": { "status": "active", "hired": "2026-08-25", "role": "confirmation", "last_action": "Provides completed-candle trigger; no independent book", "assets_covered": [] },
-    "momentum-trader": { "status": "active", "hired": "2026-08-25", "role": "management", "last_action": "Trend filter and trailing-stop manager; no independent book", "assets_covered": [] },
-    "jesse-livermore": { "status": "active", "hired": "2026-08-25", "role": "management", "last_action": "Pyramid manager for profitable breakout campaigns; no independent book", "assets_covered": [] },
-    "risk-manager": { "status": "active", "hired": "2026-08-25", "role": "oversight", "last_action": "Enforces spot-only, 100% notional and 5% campaign-risk limits", "risk_limits": { "max_position_notional_pct": 100, "risk_per_campaign_pct": 5, "minimum_risk_reward": 1.5, "shorting_allowed": false } },
-    "portfolio-manager": { "status": "active", "hired": "2026-08-25", "role": "oversight", "last_action": "Monitors correlated exposure" },
-    "quant-analyst": { "status": "active", "hired": "2026-08-25", "role": "oversight", "last_action": "Monitors strategy metrics" }
+    "breakout-specialist": {
+      "status": "active",
+      "hired": "2026-08-25",
+      "role": "primary",
+      "last_action": "0 posisi spot terbuka · 0 pending order",
+      "assets_covered": [
+        "BTC/IDR",
+        "ETH/IDR",
+        "SOL/IDR",
+        "XRP/IDR",
+        "DOGE/IDR",
+        "PEPE/IDR",
+        "SUI/IDR",
+        "BNB/IDR",
+        "TRX/IDR",
+        "HYPE/IDR",
+        "LINK/IDR",
+        "ADA/IDR",
+        "BCH/IDR",
+        "TON/IDR",
+        "LTC/IDR",
+        "HBAR/IDR",
+        "AVAX/IDR",
+        "SHIB/IDR",
+        "UNI/IDR"
+      ]
+    },
+    "mean-reversion-trader": {
+      "status": "active",
+      "hired": "2026-08-25",
+      "role": "primary",
+      "last_action": "0 posisi spot terbuka · 0 pending order",
+      "assets_covered": [
+        "BTC/IDR",
+        "ETH/IDR",
+        "SOL/IDR",
+        "XRP/IDR",
+        "DOGE/IDR",
+        "PEPE/IDR",
+        "SUI/IDR",
+        "BNB/IDR",
+        "TRX/IDR",
+        "HYPE/IDR",
+        "LINK/IDR",
+        "ADA/IDR",
+        "BCH/IDR",
+        "TON/IDR",
+        "LTC/IDR",
+        "HBAR/IDR",
+        "AVAX/IDR",
+        "SHIB/IDR",
+        "UNI/IDR"
+      ]
+    },
+    "smc-trader": {
+      "status": "active",
+      "hired": "2026-08-25",
+      "role": "primary",
+      "last_action": "0 posisi spot terbuka · 0 pending order",
+      "assets_covered": [
+        "BTC/IDR",
+        "ETH/IDR",
+        "SOL/IDR",
+        "XRP/IDR",
+        "DOGE/IDR",
+        "PEPE/IDR",
+        "SUI/IDR",
+        "BNB/IDR",
+        "TRX/IDR",
+        "HYPE/IDR",
+        "LINK/IDR",
+        "ADA/IDR",
+        "BCH/IDR",
+        "TON/IDR",
+        "LTC/IDR",
+        "HBAR/IDR",
+        "AVAX/IDR",
+        "SHIB/IDR",
+        "UNI/IDR"
+      ]
+    },
+    "wyckoff-trader": {
+      "status": "active",
+      "hired": "2026-08-25",
+      "role": "primary",
+      "last_action": "0 posisi spot terbuka · 0 pending order",
+      "assets_covered": [
+        "BTC/IDR",
+        "ETH/IDR",
+        "SOL/IDR",
+        "XRP/IDR",
+        "DOGE/IDR",
+        "PEPE/IDR",
+        "SUI/IDR",
+        "BNB/IDR",
+        "TRX/IDR",
+        "HYPE/IDR",
+        "LINK/IDR",
+        "ADA/IDR",
+        "BCH/IDR",
+        "TON/IDR",
+        "LTC/IDR",
+        "HBAR/IDR",
+        "AVAX/IDR",
+        "SHIB/IDR",
+        "UNI/IDR"
+      ]
+    },
+    "aggressive-breakout-trader": {
+      "status": "active",
+      "hired": "2026-08-25",
+      "role": "primary",
+      "last_action": "0 posisi spot terbuka · 0 pending order",
+      "assets_covered": [
+        "BTC/IDR",
+        "ETH/IDR",
+        "SOL/IDR",
+        "XRP/IDR",
+        "DOGE/IDR",
+        "PEPE/IDR",
+        "SUI/IDR",
+        "BNB/IDR",
+        "TRX/IDR",
+        "HYPE/IDR",
+        "LINK/IDR",
+        "ADA/IDR",
+        "BCH/IDR",
+        "TON/IDR",
+        "LTC/IDR",
+        "HBAR/IDR",
+        "AVAX/IDR",
+        "SHIB/IDR",
+        "UNI/IDR"
+      ]
+    },
+    "supply-demand-trader": {
+      "status": "active",
+      "hired": "2026-08-25",
+      "role": "confirmation",
+      "last_action": "Validates fresh zones; no independent book",
+      "assets_covered": []
+    },
+    "fibonacci-trader": {
+      "status": "active",
+      "hired": "2026-08-25",
+      "role": "confirmation",
+      "last_action": "Provides Fib confluence; no independent book",
+      "assets_covered": []
+    },
+    "candlestick-trader": {
+      "status": "active",
+      "hired": "2026-08-25",
+      "role": "confirmation",
+      "last_action": "Provides completed-candle trigger; no independent book",
+      "assets_covered": []
+    },
+    "momentum-trader": {
+      "status": "active",
+      "hired": "2026-08-25",
+      "role": "management",
+      "last_action": "Trend filter and trailing-stop manager; no independent book",
+      "assets_covered": []
+    },
+    "jesse-livermore": {
+      "status": "active",
+      "hired": "2026-08-25",
+      "role": "management",
+      "last_action": "Pyramid manager for profitable breakout campaigns; no independent book",
+      "assets_covered": []
+    },
+    "risk-manager": {
+      "status": "active",
+      "hired": "2026-08-25",
+      "role": "oversight",
+      "last_action": "Enforces spot-only, 100% notional and 5% campaign-risk limits",
+      "risk_limits": {
+        "max_position_notional_pct": 100,
+        "risk_per_campaign_pct": 5,
+        "minimum_risk_reward": 1.5,
+        "shorting_allowed": false
+      }
+    },
+    "portfolio-manager": {
+      "status": "active",
+      "hired": "2026-08-25",
+      "role": "oversight",
+      "last_action": "Monitors correlated exposure"
+    },
+    "quant-analyst": {
+      "status": "active",
+      "hired": "2026-08-25",
+      "role": "oversight",
+      "last_action": "Monitors strategy metrics"
+    }
   },
   "exchanges": {}
 }
