@@ -4,7 +4,7 @@
  */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -36,7 +36,7 @@ export interface ParsedSkill {
  * Simple parser — handles the subset of YAML used in skills.
  */
 export function parseFrontmatter(raw: string): SkillFrontmatter {
-  const match = raw.match(/^---\n([\s\S]*?)\n---/);
+  const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!match) {
     return { name: '', description: '', commands: [] };
   }
@@ -48,14 +48,14 @@ export function parseFrontmatter(raw: string): SkillFrontmatter {
   const name = nameMatch?.[1]?.trim() ?? '';
 
   // Extract description (may be multi-line with >)
-  const descMatch = yaml.match(/description:\s*>?\s*\n([\s\S]*?)(?=\ncommands:|\n[a-z]|\n$)/);
+  const descMatch = yaml.match(/description:\s*>?\s*\r?\n([\s\S]*?)(?=\r?\ncommands:|\r?\n[a-z]|\r?\n$)/);
   const description = descMatch
     ? descMatch[1].split('\n').map(l => l.trim()).filter(Boolean).join(' ')
     : '';
 
   // Extract commands list
   const commands: string[] = [];
-  const commandsMatch = yaml.match(/commands:\s*\n((?:\s+-\s+.+\n?)*)/);
+  const commandsMatch = yaml.match(/commands:\s*\r?\n((?:\s+-\s+.+\r?\n?)*)/);
   if (commandsMatch) {
     const lines = commandsMatch[1].split('\n');
     for (const line of lines) {
@@ -72,9 +72,9 @@ export function parseFrontmatter(raw: string): SkillFrontmatter {
  */
 export function parseSections(raw: string): { title: string; sections: SkillSection[] } {
   // Strip frontmatter
-  const body = raw.replace(/^---\n[\s\S]*?\n---\n*/, '');
+  const body = raw.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n*/, '');
 
-  const lines = body.split('\n');
+  const lines = body.split(/\r?\n/);
   const sections: SkillSection[] = [];
   let title = '';
   let currentSection: SkillSection | null = null;
@@ -117,7 +117,7 @@ export function parseSections(raw: string): { title: string; sections: SkillSect
  */
 export function parseSkill(filePath: string): ParsedSkill {
   const raw = readFileSync(filePath, 'utf-8');
-  const slug = filePath.split('/').slice(-2, -1)[0];
+  const slug = basename(dirname(filePath));
   const frontmatter = parseFrontmatter(raw);
   const { title, sections } = parseSections(raw);
 
@@ -264,3 +264,4 @@ export const REQUIRED_SECTIONS = [
   'Safety Rules',
   'Performance Metrics',
 ];
+
