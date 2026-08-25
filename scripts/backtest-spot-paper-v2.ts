@@ -64,39 +64,44 @@ function fibConfluence(candles: OHLCV[], price: number) {
 function bullishEngulfing(candles: OHLCV[]) { const [previous, last] = candles.slice(-2); return Boolean(previous && last && last.close > last.open && last.close >= previous.open && last.open <= previous.close); }
 function priorFourHour(candles: OHLCV[], timestamp: number) { return candles.filter(candle => candle.timestamp <= timestamp).slice(-70); }
 
-function setups(one: OHLCV[], four: OHLCV[]): Setup[] {
-  if (one.length < 60 || four.length < 55) return [];
+function setups(one: OHLCV[], four: OHLCV[], btcFour: OHLCV[]): Setup[] {
+  if (one.length < 60 || four.length < 55 || btcFour.length < 55) return [];
   const current = one.at(-1)!; const prior = one.slice(-21, -1); const closes = one.map(c => c.close); const fourCloses = four.map(c => c.close);
   const resistance = Math.max(...prior.map(c => c.high)); const support = Math.min(...prior.map(c => c.low)); const a = atr(one); const volume = current.volume / mean(prior.map(c => c.volume));
+  const btcCloses = btcFour.map(candle => candle.close); const btcBullish = ema(btcCloses, 9) >= ema(btcCloses, 21) && btcFour.at(-1)!.close >= ema(btcCloses, 21); const btcNeutral = btcFour.at(-1)!.close >= ema(btcCloses, 21) * .985;
   const trendUp = ema(fourCloses, 9) > ema(fourCloses, 21) && latestAdx(four) >= 22; const fourAdx = latestAdx(four); const out: Setup[] = [];
-  if (trendUp && current.close > resistance && volume >= 1.5) {
-    const entry = Math.max(resistance, current.close - a * .45); const stop = Math.min(support, entry - 1.35 * a); const target = entry + Math.max(resistance - support, (entry - stop) * 1.8);
+  const liquid = one.slice(-20).every(candle => candle.volume > 0) && a / current.close <= .08; const candleRange = Math.max(current.high - current.low, Number.EPSILON); const closeStrength = (current.close - current.low) / candleRange; const body = Math.abs(current.close - current.open);
+  if (btcBullish && liquid && trendUp && current.close > resistance && volume >= 1.5 && closeStrength >= .65 && body / a <= 2.2) {
+    const entry = Math.max(resistance, current.close - a * .45); const stop = Math.max(support - a * .15, entry - 1.5 * a); const target = entry + (entry - stop) * 2;
     const band = limitBand(entry, a, resistance, current.close); const extension = (current.close - resistance) / a;
     if (extension <= 1.25 && valid({ entryHigh: band.high, stop, target })) out.push({ agent: 'breakout-specialist', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 4 });
   }
-  if (trendUp && current.close > resistance && volume >= 2 && fourAdx >= 25) {
-    const entry = current.close * 1.0015; const stop = Math.max(resistance * .992, entry - 1.6 * a); const target = entry + (entry - stop) * 2.2; const extension = (current.close - resistance) / a;
-    if (extension <= .9 && valid({ entryHigh: entry, stop, target })) out.push({ agent: 'aggressive-breakout-trader', entryLow: entry, entryHigh: entry, stop, target, expiryBars: 3 });
+  const previous = one.at(-2)!; const priorToPrevious = one.slice(-22, -2); const previousResistance = Math.max(...priorToPrevious.map(candle => candle.high));
+  const followThrough = previous.close > previousResistance && current.close > previous.high && closeStrength >= .6;
+  if (btcBullish && liquid && trendUp && followThrough && volume >= 1.2 && fourAdx >= 25) {
+    const entry = current.close * 1.001; const stop = Math.max(previousResistance - a * .15, entry - 1.4 * a); const target = entry + (entry - stop) * 2.2;
+    if (valid({ entryHigh: entry, stop, target })) out.push({ agent: 'aggressive-breakout-trader', entryLow: entry, entryHigh: entry, stop, target, expiryBars: 3 });
   }
   const bb = bollinger(closes);
-  if (fourAdx < 20 && ema(fourCloses, 9) <= ema(fourCloses, 21) * 1.01 && rsi(closes) < 30 && current.close <= bb.lower) {
+  const previousRsi = rsi(closes.slice(0, -1)); const reversal = previousRsi < 32 && rsi(closes) > previousRsi && current.close > current.open && current.low <= bb.lower;
+  if (btcNeutral && liquid && fourAdx < 22 && ema(fourCloses, 9) >= ema(fourCloses, 21) * .99 && reversal) {
     const entry = current.close; const stop = entry - 1.8 * a; const band = limitBand(entry, a, entry - a * .45, entry);
     if (valid({ entryHigh: band.high, stop, target: bb.mid })) out.push({ agent: 'mean-reversion-trader', entryLow: band.low, entryHigh: band.high, stop, target: bb.mid, expiryBars: 6 });
   }
   const zone = demandZone(one, current.close); const trigger = fibConfluence(four, current.close) || bullishEngulfing(one);
-  const wyckoffHistory = one.slice(-24, -3); const [spring, reclaim, test] = one.slice(-3);
+  const wyckoffHistory = one.slice(-34, -3); const [spring, reclaim, test] = one.slice(-3);
   if (wyckoffHistory.length >= 18 && spring && reclaim && test) {
     const rangeLow = Math.min(...wyckoffHistory.map(bar => bar.low)); const rangeHigh = Math.max(...wyckoffHistory.map(bar => bar.high));
     const averageVolume = mean(wyckoffHistory.map(bar => bar.volume));
-    const ranging4h = fourAdx < 30 && Math.abs(ema(fourCloses, 9) - ema(fourCloses, 21)) / ema(fourCloses, 21) < .025;
-    const validSpring = spring.low < rangeLow && spring.close > rangeLow && spring.volume >= averageVolume * 1.1;
-    const validReclaim = reclaim.close > rangeLow && reclaim.close > reclaim.open;
-    const validTest = test.low >= spring.low && test.close > test.open && test.close >= rangeLow;
+    const ranging4h = fourAdx < 28 && Math.abs(ema(fourCloses, 9) - ema(fourCloses, 21)) / ema(fourCloses, 21) < .022;
+    const validSpring = spring.low < rangeLow && spring.close > rangeLow && spring.volume >= averageVolume * 1.3;
+    const validReclaim = reclaim.close > rangeLow && reclaim.close > reclaim.open && reclaim.close >= (reclaim.high + reclaim.low) / 2;
+    const validTest = test.low >= spring.low && test.close >= reclaim.close && test.close > test.open && test.volume <= reclaim.volume * 1.1;
     const entry = test.close; const band = limitBand(entry, a, Math.max(rangeLow, entry - a * .5), entry); const stop = spring.low - a * .4;
     const target = Math.max((rangeLow + rangeHigh) / 2, band.high + (band.high - stop) * 2);
-    if (ranging4h && validSpring && validReclaim && validTest && valid({ entryHigh: band.high, stop, target })) out.push({ agent: 'wyckoff-trader', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 8 });
+    if (btcNeutral && liquid && ranging4h && validSpring && validReclaim && validTest && valid({ entryHigh: band.high, stop, target })) out.push({ agent: 'wyckoff-trader', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 8 });
   }
-  if (zone && trigger) {
+  if (btcBullish && liquid && ema(fourCloses, 9) >= ema(fourCloses, 21) * .995 && zone && trigger && body >= a * .75) {
     const entry = Math.min(zone.high, current.close); const band = limitBand(entry, a, zone.low, entry); const stop = zone.low - a * .5; const target = Math.max(resistance, band.high + (band.high - stop) * 1.8);
     if (valid({ entryHigh: band.high, stop, target })) {
       const recent = one.slice(-7, -1); const swept = recent.at(-2)!.low < Math.min(...recent.slice(0, -2).map(c => c.low)); const choch = current.close > Math.max(...recent.slice(0, -1).map(c => c.high));
@@ -106,11 +111,11 @@ function setups(one: OHLCV[], four: OHLCV[]): Setup[] {
   return out;
 }
 
-function simulate(agent: Agent, pair: string, candles: OHLCV[], fourHour: OHLCV[]) {
+function simulate(agent: Agent, pair: string, candles: OHLCV[], fourHour: OHLCV[], btcFourHour: OHLCV[]) {
   const trades: Trade[] = []; let available = 70;
   for (let index = 70; index < candles.length - 2; index++) {
-    if (index < available) continue; const context = candles.slice(Math.max(0, index - 70), index + 1); const four = priorFourHour(fourHour, candles[index].timestamp);
-    const setup = setups(context, four).find(item => item.agent === agent); if (!setup) continue;
+    if (index < available) continue; const context = candles.slice(Math.max(0, index - 70), index + 1); const four = priorFourHour(fourHour, candles[index].timestamp); const btcFour = priorFourHour(btcFourHour, candles[index].timestamp);
+    const setup = setups(context, four, btcFour).find(item => item.agent === agent); if (!setup) continue;
     let filledAt = -1; let entry = 0;
     for (let future = index + 1; future <= Math.min(candles.length - 1, index + setup.expiryBars); future++) {
       const bar = candles[future]; const fills = setup.entryLow === setup.entryHigh ? bar.high >= setup.entryHigh : bar.low <= setup.entryHigh && bar.high >= setup.entryLow;
@@ -153,12 +158,18 @@ async function mapLimit<T, R>(items: T[], concurrency: number, task: (item: T) =
 async function main() {
   const bars = Number(process.env.BACKTEST_BARS ?? 8760); console.log(`Downloading ${bars} 1H bars and 4H context for ${PAIRS.length} pairs...`);
   const datasets = await mapLimit(PAIRS, 3, async pair => ({ pair, one: await fetchOhlcv(pair, '1h', bars), four: await fetchOhlcv(pair, '4h', Math.ceil(bars / 4) + 80) }));
-  const all = AGENTS.flatMap(agent => datasets.flatMap(data => simulate(agent, data.pair, data.one, data.four)));
+  const btcFour = datasets.find(data => data.pair === 'btcidr')?.four ?? [];
+  const all = AGENTS.flatMap(agent => datasets.flatMap(data => simulate(agent, data.pair, data.one, data.four, btcFour)));
   const split = datasets[0]?.one[Math.floor(datasets[0].one.length * .7)]?.timestamp ?? 0;
   const btc = datasets.find(data => data.pair === 'btcidr')?.one ?? [];
   const btcEntry = btc.find(candle => candle.timestamp >= split); const btcExit = btc.at(-1);
   const btcBuyAndHold = btcEntry && btcExit ? { pair: 'btcidr', startedAt: btcEntry.timestamp, endedAt: btcExit.timestamp, grossReturn: btcExit.close / btcEntry.close - 1, netReturn: btcExit.close / btcEntry.close - 1 - 2 * FEE_PER_SIDE } : null;
-  const report = { generatedAt: new Date().toISOString(), assumptions: { bars, feePerSide: FEE_PER_SIDE, pendingOrders: true, sameCandleResolution: 'stop-first (conservative)', inSampleEnd: new Date(split).toISOString() }, benchmark: { btcBuyAndHold }, byAgent: Object.fromEntries(AGENTS.map(agent => { const trades = all.filter(t => t.agent === agent); const outOfSample = trades.filter(t => t.openedAt >= split); return [agent, { all: metrics(trades), inSample: metrics(trades.filter(t => t.openedAt < split)), outOfSample: metrics(outOfSample), compoundedReturn: compoundedReturn(outOfSample), equityCurve: equityCurve(outOfSample), pairEntries: pairEntries(outOfSample) }]; })), totalTrades: all.length };
+  const universeBuyAndHold = datasets.map(data => {
+    const entry = data.one.find(candle => candle.timestamp >= split); const exit = data.one.at(-1);
+    return entry && exit ? { pair: data.pair, netReturn: exit.close / entry.close - 1 - 2 * FEE_PER_SIDE } : null;
+  }).filter((value): value is { pair: string; netReturn: number } => value !== null);
+  const equalWeightUniverse = { pairs: universeBuyAndHold.length, netReturn: mean(universeBuyAndHold.map(item => item.netReturn)), byPair: [...universeBuyAndHold].sort((left, right) => right.netReturn - left.netReturn) };
+  const report = { generatedAt: new Date().toISOString(), assumptions: { bars, feePerSide: FEE_PER_SIDE, pendingOrders: true, sameCandleResolution: 'stop-first (conservative)', inSampleEnd: new Date(split).toISOString() }, benchmark: { btcBuyAndHold, equalWeightUniverse }, byAgent: Object.fromEntries(AGENTS.map(agent => { const trades = all.filter(t => t.agent === agent); const outOfSample = trades.filter(t => t.openedAt >= split); return [agent, { all: metrics(trades), inSample: metrics(trades.filter(t => t.openedAt < split)), outOfSample: metrics(outOfSample), compoundedReturn: compoundedReturn(outOfSample), equityCurve: equityCurve(outOfSample), pairEntries: pairEntries(outOfSample) }]; })), totalTrades: all.length };
   const destination = process.env.BACKTEST_OUTPUT ?? path.resolve(process.cwd(), '..', 'outputs', `spot-paper-v2-backtest-${new Date().toISOString().slice(0, 10)}.json`);
   fs.mkdirSync(path.dirname(destination), { recursive: true }); fs.writeFileSync(destination, JSON.stringify({ ...report, trades: all }, null, 2));
   console.table(Object.entries(report.byAgent).map(([agent, value]) => ({ agent, trades: value.outOfSample.trades, winRate: `${(value.outOfSample.winRate * 100).toFixed(1)}%`, avgNet: `${(value.outOfSample.avgNetReturn * 100).toFixed(2)}%`, profitFactor: Number.isFinite(value.outOfSample.profitFactor) ? value.outOfSample.profitFactor.toFixed(2) : '∞', maxDD: `${(value.outOfSample.maxDrawdown * 100).toFixed(1)}%`, tradesPerMonth: value.all.signalsPerMonth.toFixed(1) })));
