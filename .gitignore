@@ -34,3 +34,5 @@ npm-debug.log*
 
 # AI-generated repo intelligence artifacts
 .ai/
+.vercel
+.env*

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import type { OHLCV } from '@/lib/indicators';
+import { formatWibDate, formatWibDateTime } from '@/lib/time';
 
 const WIDTH = 800;
 const HEIGHT = 300;
@@ -13,12 +14,11 @@ function formatPrice(value: number): string {
   return value.toLocaleString('id-ID', { minimumFractionDigits: 6, maximumFractionDigits: 6 });
 }
 
-function formatTime(ts: number): string {
-  // Daily candles only — a date is all the tooltip needs, no HH:MM.
-  return new Date(ts).toISOString().slice(0, 10);
+function formatTime(ts: number, timeframe: string): string {
+  return timeframe === 'Daily' ? formatWibDate(ts) : formatWibDateTime(ts);
 }
 
-export function PriceChart({ candles }: { candles: OHLCV[] }) {
+export function PriceChart({ candles, timeframe }: { candles: OHLCV[]; timeframe: string }) {
   const [hover, setHover] = useState<number | null>(null);
 
   const { bars, minPrice, maxPrice } = useMemo(() => {
@@ -120,7 +120,7 @@ export function PriceChart({ candles }: { candles: OHLCV[] }) {
 
       {hovered && (
         <div className="pointer-events-none absolute top-2 right-2 rounded-lg border border-border bg-bg/95 px-3 py-2 font-mono text-[11px] leading-relaxed text-ink shadow-lg">
-          <div className="text-ink-muted">{formatTime(hovered.candle.timestamp)}</div>
+          <div className="text-ink-muted">{formatTime(hovered.candle.timestamp, timeframe)}</div>
           <div>
             O <span className="text-ink">Rp{formatPrice(hovered.candle.open)}</span>
           </div>

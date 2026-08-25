@@ -1,3 +1,5 @@
+import { localizeUtcLabels } from './time';
+
 /**
  * Minimal, dependency-free Markdown -> HTML renderer for the briefing books
  * (.desk/briefings/*.md). Only handles the subset those files actually use:
@@ -19,8 +21,39 @@ function renderInline(text: string): string {
   return html;
 }
 
-export function renderBriefingMarkdown(markdown: string): string {
+function timestampFromHeading(line: string): number | null {
+  const match = line.match(/^###\s+(\d{4}-\d{2}-\d{2})(?:T|\s)(\d{2}:\d{2})/);
+  if (!match) return null;
+  const timestamp = new Date(`${match[1]}T${match[2]}:00Z`).getTime();
+  return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+/** Keep briefing history readable by showing its timestamped entries newest first. */
+function sortBriefingEntriesNewestFirst(markdown: string): string {
   const lines = markdown.split('\n');
+  const firstEntryIndex = lines.findIndex((line) => timestampFromHeading(line) != null);
+  if (firstEntryIndex === -1) return markdown;
+
+  const prefix = lines.slice(0, firstEntryIndex);
+  const entries: { timestamp: number; lines: string[] }[] = [];
+  let current: { timestamp: number; lines: string[] } | null = null;
+
+  for (const line of lines.slice(firstEntryIndex)) {
+    const timestamp = timestampFromHeading(line);
+    if (timestamp != null) {
+      if (current) entries.push(current);
+      current = { timestamp, lines: [line] };
+    } else {
+      current?.lines.push(line);
+    }
+  }
+  if (current) entries.push(current);
+
+  return [...prefix, ...entries.sort((a, b) => b.timestamp - a.timestamp).flatMap((entry) => entry.lines)].join('\n');
+}
+
+export function renderBriefingMarkdown(markdown: string): string {
+  const lines = localizeUtcLabels(sortBriefingEntriesNewestFirst(markdown)).split('\n');
   const blocks: string[] = [];
   let listBuffer: string[] = [];
   let paraBuffer: string[] = [];

@@ -9,6 +9,7 @@ import {
   type AgentSummary,
 } from '@/lib/desk-data';
 import type { BadgeTone } from '@/components/StatBadge';
+import { formatWibDateTime, formatWibTime } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
@@ -167,7 +168,7 @@ export default async function DeskPage() {
           <p className="mt-1 font-mono text-xs text-ink-faint">
             last cycle{' '}
             <span className="text-ink-muted font-medium">
-              {snapshot.lastCycle}
+              {formatWibDateTime(snapshot.lastCycle)}
             </span>{' '}
             · mode {snapshot.deskMode}
           </p>
@@ -234,11 +235,7 @@ export default async function DeskPage() {
               </h2>
 
               <span className="font-mono text-[10px] sm:text-[11px] text-ink-faint">
-                {snapshot.lastCycle.slice(
-                  11,
-                  19
-                )}{' '}
-                UTC
+                {formatWibTime(snapshot.lastCycle)}
               </span>
             </div>
 
@@ -559,7 +556,7 @@ export default async function DeskPage() {
         </div>
 
         {/* Gemini AI Console */}
-        <AiConsole snapshot={snapshot} />
+        <AiConsole />
       </section>
 
       <LiveTicker />

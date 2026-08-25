@@ -4,7 +4,11 @@ export interface ExplorePairRow extends PairMeta {
   rank: number | null;
   marketCapUsd: number | null;
   priceIdr: number | null;
-  changePct24h: number | null;
+  /** Global CoinGecko move, explicitly kept separate from Indodax-local data. */
+  globalChangePct24h: number | null;
+  volumeIdr: number | null;
+  highIdr: number | null;
+  lowIdr: number | null;
 }
 
 interface CoinGeckoMarketEntry {
@@ -13,6 +17,25 @@ interface CoinGeckoMarketEntry {
   market_cap_rank: number | null;
   market_cap: number | null;
   price_change_percentage_24h: number | null;
+}
+
+interface IndodaxTicker {
+  last?: string;
+  high?: string;
+  low?: string;
+  vol_idr?: string;
+}
+
+interface IndodaxTickerStats {
+  priceIdr: number | null;
+  volumeIdr: number | null;
+  highIdr: number | null;
+  lowIdr: number | null;
+}
+
+function asNumber(value: string | undefined): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function chunk<T>(items: T[], size: number): T[][] {
@@ -33,6 +56,27 @@ export async function fetchBulkIdrPrices(): Promise<Record<string, number>> {
       if (!Number.isNaN(price)) out[key] = price;
     }
     return out;
+  } catch {
+    return {};
+  }
+}
+
+async function fetchExploreTickerStats(): Promise<Record<string, IndodaxTickerStats>> {
+  try {
+    const res = await fetch('https://indodax.com/api/ticker_all', { next: { revalidate: 60 } });
+    if (!res.ok) return {};
+    const data = (await res.json()) as { tickers: Record<string, IndodaxTicker> };
+    return Object.fromEntries(
+      Object.entries(data.tickers ?? {}).map(([key, ticker]) => [
+        key,
+        {
+          priceIdr: asNumber(ticker.last),
+          volumeIdr: asNumber(ticker.vol_idr),
+          highIdr: asNumber(ticker.high),
+          lowIdr: asNumber(ticker.low),
+        },
+      ]),
+    );
   } catch {
     return {};
   }
@@ -67,17 +111,21 @@ async function fetchMarketData(coingeckoIds: string[]): Promise<Map<string, Coin
  * back null for everything but the page still renders with symbol/name/price.
  */
 export async function fetchExplorePairs(pairs: PairMeta[]): Promise<ExplorePairRow[]> {
-  const [prices, marketMap] = await Promise.all([fetchBulkIdrPrices(), fetchMarketData(pairs.map((p) => p.coingeckoId))]);
+  const [tickerStats, marketMap] = await Promise.all([fetchExploreTickerStats(), fetchMarketData(pairs.map((p) => p.coingeckoId))]);
 
   const rows: ExplorePairRow[] = pairs.map((p) => {
     const market = marketMap.get(p.coingeckoId);
+    const ticker = tickerStats[`${p.symbol}_idr`];
     return {
       ...p,
       name: market?.name ?? p.name,
       rank: market?.market_cap_rank ?? null,
       marketCapUsd: market?.market_cap ?? null,
-      priceIdr: prices[`${p.symbol}_idr`] ?? null,
-      changePct24h: market?.price_change_percentage_24h ?? null,
+      priceIdr: ticker?.priceIdr ?? null,
+      volumeIdr: ticker?.volumeIdr ?? null,
+      highIdr: ticker?.highIdr ?? null,
+      lowIdr: ticker?.lowIdr ?? null,
+      globalChangePct24h: market?.price_change_percentage_24h ?? null,
     };
   });
 

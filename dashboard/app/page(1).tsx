@@ -103,7 +103,7 @@ export default async function DeskPage() {
           language="json"
           code={JSON.stringify(snapshot.riskLimits ?? {}, null, 2)}
         />
-        <AiConsole snapshot={snapshot} />
+        <AiConsole />
       </section>
 
       <LiveTicker />

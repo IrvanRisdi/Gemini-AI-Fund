@@ -6,6 +6,9 @@ export interface CoinInfo {
   marketCapUsd: number | null;
   volume24hUsd: number | null;
   circulatingSupply: number | null;
+  totalSupply: number | null;
+  maxSupply: number | null;
+  fullyDilutedValuationUsd: number | null;
   athUsd: number | null;
   athDate: string | null;
   homepage: string | null;
@@ -31,6 +34,9 @@ export async function fetchCoinInfo(coingeckoId: string): Promise<CoinInfo | nul
       marketCapUsd: data.market_data?.market_cap?.usd ?? null,
       volume24hUsd: data.market_data?.total_volume?.usd ?? null,
       circulatingSupply: data.market_data?.circulating_supply ?? null,
+      totalSupply: data.market_data?.total_supply ?? null,
+      maxSupply: data.market_data?.max_supply ?? null,
+      fullyDilutedValuationUsd: data.market_data?.fully_diluted_valuation?.usd ?? null,
       athUsd: data.market_data?.ath?.usd ?? null,
       athDate: data.market_data?.ath_date?.usd ?? null,
       homepage: data.links?.homepage?.[0] || null,

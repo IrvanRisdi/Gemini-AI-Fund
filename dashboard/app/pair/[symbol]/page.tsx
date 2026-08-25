@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { getPair } from '@/lib/pairs';
 import { findPairBySymbol } from '@/lib/all-pairs';
 import { fetchOhlcv } from '@/lib/indodax';
 import { fetchCoinInfo } from '@/lib/coingecko';
+import { fetchCoinNews } from '@/lib/news';
 import { computeTechnicalSnapshot } from '@/lib/technical';
 import { computeSmcSnapshot } from '@/lib/smc';
 import { computeFibonacci } from '@/lib/fibonacci';
@@ -11,6 +13,7 @@ import { scoreMovingAverage, scoreRsi, scoreBreakout, scoreSmc, scoreFibonacci, 
 import { PriceChart } from '@/components/PriceChart';
 import { TechnicalPanel } from '@/components/TechnicalPanel';
 import { CoinInfoPanel } from '@/components/CoinInfoPanel';
+import { CoinNewsPanel } from '@/components/CoinNewsPanel';
 import { HistoricalTable } from '@/components/HistoricalTable';
 import { AiAnalysisPanel } from '@/components/AiAnalysisPanel';
 import { AnalysisGrid } from '@/components/AnalysisGrid';
@@ -21,8 +24,25 @@ import { StatBadge } from '@/components/StatBadge';
 // live prices/candles per request, not bake in build-time snapshots.
 export const dynamic = 'force-dynamic';
 
-export default async function PairPage({ params }: { params: Promise<{ symbol: string }> }) {
+const TIMEFRAMES = {
+  '1h': { label: '1H', candles: 160 },
+  '4h': { label: '4H', candles: 150 },
+  '1d': { label: 'Daily', candles: 120 },
+} as const;
+
+type Timeframe = keyof typeof TIMEFRAMES;
+
+export default async function PairPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ symbol: string }>;
+  searchParams: Promise<{ tf?: string }>;
+}) {
   const { symbol } = await params;
+  const { tf } = await searchParams;
+  const timeframe: Timeframe = tf === '1h' || tf === '4h' || tf === '1d' ? tf : '4h';
+  const timeframeMeta = TIMEFRAMES[timeframe];
   // Fast path: the 8 pairs the paper-trading desk actually holds books in.
   // Fallback: the other ~470 active Indodax IDR pairs (research/browsing only).
   const pair = getPair(symbol) ?? (await findPairBySymbol(symbol));
@@ -31,13 +51,14 @@ export default async function PairPage({ params }: { params: Promise<{ symbol: s
   // .catch(() => []) covers both "no data for this pair" and transient
   // Indodax failures (e.g. a 429 rate-limit) — either way, degrade to the
   // same empty-state message below instead of throwing an unhandled 500.
-  const [dailyCandles, technicalCandles, coinInfo] = await Promise.all([
-    fetchOhlcv(pair.indodaxId, '1d', 60).catch(() => []),
-    fetchOhlcv(pair.indodaxId, '15m', 60).catch(() => []),
+  const [candles, dailyCandles, coinInfo, news] = await Promise.all([
+    fetchOhlcv(pair.indodaxId, timeframe, timeframeMeta.candles).catch(() => []),
+    fetchOhlcv(pair.indodaxId, '1d', 2).catch(() => []),
     fetchCoinInfo(pair.coingeckoId),
+    fetchCoinNews(pair.name, pair.symbol),
   ]);
 
-  if (dailyCandles.length === 0) {
+  if (candles.length === 0) {
     return (
       <main className="mx-auto max-w-6xl px-6 py-10">
         <header className="mb-6">
@@ -57,14 +78,15 @@ export default async function PairPage({ params }: { params: Promise<{ symbol: s
     );
   }
 
-  const snapshot = computeTechnicalSnapshot(technicalCandles);
-  const smc = computeSmcSnapshot(technicalCandles);
-  const fib = computeFibonacci(technicalCandles);
-  const breakout = computeBreakout(technicalCandles);
+  const snapshot = computeTechnicalSnapshot(candles);
+  const smc = computeSmcSnapshot(candles);
+  const fib = computeFibonacci(candles);
+  const breakout = computeBreakout(candles);
 
-  const last = dailyCandles[dailyCandles.length - 1];
+  const last = candles[candles.length - 1];
   const prev = dailyCandles[dailyCandles.length - 2];
-  const changePct = prev ? ((last.close - prev.close) / prev.close) * 100 : 0;
+  const dailyLast = dailyCandles[dailyCandles.length - 1];
+  const changePct = prev && dailyLast ? ((dailyLast.close - prev.close) / prev.close) * 100 : 0;
 
   const hasFullAnalysis = snapshot && smc && fib && breakout;
   const composite = hasFullAnalysis
@@ -91,12 +113,21 @@ export default async function PairPage({ params }: { params: Promise<{ symbol: s
       </header>
 
       <section className="rounded-xl border border-border bg-surface p-5">
-        <h2 className="mb-3 font-sans text-sm font-medium text-ink-muted">Price Chart · Daily</h2>
-        <PriceChart candles={dailyCandles} />
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-sans text-sm font-medium text-ink-muted">Price Chart · {timeframeMeta.label}</h2>
+          <nav className="flex rounded-lg border border-border p-1" aria-label="Pilih timeframe">
+            {(Object.entries(TIMEFRAMES) as [Timeframe, (typeof TIMEFRAMES)[Timeframe]][]).map(([value, meta]) => (
+              <Link key={value} href={`/pair/${pair.symbol}?tf=${value}`} scroll={false} className={`rounded-md px-3 py-1 font-mono text-xs ${timeframe === value ? 'bg-accent-bg text-accent' : 'text-ink-muted hover:text-ink'}`}>
+                {meta.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+        <PriceChart candles={candles} timeframe={timeframeMeta.label} />
       </section>
 
       <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {snapshot ? <TechnicalPanel snapshot={snapshot} /> : <div className="rounded-xl border border-border bg-surface p-5 text-sm text-ink-muted">Not enough candle history yet for technical analysis.</div>}
+        {snapshot ? <TechnicalPanel snapshot={snapshot} timeframe={timeframeMeta.label} /> : <div className="rounded-xl border border-border bg-surface p-5 text-sm text-ink-muted">Data candle belum cukup untuk analisis teknikal.</div>}
         <CoinInfoPanel info={coinInfo} />
       </section>
 
@@ -108,10 +139,21 @@ export default async function PairPage({ params }: { params: Promise<{ symbol: s
       )}
 
       <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <HistoricalTable candles={dailyCandles} />
+        <HistoricalTable candles={candles} timeframe={timeframeMeta.label} />
         {hasFullAnalysis && composite && plan && (
           <AiAnalysisPanel symbol={pair.symbol} name={pair.name} snapshot={snapshot} smc={smc} fib={fib} breakout={breakout} composite={composite} plan={plan} />
         )}
+      </section>
+
+      <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <CoinNewsPanel news={news} />
+        <div className="rounded-xl border border-border bg-surface p-5">
+          <h3 className="font-sans text-lg font-semibold text-ink">Cara Membaca Halaman Ini</h3>
+          <div className="mt-3 space-y-2 font-sans text-sm leading-relaxed text-ink-muted">
+            <p><span className="font-medium text-ink">Daily</span> untuk bias dan level besar, <span className="font-medium text-ink">4H</span> untuk rencana utama, dan <span className="font-medium text-ink">1H</span> untuk timing setelah setup ada.</p>
+            <p>Berita dan fundamental adalah konteks. Rencana trading hanya berbasis data harga pada timeframe aktif dan bukan rekomendasi keuangan.</p>
+          </div>
+        </div>
       </section>
     </main>
   );

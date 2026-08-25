@@ -146,14 +146,16 @@ export function computeComposite(verdicts: AnalysisVerdict[]): CompositeAnalysis
   const bullishCount = verdicts.filter((v) => v.score > 0).length;
   const bearishCount = verdicts.filter((v) => v.score < 0).length;
   const neutralCount = verdicts.length - bullishCount - bearishCount;
-  const bias: CompositeAnalysis['bias'] = totalScore >= 2 ? 'bullish' : totalScore <= -2 ? 'bearish' : 'neutral';
+  // Factors intentionally do not need unanimous agreement. A positive/negative
+  // balance establishes a directional bias; readiness is decided separately.
+  const bias: CompositeAnalysis['bias'] = totalScore > 0 ? 'bullish' : totalScore < 0 ? 'bearish' : 'neutral';
   const alignedCount = bias === 'bullish' ? bullishCount : bias === 'bearish' ? bearishCount : 0;
   return { verdicts, totalScore, bias, bullishCount, bearishCount, neutralCount, alignedCount };
 }
 
 export interface TradingPlan {
   bias: 'bullish' | 'bearish' | 'neutral';
-  verdict: 'trade' | 'wait';
+  verdict: 'trade' | 'conditional' | 'wait';
   reasoning: string;
   entryZone?: [number, number];
   stop?: number;
@@ -180,11 +182,11 @@ export function buildTradingPlan(
     };
   }
 
-  if (alignedCount < 3) {
+  if (alignedCount < 2) {
     return {
       bias,
       verdict: 'wait',
-      reasoning: `Only ${alignedCount}/5 analyses support the ${bias} case — that's below the 3-of-5 confluence bar this desk's agents require before sizing a trade. Wait for more alignment rather than forcing an entry.`,
+      reasoning: `Baru ${alignedCount} faktor yang mendukung bias ${bias}. Belum cukup untuk menyusun setup yang bertanggung jawab; tunggu struktur atau momentum yang lebih jelas.`,
     };
   }
 
@@ -195,21 +197,45 @@ export function buildTradingPlan(
       (v): v is number => typeof v === 'number' && v < close
     );
     const stop = (stopCandidates.length ? Math.max(...stopCandidates) : close - tech.atr14 * 2) - tech.atr14 * 0.3;
-    const entryHigh = close;
-    const entryLow = Math.max(stop + tech.atr14 * 0.3, Math.min(close, breakout.level));
+    let entryHigh = close;
+    let entryLow = Math.max(stop + tech.atr14 * 0.3, Math.min(close, breakout.level));
     const target1 = tech.resistance20 > close ? tech.resistance20 : close + (close - stop) * 1.5;
-    const target2 = close + (target1 - close) * 1.8;
+    const rrAtMarket = (target1 - entryHigh) / (entryHigh - stop);
+
+    // A nearby resistance with a wide invalidation is not a valid plan. Rather
+    // than displaying a misleading RR (e.g. 1:0.04), calculate the highest
+    // pullback entry that preserves at least 1:1.5 to that structural target.
+    const needsPullback = rrAtMarket < 1.5;
+    if (needsPullback) {
+      const maxEntryForMinRr = (target1 + 1.5 * stop) / 2.5;
+      if (maxEntryForMinRr <= stop + tech.atr14 * 0.3) {
+        return {
+          bias,
+          verdict: 'wait',
+          reasoning: `Resistance Rp${target1.toLocaleString('id-ID')} terlalu dekat dibanding level invalidasi. Tidak ada entry yang memberikan rasio risiko/imbal hasil minimum 1:1,5; tunggu struktur harga baru.`,
+        };
+      }
+      entryHigh = maxEntryForMinRr;
+      entryLow = Math.max(stop + tech.atr14 * 0.3, entryHigh - tech.atr14 * 0.25);
+    }
+    const target2 = entryHigh + (entryHigh - stop) * 2.5;
+    const verdict: TradingPlan['verdict'] = alignedCount >= 3 && !needsPullback ? 'trade' : 'conditional';
 
     return {
       bias,
-      verdict: 'trade',
-      reasoning: `${alignedCount}/5 analyses align bullish — moving average trend, RSI, breakout structure, SMC zone/CHoCH, and Fibonacci positioning are pointing the same direction. This is the kind of confluence this desk's agents would size a real entry on.`,
+      verdict,
+      reasoning:
+        needsPullback
+          ? `${alignedCount} faktor mendukung bias bullish, tetapi entry pada harga sekarang tidak memenuhi RR minimum 1:1,5. Tunggu pullback ke zona entry sebelum mempertimbangkan setup.`
+          : alignedCount >= 3
+          ? `${alignedCount} faktor mendukung bias bullish. Setup aktif selama harga bertahan di atas level invalidasi.`
+          : `${alignedCount} faktor mendukung bias bullish, namun belum sepenuhnya selaras. Ini setup bersyarat: tunggu penutupan candle dan volume mengonfirmasi sebelum entry.`,
       entryZone: [Math.min(entryLow, entryHigh), Math.max(entryLow, entryHigh)],
       stop,
       target1,
       target2,
-      riskRewardT1: (target1 - close) / (close - stop),
-      riskRewardT2: (target2 - close) / (close - stop),
+      riskRewardT1: (target1 - entryHigh) / (entryHigh - stop),
+      riskRewardT2: (target2 - entryHigh) / (entryHigh - stop),
     };
   }
 
@@ -218,20 +244,40 @@ export function buildTradingPlan(
     (v): v is number => typeof v === 'number' && v > close
   );
   const stop = (stopCandidates.length ? Math.min(...stopCandidates) : close + tech.atr14 * 2) + tech.atr14 * 0.3;
-  const entryLow = close;
-  const entryHigh = Math.min(stop - tech.atr14 * 0.3, Math.max(close, breakout.level));
+  let entryLow = close;
+  let entryHigh = Math.min(stop - tech.atr14 * 0.3, Math.max(close, breakout.level));
   const target1 = tech.support20 < close ? tech.support20 : close - (stop - close) * 1.5;
-  const target2 = close - (close - target1) * 1.8;
+  const rrAtMarket = (entryLow - target1) / (stop - entryLow);
+  const needsPullback = rrAtMarket < 1.5;
+  if (needsPullback) {
+    const minEntryForMinRr = (target1 + 1.5 * stop) / 2.5;
+    if (minEntryForMinRr >= stop - tech.atr14 * 0.3) {
+      return {
+        bias,
+        verdict: 'wait',
+        reasoning: `Support Rp${target1.toLocaleString('id-ID')} terlalu dekat dibanding level invalidasi. Tidak ada entry yang memberikan rasio risiko/imbal hasil minimum 1:1,5; tunggu struktur harga baru.`,
+      };
+    }
+    entryLow = minEntryForMinRr;
+    entryHigh = Math.min(stop - tech.atr14 * 0.3, entryLow + tech.atr14 * 0.25);
+  }
+  const target2 = entryLow - (stop - entryLow) * 2.5;
+  const verdict: TradingPlan['verdict'] = alignedCount >= 3 && !needsPullback ? 'trade' : 'conditional';
 
   return {
     bias,
-    verdict: 'trade',
-    reasoning: `${alignedCount}/5 analyses align bearish — moving average trend, RSI, breakout structure, SMC zone/CHoCH, and Fibonacci positioning are pointing the same direction. This is the kind of confluence this desk's agents would size a real entry on.`,
+    verdict,
+    reasoning:
+      needsPullback
+        ? `${alignedCount} faktor mendukung bias bearish, tetapi entry pada harga sekarang tidak memenuhi RR minimum 1:1,5. Tunggu pullback ke zona entry sebelum mempertimbangkan setup.`
+        : alignedCount >= 3
+        ? `${alignedCount} faktor mendukung bias bearish. Setup aktif selama harga bertahan di bawah level invalidasi.`
+        : `${alignedCount} faktor mendukung bias bearish, namun belum sepenuhnya selaras. Ini setup bersyarat: tunggu penutupan candle dan volume mengonfirmasi sebelum entry.`,
     entryZone: [Math.min(entryLow, entryHigh), Math.max(entryLow, entryHigh)],
     stop,
     target1,
     target2,
-    riskRewardT1: (close - target1) / (stop - close),
-    riskRewardT2: (close - target2) / (stop - close),
+    riskRewardT1: (entryLow - target1) / (stop - entryLow),
+    riskRewardT2: (entryLow - target2) / (stop - entryLow),
   };
 }

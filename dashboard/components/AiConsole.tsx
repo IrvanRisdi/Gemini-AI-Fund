@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import type { DeskSnapshot } from '@/lib/desk-data';
 
 function formatInline(text: string): string {
   if (!text) return '';
@@ -110,7 +109,7 @@ function renderFormattedText(text: string) {
   );
 }
 
-export function AiConsole({ snapshot }: { snapshot: DeskSnapshot }) {
+export function AiConsole() {
   const [question, setQuestion] = useState('');
   const [displayed, setDisplayed] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -127,7 +126,7 @@ export function AiConsole({ snapshot }: { snapshot: DeskSnapshot }) {
       const res = await fetch('/api/ai-console', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: trimmed, snapshot }),
+        body: JSON.stringify({ question: trimmed }),
       });
 
       const data = await res.json();
@@ -150,6 +149,10 @@ export function AiConsole({ snapshot }: { snapshot: DeskSnapshot }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {}
+  }
+
+  function usePrompt(prompt: string) {
+    setQuestion(prompt);
   }
 
   return (
@@ -194,6 +197,24 @@ export function AiConsole({ snapshot }: { snapshot: DeskSnapshot }) {
             'Kirim'
           )}
         </button>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5">
+        {[
+          'Buat ringkasan kondisi desk dan risiko utamanya saat ini.',
+          'Analisis sinyal terbaru: mana yang saling mengonfirmasi atau bertentangan?',
+          'Jelaskan seluruh posisi terbuka dan level risiko yang perlu dipantau.',
+        ].map((prompt) => (
+          <button
+            key={prompt}
+            type="button"
+            disabled={isLoading}
+            onClick={() => usePrompt(prompt)}
+            className="rounded-full border border-border bg-bg/60 px-2.5 py-1 font-mono text-[10px] text-ink-muted transition-colors hover:border-accent/50 hover:text-accent disabled:opacity-50"
+          >
+            {prompt}
+          </button>
+        ))}
       </div>
 
       {displayed && (

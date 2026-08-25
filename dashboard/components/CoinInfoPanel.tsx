@@ -16,7 +16,7 @@ export function CoinInfoPanel({ info }: { info: CoinInfo | null }) {
   if (!info) {
     return (
       <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
-        <h3 className="font-sans text-lg font-semibold text-ink">Coin Info</h3>
+        <h3 className="font-sans text-lg font-semibold text-ink">Fundamental Koin</h3>
         <StatBadge tone="warning">unavailable</StatBadge>
         <p className="font-sans text-xs text-ink-muted italic">
           CoinGecko's public API couldn't be reached from this server right now. This panel degrades gracefully — everything
@@ -39,15 +39,25 @@ export function CoinInfoPanel({ info }: { info: CoinInfo | null }) {
 
       {description && <p className="font-sans text-xs leading-relaxed text-ink-muted italic">{description}.</p>}
 
-      <div className="grid grid-cols-2 gap-2.5">
-        <div className="rounded-lg border border-border bg-bg/60 px-3 py-2.5">
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="rounded-lg border border-border bg-bg/60 px-3 py-2.5">
           <span className="block font-mono text-[10px] tracking-wide text-ink-muted uppercase">Market Cap</span>
           <span className="font-mono text-sm font-semibold text-ink">{info.marketCapUsd ? formatUsd(info.marketCapUsd) : '—'}</span>
-        </div>
-        <div className="rounded-lg border border-border bg-bg/60 px-3 py-2.5">
+          </div>
+          <div className="rounded-lg border border-border bg-bg/60 px-3 py-2.5">
+            <span className="block font-mono text-[10px] tracking-wide text-ink-muted uppercase">FDV</span>
+            <span className="font-mono text-sm font-semibold text-ink">{info.fullyDilutedValuationUsd ? formatUsd(info.fullyDilutedValuationUsd) : '—'}</span>
+          </div>
+          <div className="rounded-lg border border-border bg-bg/60 px-3 py-2.5">
           <span className="block font-mono text-[10px] tracking-wide text-ink-muted uppercase">24h Volume</span>
           <span className="font-mono text-sm font-semibold text-ink">{info.volume24hUsd ? formatUsd(info.volume24hUsd) : '—'}</span>
-        </div>
+          </div>
+          <div className="rounded-lg border border-border bg-bg/60 px-3 py-2.5">
+            <span className="block font-mono text-[10px] tracking-wide text-ink-muted uppercase">Max Supply</span>
+            <span className="font-mono text-sm font-semibold text-ink">
+              {info.maxSupply ? Math.round(info.maxSupply).toLocaleString('en-US') : info.totalSupply ? Math.round(info.totalSupply).toLocaleString('en-US') : '—'}
+            </span>
+          </div>
         <div className="rounded-lg border border-border bg-bg/60 px-3 py-2.5">
           <span className="block font-mono text-[10px] tracking-wide text-ink-muted uppercase">Circulating Supply</span>
           <span className="font-mono text-sm font-semibold text-ink">

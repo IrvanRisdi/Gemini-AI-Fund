@@ -1,126 +1,152 @@
 import { NextResponse } from 'next/server';
+import { getDeskSnapshot } from '@/lib/desk-data';
+import { formatWibDateTime } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
+
+const DEFAULT_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'] as const;
+const MAX_QUESTION_LENGTH = 2_000;
+const MAX_OUTPUT_TOKENS = 1_600;
+
+function formatIdr(value: number): string {
+  return `Rp${Math.round(value).toLocaleString('id-ID')}`;
+}
+
+function getModelCandidates(): string[] {
+  const configured = (process.env.GEMINI_MODELS || '')
+    .split(',')
+    .map((model) => model.trim())
+    .filter(Boolean);
+
+  return configured.length > 0 ? configured : [...DEFAULT_MODELS];
+}
+
+function buildDeskContext(snapshot: Awaited<ReturnType<typeof getDeskSnapshot>>): string {
+  const signals = snapshot.latestScanCandidates?.length
+    ? snapshot.latestScanCandidates
+        .map((signal) => `- ${signal.pair.toUpperCase()} | ${signal.agent} | ${signal.reason}`)
+        .join('\n')
+    : '- Tidak ada sinyal pada siklus terakhir.';
+
+  const agents = snapshot.agents
+    .map((agent) => {
+      const positions = agent.openPositions.length
+        ? agent.openPositions
+            .map((position, index) => {
+              const pair = agent.openPairs[index] ?? 'PAIR TIDAK DIKETAHUI';
+              return `${position.side.toUpperCase()} ${pair}, entry ${formatIdr(position.entryPrice)}, stop ${formatIdr(position.stopPrice)}${position.targetPrice ? `, target ${formatIdr(position.targetPrice)}` : ''}`;
+            })
+            .join('; ')
+        : 'FLAT';
+      return `- ${agent.slug}: ekuitas ${formatIdr(agent.equity)}, kas ${formatIdr(agent.cash)}, floating ${formatIdr(agent.unrealizedPnlIdr)}, posisi ${positions}. Aksi/data terakhir: ${agent.lastAction}`;
+    })
+    .join('\n');
+
+  return `
+Waktu data: ${formatWibDateTime(snapshot.lastCycle)}
+Mode: ${snapshot.deskMode} (paper trading, bukan eksekusi uang riil)
+Total equity: ${formatIdr(snapshot.totalEquity)}
+Total kas: ${formatIdr(snapshot.totalCash)}
+Total floating P&L: ${formatIdr(snapshot.totalUnrealizedPnl)}
+Jumlah strategi aktif: ${snapshot.agents.length}
+
+SINYAL TERBARU
+${signals}
+
+BOOK STRATEGI AKTIF
+${agents}
+`.trim();
+}
 
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const question = body.question;
-    const snapshot = body.snapshot;
+    const question = typeof body.question === 'string' ? body.question.trim() : '';
 
-    if (!question || typeof question !== 'string') {
-      return NextResponse.json({ error: 'Pertanyaan tidak valid' }, { status: 400 });
+    if (!question || question.length > MAX_QUESTION_LENGTH) {
+      return NextResponse.json({ error: 'Pertanyaan harus berisi 1–2.000 karakter.' }, { status: 400 });
     }
 
-    // 1. Ambil dan bersihkan API Key dari Vercel Environment Variables
-    const rawApiKey = process.env.GEMINI_API_KEY || '';
-    const apiKey = rawApiKey.trim().replace(/^["']|["']$/g, '');
-
+    const apiKey = (process.env.GEMINI_API_KEY || '').trim().replace(/^["']|["']$/g, '');
     if (!apiKey) {
       return NextResponse.json({
-        response: `⚠️ **GEMINI_API_KEY belum disetel di Vercel.**\n\nSilakan buka Vercel -> Settings -> Environment Variables -> Tambahkan \`GEMINI_API_KEY\`, lalu klik Redeploy.`,
+        response: '⚠️ **GEMINI_API_KEY belum disetel di Vercel.** Tambahkan environment variable tersebut, lalu redeploy.',
       });
     }
 
-    const systemPrompt = `
-Anda adalah Gemini Desk Analyst (Chief AI Investment Officer) untuk platform kuantitatif "Gemini AI-Fund".
-Anda mengawasi 50 persona agen multi-strategi di pasar kripto IDR Indodax.
+    // The server is the source of truth: never let a browser-provided portfolio snapshot influence analysis.
+    const snapshot = await getDeskSnapshot();
+    const modelCandidates = getModelCandidates();
+    const systemInstruction = `
+Anda adalah Gemini Desk Analyst untuk Gemini AI-Fund, sebuah dashboard paper-trading kripto IDR.
+Jawab hanya berdasarkan konteks desk di bawah. Jangan mengarang harga terkini, berita, posisi, performa, atau konfirmasi agent yang tidak ada di data.
+Jika informasi tidak tersedia atau stale, katakan dengan eksplisit dan jelaskan data tambahan yang diperlukan.
+Semua waktu harus ditulis dalam WIB. Selalu bedakan fakta desk, inferensi, dan asumsi.
 
-=== DATA PORTOFOLIO DESK REAL-TIME ===
-* Last Cycle: ${snapshot?.lastCycle || 'N/A'}
-* Mode: ${snapshot?.deskMode || 'paper (local-simulation)'}
-* Total Equity (Mark-to-Market): Rp${Math.round(snapshot?.totalEquity || 0).toLocaleString('id-ID')}
-* Total Saldo Kas: Rp${Math.round(snapshot?.totalCash || 0).toLocaleString('id-ID')}
-* Total Floating PnL: Rp${Math.round(snapshot?.totalUnrealizedPnl || 0).toLocaleString('id-ID')}
-* Total Agen Aktif: ${snapshot?.agents?.length || 0} Agen
-* Sinyal Terakhir Terdeteksi: ${JSON.stringify(snapshot?.latestScanCandidates || [], null, 2)}
+Gunakan Bahasa Indonesia profesional dan langsung. Untuk pertanyaan analitis, gunakan format Markdown berikut (hilangkan bagian yang tidak relevan):
+### Jawaban Singkat
+Ringkasan langsung 2–4 kalimat.
+### Bukti dari Desk
+- Angka, sinyal, posisi, atau timestamp yang mendukung jawaban.
+### Analisis
+1. Penalaran utama.
+2. Konfluensi atau konflik antar-sinyal.
+### Risiko & Batasan
+- Risiko posisi, kualitas data, dan fakta bahwa ini paper trading.
+### Langkah Pemantauan
+- Kondisi spesifik yang perlu dipantau; jangan memberi instruksi beli/jual yang pasti.
 
-=== STATUS BUKU & POSISI AGEN ===
-${(snapshot?.agents || [])
-  .map(
-    (a: any) =>
-      `• ${a.slug} (${a.status}): Ekuitas Rp${Math.round(a.equity || a.balance || 0).toLocaleString('id-ID')}, Kas Rp${Math.round(a.cash || 0).toLocaleString('id-ID')}, Posisi: ${
-        a.openPositions && a.openPositions.length > 0
-          ? a.openPositions.map((p: any) => `${p.side?.toUpperCase()} @ Rp${p.entryPrice?.toLocaleString('id-ID')}`).join(', ')
-          : 'FLAT (Tidak ada posisi)'
-      }, Aksi: ${a.lastAction}`
-  )
-  .join('\n')}
+Untuk pertanyaan sederhana, tetap jawab lengkap tetapi ringkas. Jangan menyebut jumlah 50 agent; gunakan hanya strategi aktif pada konteks.
 
-=== PANDUAN ANALISIS (SKILL GEMINI ANALYST) ===
-1. Gunakan Bahasa Indonesia yang lugas, presisi, berwibawa, dan profesional.
-2. Langsung jawab inti pertanyaan tanpa basa-basi pembuka ("Halo saya Gemini...", "Tentu saya akan bantu...").
-3. Jika ditanya tentang posisi terbuka, sebutkan nama koin, jenis posisi (LONG/SHORT), harga masuk, dan alasan strategi secara singkat.
-4. Jika ditanya tentang sinyal pasar, analisis konfluensi multi-agen (misal: konfirmasi breakout volume + liquidity sweep SMC).
-5. Format jawaban secara bersih: gunakan poin nomor (1. 2. 3.) atau bullet sederhana (- ), dan tebal (**teks**) pada angka kunci. Hindari simbol pagar bertumpuk.
-`;
-
-    // Daftar Model Resmi Google AI Studio Sesuai Dokumentasi
-    const modelCandidates = [
-      // 1. Model Generasi Terbaru (Prioritas Utama)
-      'gemini-3.5-flash-lite',
-      'gemini-3.1-flash-lite',
-      // 2. Seri Gemini 2.5 (High Performance & Low Latency)
-      'gemini-2.5-flash-lite',
-      'gemini-2.5-flash',
-      'gemini-2.5-pro',
-      // 3. Seri Gemini 2.0 & Flash Baselines
-      'gemini-2.0-flash',
-      'gemini-1.5-flash-latest',
-      'gemini-1.5-flash',
-      'gemini-1.5-pro',
-      'gemini-pro',
-    ];
+KONTEKS DESK TERPERCAYA
+${buildDeskContext(snapshot)}
+`.trim();
 
     let answer = '';
-    let apiErrorMessage = '';
+    let selectedModel = '';
+    let lastError = '';
 
     for (const model of modelCandidates) {
       try {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
         const res = await fetch(endpoint, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': apiKey,
-          },
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+          signal: AbortSignal.timeout(25_000),
           body: JSON.stringify({
-            contents: [
-              {
-                role: 'user',
-                parts: [{ text: `${systemPrompt}\n\nUser Question: ${question}` }],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.25,
-              maxOutputTokens: 1000,
-            },
+            systemInstruction: { parts: [{ text: systemInstruction }] },
+            contents: [{ role: 'user', parts: [{ text: question }] }],
+            generationConfig: { temperature: 0.2, maxOutputTokens: MAX_OUTPUT_TOKENS },
           }),
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          answer = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          if (answer) break;
-        } else {
-          const errJson = await res.json().catch(() => null);
-          apiErrorMessage = errJson?.error?.message || `HTTP ${res.status} on ${model}`;
+        if (!res.ok) {
+          const error = await res.json().catch(() => null);
+          lastError = error?.error?.message || `HTTP ${res.status} pada ${model}`;
+          continue;
         }
-      } catch (e: any) {
-        apiErrorMessage = e?.message || 'Network fetch error';
+
+        const data = await res.json();
+        answer = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+        if (answer) {
+          selectedModel = model;
+          break;
+        }
+        lastError = `Respons kosong dari ${model}`;
+      } catch (error: unknown) {
+        lastError = error instanceof Error ? error.message : `Koneksi ke ${model} gagal`;
       }
     }
 
     if (!answer) {
       return NextResponse.json({
-        response: `⚠️ **Kendala Google AI API:** ${apiErrorMessage}\n\nPastikan API Key di [Google AI Studio](https://aistudio.google.com/) aktif dan valid.`,
+        response: `⚠️ Gemini tidak dapat memproses permintaan: ${lastError}\n\nModel yang dicoba: ${modelCandidates.map((model) => `\`${model}\``).join(', ')}. Periksa API key atau kuota di Google AI Studio.`,
       });
     }
 
-    return NextResponse.json({ response: answer });
-  } catch (err: any) {
-    return NextResponse.json({
-      response: `Terjadi kesalahan internal: ${err?.message || 'Unknown error'}`,
-    });
+    return NextResponse.json({ response: answer, model: selectedModel, generatedAt: new Date().toISOString() });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ response: `⚠️ Terjadi kesalahan internal: ${message}` }, { status: 500 });
   }
 }
