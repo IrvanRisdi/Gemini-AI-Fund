@@ -146,8 +146,20 @@ export const DEFAULT_AGENTS = [
 ];
 
 const DEFAULT_STARTING_BALANCE = 50000000;
+const GITHUB_DESK_BASE = 'https://raw.githubusercontent.com/IrvanRisdi/Gemini-AI-Fund/main/.desk';
 
 async function readJson<T>(file: string): Promise<T | null> {
+  try {
+    // Paper-loop commits update GitHub every cycle. Read that source first so
+    // production does not need a full Vercel deployment every 15 minutes.
+    const response = await fetch(`${GITHUB_DESK_BASE}/${file}`, {
+      next: { revalidate: 60 },
+    });
+    if (response.ok) return await response.json() as T;
+  } catch {
+    // Fall through to the bundled desk snapshot for local/offline resilience.
+  }
+
   try {
     const dir = getDeskDir();
     const fullPath = path.join(dir, file);
@@ -548,3 +560,4 @@ export async function getAgentMeta(slug: string): Promise<AgentMeta> {
     };
   }
 }
+
