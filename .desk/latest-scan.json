@@ -1,205 +1,36 @@
 {
-  "timestamp": "2026-08-25T08:01:52.309Z",
+  "timestamp": "2026-08-25T08:53:12.709Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "ethidr",
+      "pair": "trxidr",
       "agent": "jesse-livermore",
       "reason": "pivot break down with volume confirmation",
       "data": {
-        "volRatio": 5.307611464349985,
-        "close": 43802000,
-        "support20": 44045000
-      }
-    },
-    {
-      "pair": "solidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 1794505, distal 1798469) retested for the first time and held, 2.1x ATR departure",
-      "data": {
-        "zoneProximal": 1794505,
-        "zoneDistal": 1798469,
-        "departureToAtr": 2.053201296404738
-      }
-    },
-    {
-      "pair": "xrpidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break down with volume confirmation",
-      "data": {
-        "volRatio": 9.112435831378804,
-        "close": 26282,
-        "support20": 26503
-      }
-    },
-    {
-      "pair": "xrpidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 26511, distal 26600) retested for the first time and held, 2.9x ATR departure",
-      "data": {
-        "zoneProximal": 26511,
-        "zoneDistal": 26600,
-        "departureToAtr": 2.850192061459667
-      }
-    },
-    {
-      "pair": "dogeidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break down with volume confirmation",
-      "data": {
-        "volRatio": 2.963790664893576,
-        "close": 1605,
-        "support20": 1618
-      }
-    },
-    {
-      "pair": "dogeidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 1625, distal 1631) retested for the first time and held, 3.5x ATR departure",
-      "data": {
-        "zoneProximal": 1625,
-        "zoneDistal": 1631,
-        "departureToAtr": 3.5
-      }
-    },
-    {
-      "pair": "pepeidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break down with volume confirmation",
-      "data": {
-        "volRatio": 1.5958480778488164,
-        "close": 0.071853,
-        "support20": 0.072847
-      }
-    },
-    {
-      "pair": "pepeidr",
-      "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 0.073211, distal 0.073727) retested for the first time and held, 2.6x ATR departure",
-      "data": {
-        "zoneProximal": 0.073211,
-        "zoneDistal": 0.073727,
-        "departureToAtr": 2.5701410658307338
-      }
-    },
-    {
-      "pair": "suiidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break down with volume confirmation",
-      "data": {
-        "volRatio": 3.0108774573467634,
-        "close": 14259,
-        "support20": 14400
-      }
-    },
-    {
-      "pair": "bnbidr",
-      "agent": "momentum-trader",
-      "reason": "bearish breakdown: ADX>25, EMA9<EMA21, RSI in 20-50, close below 20-bar support, volume>1.5x",
-      "data": {
-        "adx14": 28.326612788901684,
-        "rsi14": 33.75554710812432,
-        "volRatio": 3.812889341730829
-      }
-    },
-    {
-      "pair": "bnbidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break down with volume confirmation",
-      "data": {
-        "volRatio": 3.812889341730829,
-        "close": 12480652,
-        "support20": 12526291
-      }
-    },
-    {
-      "pair": "bnbidr",
-      "agent": "breakout-specialist",
-      "reason": "squeeze (ATR ratio 0.63, bandwidth pctile 45) resolving down through range low, volume confirms",
-      "data": {
-        "atrRatio": 0.6349950576274298,
-        "bandwidthPercentile": 45,
-        "volRatio": 3.812889341730829
-      }
-    },
-    {
-      "pair": "linkidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break down with volume confirmation",
-      "data": {
-        "volRatio": 2.968380197255164,
-        "close": 205554,
-        "support20": 206673
-      }
-    },
-    {
-      "pair": "linkidr",
-      "agent": "breakout-specialist",
-      "reason": "squeeze (ATR ratio 0.87, bandwidth pctile 5) resolving down through range low, volume confirms",
-      "data": {
-        "atrRatio": 0.8683994395864535,
-        "bandwidthPercentile": 5,
-        "volRatio": 2.968380197255164
-      }
-    },
-    {
-      "pair": "adaidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break down with volume confirmation",
-      "data": {
-        "volRatio": 2.060794927910219,
-        "close": 3902,
-        "support20": 3942
+        "volRatio": 1.710076579891068,
+        "close": 6064,
+        "support20": 6079
       }
     },
     {
       "pair": "tonidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.64x the longer-window baseline",
-      "data": {
-        "rvShort": 0.022613675517725338,
-        "rvLong": 0.013811987552202141,
-        "ratio": 1.637249920205719
-      }
-    },
-    {
-      "pair": "ltcidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break down with volume confirmation",
-      "data": {
-        "volRatio": 17.71815918281332,
-        "close": 911000,
-        "support20": 918000
-      }
-    },
-    {
-      "pair": "ltcidr",
       "agent": "supply-demand-trader",
-      "reason": "fresh supply zone (proximal 921000, distal 929000) retested for the first time and held, 2.7x ATR departure",
+      "reason": "fresh supply zone (proximal 26290, distal 26290) retested for the first time and held, 2.6x ATR departure",
       "data": {
-        "zoneProximal": 921000,
-        "zoneDistal": 929000,
-        "departureToAtr": 2.7391304347826084
+        "zoneProximal": 26290,
+        "zoneDistal": 26290,
+        "departureToAtr": 2.6421404682274248
       }
     },
     {
-      "pair": "uniidr",
-      "agent": "jesse-livermore",
-      "reason": "pivot break down with volume confirmation",
+      "pair": "tonidr",
+      "agent": "candlestick-trader",
+      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
       "data": {
-        "volRatio": 90.37024465408139,
-        "close": 77000,
-        "support20": 77167
-      }
-    },
-    {
-      "pair": "uniidr",
-      "agent": "breakout-specialist",
-      "reason": "squeeze (ATR ratio 0.83, bandwidth pctile 3) resolving down through range low, volume confirms",
-      "data": {
-        "atrRatio": 0.8333197867221537,
-        "bandwidthPercentile": 2.5,
-        "volRatio": 90.37024465408139
+        "prevOpen": 26058,
+        "prevClose": 26070,
+        "lastOpen": 26290,
+        "lastClose": 25520
       }
     }
   ],

@@ -228,7 +228,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened SHORT UNI/IDR @ Rp77.000 | SL Rp78.540 | TP Rp73.150 | 1.00x"
+      "last_action": "Opened SHORT TRX/IDR @ Rp6.073 | SL Rp6.194 | TP Rp5.769 | 1.00x"
     },
     "george-soros": {
       "status": "fired",
@@ -495,7 +495,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened LONG PEPE/IDR @ Rp0 | SL Rp0 | TP Rp0 | 1.00x"
+      "last_action": "Opened LONG TON/IDR @ Rp26.290 | SL Rp25.764 | TP Rp27.605 | 1.00x"
     },
     "fibonacci-trader": {
       "status": "active",

@@ -4,7 +4,7 @@
   "created": "2026-07-13",
   "loop_restarted": "2026-07-14T02:45:00Z",
   "restart_reason": "Tokocrypto (prior data source) became unreachable (3 consecutive connection failures) after a short working period. Switched to Indodax, verified reachable from this network when OKX/Binance/Tokocrypto all failed simultaneously. Indodax's USDT pairs are too illiquid for technical indicators (16-19 of 20 candles flat on BTC/USDT and ETH/USDT; SOL/USDT doesn't exist at all) so the universe moved to IDR-quoted pairs instead. Ledger reset to a fresh IDR-denominated balance; prior Tokocrypto-era and OKX-era history preserved in each agent's briefing under dated dividers.",
-  "last_cycle": "2026-08-25T08:01:52.954Z",
+  "last_cycle": "2026-08-25T08:53:13.492Z",
   "roster_change_2026-08-21T12:52:00Z": "Fired pairs-trader and volatility-analyst per user request, hired wyckoff-trader, supply-demand-trader, fibonacci-trader, and candlestick-trader (new SKILL.md personas, authored from four trading books: the StockCharts Wyckoff Method tutorial, the Set-and-Forget supply/demand methodology, a Fibonacci strategy guide, and a candlestick pattern dictionary). Both firings were clean — pairs-trader and volatility-analyst were flat (no open positions) at the time. Before hiring, added mechanical Tier-1 coverage for all four new agents to scripts/scan-signals.ts (checkWyckoffTrader: Spring/UTAD proxy — range-extreme wick+reclaim on below-average volume; checkSupplyDemandTrader: single-base zone with >=2xATR departure, first retest; checkFibonacciTrader: price tagging a 38.2/50/61.8% retracement band of the last swing with a reversal-candle reaction; checkCandlestickTrader: Bullish/Bearish Engulfing with short-term trend context) — same standard applied when breakout-specialist/volatility-analyst/pairs-trader were hired on 2026-08-20T01:10:00Z and the reason scalper/swing-trader were fired: no agent goes on this desk's book without Tier-1 scan coverage. Verified the scan runs clean and produces sane (non-empty, non-noisy) candidates for the new checks before hiring. All four new agents assigned the full 19-pair universe via bin/desk-state update, starting balance Rp18,000,000 each, matching every other book. Active book-holding roster is now 9: momentum-trader, mean-reversion-trader, jesse-livermore, smc-trader, breakout-specialist, wyckoff-trader, supply-demand-trader, fibonacci-trader, candlestick-trader (+ risk-manager, portfolio-manager in oversight roles).",
   "loop_correction_2026-08-20T01:24:00Z": "First Tier-1 candidate of the new architecture flagged volatility-analyst on TON/IDR (vol expansion). Discovered on escalation: volatility-analyst's own SKILL.md has no place_order tool — it is a pure regime-classification/research role by design ('you never say it's going up or down'), not a directional trader, despite being given a Rp18,000,000 book like the other 6. Correction going forward: a volatility-analyst Tier-1 candidate should always resolve to a briefing analysis entry, never a trade proposal — there is nothing to risk-manager-gate. Its book is expected to stay flat indefinitely; that is by design, not a missed signal.",
   "loop_cadence_note": "Loop switched from 15-minute to hourly cadence on 2026-07-20 per user request (cron job recreated at '7 * * * *', session-only, auto-expires after 7 days). Superseded 2026-08-20 (see loop_architecture_note) — back to 15-minute cadence, but now cheap-scan-gated.",
@@ -682,6 +682,18 @@
           "marginUsed": 1875541.3748332642,
           "leverage": 1,
           "sizingNote": "Notional Rp18.755.414 | Margin Rp1.875.541 | Leverage 1.00x | Risk Rp375.108"
+        },
+        "TRX/IDR": {
+          "side": "short",
+          "size": 3021.4708439519763,
+          "entryPrice": 6073,
+          "stopPrice": 6194.46,
+          "targetPrice": 5769.35,
+          "opened": "2026-08-25T08:53:13.492Z",
+          "notionalValue": 18349392.43532035,
+          "marginUsed": 1834939.243532035,
+          "leverage": 1,
+          "sizingNote": "Notional Rp18.349.392 | Margin Rp1.834.939 | Leverage 1.00x | Risk Rp366.988"
         }
       },
       "trades": [
@@ -1120,6 +1132,17 @@
           "reason": "pivot break down with volume confirmation",
           "notionalValue": 18755413.748332642,
           "marginUsed": 1875541.3748332642
+        },
+        {
+          "timestamp": "2026-08-25T08:53:13.492Z",
+          "instrument": "TRX/IDR",
+          "side": "short",
+          "type": "open",
+          "size": 3021.4708439519763,
+          "price": 6073,
+          "reason": "pivot break down with volume confirmation",
+          "notionalValue": 18349392.43532035,
+          "marginUsed": 1834939.243532035
         }
       ]
     },
@@ -2066,6 +2089,18 @@
           "marginUsed": 1527700.8675078931,
           "leverage": 1,
           "sizingNote": "Notional Rp15.277.009 | Margin Rp1.527.701 | Leverage 1.00x | Risk Rp305.540"
+        },
+        "TON/IDR": {
+          "side": "long",
+          "size": 591.5236286343012,
+          "entryPrice": 26290,
+          "stopPrice": 25764.2,
+          "targetPrice": 27604.5,
+          "opened": "2026-08-25T08:53:13.492Z",
+          "notionalValue": 15551156.196795778,
+          "marginUsed": 1555115.6196795779,
+          "leverage": 1.0000000000000002,
+          "sizingNote": "Notional Rp15.551.156 | Margin Rp1.555.116 | Leverage 1.00x | Risk Rp311.023"
         }
       },
       "trades": [
@@ -2287,6 +2322,17 @@
           "reason": "fresh supply zone (proximal 0.073211, distal 0.073727) retested for the first time and held, 2.6x ATR departure",
           "notionalValue": 15277008.67507893,
           "marginUsed": 1527700.8675078931
+        },
+        {
+          "timestamp": "2026-08-25T08:53:13.492Z",
+          "instrument": "TON/IDR",
+          "side": "long",
+          "type": "open",
+          "size": 591.5236286343012,
+          "price": 26290,
+          "reason": "fresh supply zone (proximal 26290, distal 26290) retested for the first time and held, 2.6x ATR departure",
+          "notionalValue": 15551156.196795778,
+          "marginUsed": 1555115.6196795779
         }
       ]
     },

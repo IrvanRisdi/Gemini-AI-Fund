@@ -498,3 +498,19 @@ _None._
 * **Maximum Risk Target:** Rp375.108
 * **Portfolio Gross Exposure Before:** Rp90.112.503
 * **Portfolio Gross Exposure After:** Rp108.867.917
+
+
+---
+### 2026-08-25T08:53 UTC — Position Opened: SHORT TRX/IDR
+
+* **Entry Price:** Rp6.073
+* **Stop Loss:** Rp6.194
+* **Target:** Rp5.769
+* **Reason:** pivot break down with volume confirmation
+* **Notional:** Rp18.349.392
+* **Margin Used:** Rp1.834.939
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp366.988
+* **Maximum Risk Target:** Rp366.988
+* **Portfolio Gross Exposure Before:** Rp109.353.846
+* **Portfolio Gross Exposure After:** Rp127.703.239
