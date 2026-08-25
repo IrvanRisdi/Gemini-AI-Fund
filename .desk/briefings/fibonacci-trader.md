@@ -128,3 +128,19 @@ _None._
 * **Maximum Risk Target:** Rp364.013
 * **Portfolio Gross Exposure Before:** Rp22.628.596
 * **Portfolio Gross Exposure After:** Rp40.829.261
+
+
+---
+### 2026-08-25T05:51 UTC — Position Opened: SHORT XRP/IDR
+
+* **Entry Price:** Rp26.913
+* **Stop Loss:** Rp27.451
+* **Target:** Rp25.567
+* **Reason:** 50.0% retracement (26973.000000) of swing high 27296->low 26650 tagged with a bearish reaction candle
+* **Notional:** Rp18.255.979
+* **Margin Used:** Rp1.825.598
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp365.120
+* **Maximum Risk Target:** Rp365.120
+* **Portfolio Gross Exposure Before:** Rp40.966.170
+* **Portfolio Gross Exposure After:** Rp59.222.149

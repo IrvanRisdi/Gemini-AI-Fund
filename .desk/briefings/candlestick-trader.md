@@ -136,3 +136,19 @@ _None._
 * **Maximum Risk Target:** Rp350.775
 * **Portfolio Gross Exposure Before:** Rp8.927.781
 * **Portfolio Gross Exposure After:** Rp26.466.516
+
+
+---
+### 2026-08-25T05:51 UTC — Position Opened: SHORT PEPE/IDR
+
+* **Entry Price:** Rp0
+* **Stop Loss:** Rp0
+* **Target:** Rp0
+* **Reason:** Bearish Engulfing after a short uptrend (Level 1 reversal pattern)
+* **Notional:** Rp17.536.549
+* **Margin Used:** Rp1.753.655
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp350.731
+* **Maximum Risk Target:** Rp350.731
+* **Portfolio Gross Exposure Before:** Rp26.468.703
+* **Portfolio Gross Exposure After:** Rp44.005.252

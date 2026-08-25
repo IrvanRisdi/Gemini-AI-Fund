@@ -381,7 +381,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Closed SHORT BNB/IDR (Rp-103.039) — Stop Loss hit @ Rp12.611.917 (2026-08-25T03:08 UTC)"
+      "last_action": "Closed SHORT DOGE/IDR (Rp-103.674) — Stop Loss hit @ Rp1.643 (2026-08-25T05:51 UTC)"
     },
     "breakout-specialist": {
       "status": "active",
@@ -523,7 +523,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened LONG BNB/IDR @ Rp12.655.136 | SL Rp12.402.033 | TP Rp13.287.893 | 1.00x"
+      "last_action": "Opened SHORT XRP/IDR @ Rp26.913 | SL Rp27.451 | TP Rp25.567 | 1.00x"
     },
     "candlestick-trader": {
       "status": "active",
@@ -551,7 +551,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened SHORT ADA/IDR @ Rp3.992 | SL Rp4.072 | TP Rp3.792 | 1.00x"
+      "last_action": "Opened SHORT PEPE/IDR @ Rp0 | SL Rp0 | TP Rp0 | 1.00x"
     }
   },
   "exchanges": {}

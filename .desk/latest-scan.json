@@ -1,26 +1,37 @@
 {
-  "timestamp": "2026-08-25T05:19:06.162Z",
+  "timestamp": "2026-08-25T05:51:32.137Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "adaidr",
-      "agent": "candlestick-trader",
-      "reason": "Bullish Engulfing after a short downtrend (Level 1 reversal pattern)",
+      "pair": "xrpidr",
+      "agent": "fibonacci-trader",
+      "reason": "50.0% retracement (26973.000000) of swing high 27296->low 26650 tagged with a bearish reaction candle",
       "data": {
-        "prevOpen": 3989,
-        "prevClose": 3988,
-        "lastOpen": 3988,
-        "lastClose": 3992
+        "level": 0.5,
+        "price": 26973,
+        "swingHigh": 27296,
+        "swingLow": 26650
       }
     },
     {
-      "pair": "hbaridr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.64x the longer-window baseline",
+      "pair": "pepeidr",
+      "agent": "candlestick-trader",
+      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
       "data": {
-        "rvShort": 0.010054190801871404,
-        "rvLong": 0.006112341379192893,
-        "ratio": 1.644900076441577
+        "prevOpen": 0.074918,
+        "prevClose": 0.075014,
+        "lastOpen": 0.075116,
+        "lastClose": 0.074584
+      }
+    },
+    {
+      "pair": "tonidr",
+      "agent": "volatility-analyst",
+      "reason": "realized vol expanding — short-window vol is 1.70x the longer-window baseline",
+      "data": {
+        "rvShort": 0.016764364505274375,
+        "rvLong": 0.00988321327391719,
+        "ratio": 1.696246356386667
       }
     }
   ],

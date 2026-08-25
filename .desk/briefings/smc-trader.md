@@ -122,3 +122,14 @@ _None._
 * **Notional:** Rp4.603.039
 * **Margin Used:** Rp460.304
 * **New Balance:** Rp17.896.961
+
+
+---
+### 2026-08-25T05:51 UTC — Position Closed: SHORT DOGE/IDR
+
+* **Exit Price:** Rp1.643
+* **Realized PnL:** Rp-103.674
+* **Reason:** Stop Loss hit @ Rp1.643
+* **Notional:** Rp4.603.674
+* **Margin Used:** Rp460.367
+* **New Balance:** Rp17.793.287
