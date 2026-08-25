@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-25T18:17:06.232Z",
+  "last_cycle": "2026-08-25T19:01:00.056Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -13,7 +13,33 @@
         "IDR": 50000000
       },
       "positions": {},
-      "pendingOrders": [],
+      "pendingOrders": [
+        {
+          "id": "breakout-specialist-hypeidr-1787684457207",
+          "pair": "hypeidr",
+          "agent": "breakout-specialist",
+          "side": "long",
+          "type": "limit",
+          "timeframe": "1h",
+          "entryLow": 1445000,
+          "entryHigh": 1445604.0892857143,
+          "stopPrice": 1417561.0535714286,
+          "targetPrice": 1501690.1607142857,
+          "expiresAt": "2026-08-25T23:00:57.208Z",
+          "confirmations": [
+            "Trend 4H",
+            "Close breakout 1H",
+            "Volume ≥1.5x",
+            "Extension <=1.25 ATR"
+          ],
+          "score": 4,
+          "reason": "Breakout sehat; retest dangkal dekat harga, bukan pullback jauh.",
+          "campaignId": "breakout-specialist-hypeidr-1787684460056",
+          "riskReservedIdr": 969941.7676710499,
+          "createdAt": "2026-08-25T19:01:00.056Z",
+          "status": "pending"
+        }
+      ],
       "trades": []
     },
     "mean-reversion-trader": {
