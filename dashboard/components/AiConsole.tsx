@@ -41,6 +41,7 @@ function renderFormattedText(text: string) {
     const line = lines[i].trim();
     if (!line) continue;
 
+    // Header: ### atau ####
     if (line.startsWith('### ') || line.startsWith('#### ')) {
       const title = line.replace(/^#{3,4}\s+/, '').replace(/\*\*/g, '');
       elements.push(
@@ -51,28 +52,34 @@ function renderFormattedText(text: string) {
       continue;
     }
 
+    // Pemisah horizontal ---
     if (line === '---') {
       elements.push(<hr key={i} className="my-2 border-border/40" />);
       continue;
     }
 
-    const numMatch = line.match(/^(\d+)\.\s+(.*)/);
-    if (numMatch) {
-      const numStr = numMatch;
-      const contentStr = numMatch || '';
-      elements.push(
-        <div key={i} className="mt-2 mb-1 flex items-start gap-2 text-xs sm:text-sm font-medium text-ink">
-          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/20 font-mono text-[11px] text-blue-400 font-semibold">
-            {numStr}
-          </span>
-          <div className="flex-1 pt-0.5 leading-relaxed" dangerouslySetInnerHTML={{ __html: formatInline(contentStr) }} />
-        </div>
-      );
-      continue;
+    // Poin bernomor: 1. 2. 3. (Parsing string murni, 100% bebas error tipe data)
+    const dotIndex = line.indexOf('. ');
+    if (dotIndex > 0) {
+      const prefix = line.slice(0, dotIndex).trim();
+      if (/^\d+$/.test(prefix)) {
+        const numStr = prefix;
+        const contentStr = line.slice(dotIndex + 2).trim();
+        elements.push(
+          <div key={i} className="mt-2 mb-1 flex items-start gap-2 text-xs sm:text-sm font-medium text-ink">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/20 font-mono text-[11px] text-blue-400 font-semibold">
+              {numStr}
+            </span>
+            <div className="flex-1 pt-0.5 leading-relaxed" dangerouslySetInnerHTML={{ __html: formatInline(contentStr) }} />
+          </div>
+        );
+        continue;
+      }
     }
 
+    // Poin bullet: * atau -
     if (line.startsWith('* ') || line.startsWith('- ')) {
-      const contentStr = line.slice(2);
+      const contentStr = line.slice(2).trim();
       elements.push(
         <div key={i} className="ml-2 sm:ml-4 my-1 flex items-start gap-2 text-xs sm:text-sm text-ink-muted">
           <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400/70" />
@@ -82,6 +89,7 @@ function renderFormattedText(text: string) {
       continue;
     }
 
+    // Paragraf teks biasa
     elements.push(
       <p key={i} className="my-1 text-xs sm:text-sm leading-relaxed text-ink-muted" dangerouslySetInnerHTML={{ __html: formatInline(line) }} />
     );
