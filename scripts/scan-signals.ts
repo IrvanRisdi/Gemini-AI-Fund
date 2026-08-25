@@ -21,8 +21,19 @@ function metric(candles: OHLCV[]) {
   const bands = bollingerBands(closes, 20, 2); const av = prior.reduce((s, c) => s + c.volume, 0) / prior.length;
   return { last, closes, adx: adx(closed, 14).at(-1)!, ema9: ema(closes, 9).at(-1)!, ema21: ema(closes, 21).at(-1)!, rsi: rsi(closes, 14).at(-1)!, atr: atr(closed, 14).at(-1)!, upper: bands.upper.at(-1)!, lower: bands.lower.at(-1)!, mid: bands.middle.at(-1)!, resistance: Math.max(...prior.map((c) => c.high)), support: Math.min(...prior.map((c) => c.low)), vol: av > 0 ? last.volume / av : 0, closed };
 }
-function valid(entry: number, stop: number, target: number) { return stop > 0 && entry > stop && (target - entry) / (entry - stop) >= 1.5; }
+// A 1.5R gross plan is too thin after a 0.6% round-trip paper fee. Keep a
+// buffer while retaining the executor's absolute 1.5R safety floor.
+function valid(entry: number, stop: number, target: number) {
+  const risk = (entry - stop) / entry;
+  const reward = (target - entry) / entry;
+  return stop > 0 && entry > stop && reward >= Math.max(risk * 1.8, 0.012);
+}
 function expiry(hours: number) { return new Date(Date.now() + hours * 3_600_000).toISOString(); }
+function limitBand(entry: number, atrValue: number, floor: number, ceiling: number) {
+  // Avoid a wide wish-price below market: entries stay within half an hourly ATR.
+  const high = Math.min(ceiling, entry);
+  return { low: Math.max(floor, high - atrValue * 0.5), high };
+}
 function demandZone(candles: OHLCV[], current: number) {
   const recent = candles.slice(-32, -1); const low = Math.min(...recent.map((c) => c.low)); const high = Math.max(...recent.map((c) => c.high));
   const zoneHigh = low + (high - low) * 0.22; return current >= low * 0.995 && current <= zoneHigh * 1.02 ? { low, high: zoneHigh } : null;
@@ -39,30 +50,35 @@ async function scanPair(pair: string): Promise<Candidate[]> {
   const candidates: Candidate[] = []; const trendUp = four.ema9 > four.ema21 && four.adx >= 22; const zone = demandZone(oneHour, one.last.close);
   const id = (owner: Owner) => `${owner}-${pair}-${Date.now()}`;
 
-  // Breakout: use a pullback pending order rather than chasing the breakout candle.
+  // Breakout: accept only a shallow retest; never park a wish-price far below market.
   if (trendUp && one.last.close > one.resistance && one.vol >= 1.5) {
-    const entry = one.resistance; const stop = Math.min(one.support, entry - 1.2 * one.atr); const target = entry + Math.max(one.resistance - one.support, (entry - stop) * 1.5);
-    if (valid(entry, stop, target)) candidates.push({ id: id('breakout-specialist'), pair, agent: 'breakout-specialist', side: 'long', type: 'limit', timeframe: '1h', entryLow: entry * 0.997, entryHigh: entry * 1.003, stopPrice: stop, targetPrice: target, expiresAt: expiry(12), confirmations: ['Trend 4H', 'Close breakout 1H', 'Volume ≥1.5x'], score: 3, reason: 'Breakout 1H searah tren 4H; menunggu retest level breakout.' });
+    const entry = Math.max(one.resistance, one.last.close - one.atr * 0.45);
+    const stop = Math.min(one.support, entry - 1.35 * one.atr); const target = entry + Math.max(one.resistance - one.support, (entry - stop) * 1.8);
+    const band = limitBand(entry, one.atr, one.resistance, one.last.close); const extension = (one.last.close - one.resistance) / one.atr;
+    if (extension <= 1.25 && valid(band.high, stop, target)) candidates.push({ id: id('breakout-specialist'), pair, agent: 'breakout-specialist', side: 'long', type: 'limit', timeframe: '1h', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(4), confirmations: ['Trend 4H', 'Close breakout 1H', 'Volume ≥1.5x', 'Extension <=1.25 ATR'], score: 4, reason: 'Breakout sehat; retest dangkal dekat harga, bukan pullback jauh.' });
   }
   // Aggressive is a premium stop-entry and never pyramids.
   if (trendUp && one.last.close > one.resistance && one.vol >= 2 && four.adx >= 25) {
-    const entry = one.last.close * 1.002; const stop = Math.max(one.resistance * 0.992, entry - 1.5 * one.atr); const target = entry + (entry - stop) * 2;
-    if (valid(entry, stop, target)) candidates.push({ id: id('aggressive-breakout-trader'), pair, agent: 'aggressive-breakout-trader', side: 'long', type: 'stop', timeframe: '1h', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(6), confirmations: ['Trend 4H kuat', 'Volume ≥2x', 'Breakout close 1H'], score: 4, reason: 'Breakout premium; stop entry hanya bila harga melanjutkan momentum.' });
+    const entry = one.last.close * 1.0015; const stop = Math.max(one.resistance * 0.992, entry - 1.6 * one.atr); const target = entry + (entry - stop) * 2.2;
+    const extension = (one.last.close - one.resistance) / one.atr;
+    if (extension <= 0.9 && valid(entry, stop, target)) candidates.push({ id: id('aggressive-breakout-trader'), pair, agent: 'aggressive-breakout-trader', side: 'long', type: 'stop', timeframe: '1h', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(3), confirmations: ['Trend 4H kuat', 'Volume ≥2x', 'Breakout close 1H', 'Extension <=0.9 ATR'], score: 5, reason: 'Momentum premium dekat harga; batal bila kelanjutan tidak terjadi cepat.' });
   }
   // Mean reversion is allowed only in a verified ranging 4H regime.
   if (four.adx < 20 && four.ema9 <= four.ema21 * 1.01 && one.rsi < 30 && one.last.close <= one.lower) {
-    const entry = Math.min(one.last.close, one.lower); const stop = entry - 1.5 * one.atr; const target = one.mid;
-    if (valid(entry, stop, target)) candidates.push({ id: id('mean-reversion-trader'), pair, agent: 'mean-reversion-trader', side: 'long', type: 'limit', timeframe: '1h', entryLow: entry * 0.992, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(12), confirmations: ['Range 4H', 'RSI oversold', 'Bollinger lower band'], score: 3, reason: 'Reversion long dalam regime range; menunggu limit fill di area ekstrem.' });
+    const entry = one.last.close; const stop = entry - 1.8 * one.atr; const target = one.mid;
+    const band = limitBand(entry, one.atr, entry - one.atr * 0.45, entry);
+    if (valid(band.high, stop, target)) candidates.push({ id: id('mean-reversion-trader'), pair, agent: 'mean-reversion-trader', side: 'long', type: 'limit', timeframe: '1h', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(6), confirmations: ['Range 4H', 'RSI oversold', 'Bollinger lower band', 'Entry <=0.45 ATR'], score: 4, reason: 'Reversion di ekstrem; limit dekat harga dan cepat kedaluwarsa.' });
   }
   // SMC / Wyckoff own their campaign, while S&D is mandatory and Fib OR candle is the trigger.
   const trigger = fibConfluence(fourHour, one.last.close) ? 'Fibonacci overlap' : bullishCandle(oneHour) ? 'Bullish engulfing 1H' : null;
   if (zone && trigger) {
-    const stop = zone.low - one.atr * 0.25; const target = Math.max(one.resistance, zone.high + (zone.high - stop) * 1.5);
-    if (valid(zone.high, stop, target)) {
+    const entry = Math.min(zone.high, one.last.close); const band = limitBand(entry, one.atr, zone.low, entry);
+    const stop = zone.low - one.atr * 0.5; const target = Math.max(one.resistance, band.high + (band.high - stop) * 1.8);
+    if (valid(band.high, stop, target)) {
       const smc = detectSweepChochConfluence(oneHour, 5);
-      if (smc?.choch === 'bullish') candidates.push({ id: id('smc-trader'), pair, agent: 'smc-trader', side: 'long', type: 'limit', timeframe: '1h', entryLow: zone.low, entryHigh: zone.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(16), confirmations: ['Fresh demand zone', 'Sweep + CHoCH', trigger], score: 3 + (trigger === 'Fibonacci overlap' ? 1 : 0), reason: 'SMC bullish dengan zona demand sebagai lokasi entry.' });
+      if (smc?.choch === 'bullish') candidates.push({ id: id('smc-trader'), pair, agent: 'smc-trader', side: 'long', type: 'limit', timeframe: '1h', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Fresh demand zone', 'Sweep + CHoCH', trigger, 'Entry <=0.5 ATR'], score: 4 + (trigger === 'Fibonacci overlap' ? 1 : 0), reason: 'SMC bullish; entry proximal dekat harga, stop di luar zona.' });
       const bars = one.closed.slice(-3); const spring = bars[0] && bars[1] && bars[0].low < one.support && bars[0].close > one.support && bars[1].low >= bars[0].low && bars[1].close > bars[1].open;
-      if (spring) candidates.push({ id: id('wyckoff-trader'), pair, agent: 'wyckoff-trader', side: 'long', type: 'limit', timeframe: '1h', entryLow: zone.low, entryHigh: zone.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(16), confirmations: ['Spring + Test', 'Fresh demand zone', trigger], score: 3 + (trigger === 'Fibonacci overlap' ? 1 : 0), reason: 'Wyckoff Spring/Test dengan demand zone sebagai entry.' });
+      if (spring) candidates.push({ id: id('wyckoff-trader'), pair, agent: 'wyckoff-trader', side: 'long', type: 'limit', timeframe: '1h', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Spring + Test', 'Fresh demand zone', trigger, 'Entry <=0.5 ATR'], score: 4 + (trigger === 'Fibonacci overlap' ? 1 : 0), reason: 'Wyckoff Spring/Test; retest proximal agar order realistis terisi.' });
     }
   }
   return candidates;
@@ -75,3 +91,4 @@ async function main() {
   fs.writeFileSync(path.join(process.cwd(), '.desk', 'latest-scan.json'), JSON.stringify(output, null, 2) + '\n'); console.log(JSON.stringify(output, null, 2));
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });
+
