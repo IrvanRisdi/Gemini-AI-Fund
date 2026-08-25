@@ -1,29 +1,7 @@
 {
-  "timestamp": "2026-08-25T19:39:06.844Z",
+  "timestamp": "2026-08-25T20:04:14.564Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [
-    {
-      "id": "breakout-specialist-hypeidr-1787686746837",
-      "pair": "hypeidr",
-      "agent": "breakout-specialist",
-      "side": "long",
-      "type": "limit",
-      "timeframe": "1h",
-      "entryLow": 1445000,
-      "entryHigh": 1445604.0892857143,
-      "stopPrice": 1417561.0535714286,
-      "targetPrice": 1501690.1607142857,
-      "expiresAt": "2026-08-25T23:39:06.837Z",
-      "confirmations": [
-        "Trend 4H",
-        "Close breakout 1H",
-        "Volume ≥1.5x",
-        "Extension <=1.25 ATR"
-      ],
-      "score": 4,
-      "reason": "Breakout sehat; retest dangkal dekat harga, bukan pullback jauh."
-    }
-  ],
+  "candidates": [],
   "errors": []
 }
