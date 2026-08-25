@@ -133,3 +133,19 @@ _None._
 * **Notional:** Rp4.603.674
 * **Margin Used:** Rp460.367
 * **New Balance:** Rp17.793.287
+
+
+---
+### 2026-08-25T07:13 UTC — Position Opened: SHORT SOL/IDR
+
+* **Entry Price:** Rp1.793.743
+* **Stop Loss:** Rp1.829.618
+* **Target:** Rp1.704.056
+* **Reason:** buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)
+* **Notional:** Rp17.816.307
+* **Margin Used:** Rp1.781.631
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp356.326
+* **Maximum Risk Target:** Rp356.326
+* **Portfolio Gross Exposure Before:** Rp4.523.020
+* **Portfolio Gross Exposure After:** Rp22.339.326

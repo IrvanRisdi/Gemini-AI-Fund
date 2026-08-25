@@ -212,3 +212,30 @@ _None._
 * **Maximum Risk Target:** Rp349.494
 * **Portfolio Gross Exposure Before:** Rp123.865.735
 * **Portfolio Gross Exposure After:** Rp141.340.418
+
+
+---
+### 2026-08-25T07:13 UTC — Position Closed: LONG SHIB/IDR
+
+* **Exit Price:** Rp0
+* **Realized PnL:** Rp-523.924
+* **Reason:** Stop Loss hit @ Rp0
+* **Notional:** Rp16.950.759
+* **Margin Used:** Rp1.695.076
+* **New Balance:** Rp16.956.040
+
+
+---
+### 2026-08-25T07:13 UTC — Position Opened: LONG SUI/IDR
+
+* **Entry Price:** Rp14.551
+* **Stop Loss:** Rp14.260
+* **Target:** Rp15.279
+* **Reason:** fresh supply zone (proximal 14551, distal 14614) retested for the first time and held, 2.5x ATR departure
+* **Notional:** Rp16.812.407
+* **Margin Used:** Rp1.681.241
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp336.248
+* **Maximum Risk Target:** Rp336.248
+* **Portfolio Gross Exposure Before:** Rp123.727.383
+* **Portfolio Gross Exposure After:** Rp140.539.790

@@ -381,7 +381,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Closed SHORT DOGE/IDR (Rp-103.674) — Stop Loss hit @ Rp1.643 (2026-08-25T05:51 UTC)"
+      "last_action": "Opened SHORT SOL/IDR @ Rp1.793.743 | SL Rp1.829.618 | TP Rp1.704.056 | 1.00x"
     },
     "breakout-specialist": {
       "status": "active",
@@ -495,7 +495,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened LONG SHIB/IDR @ Rp0 | SL Rp0 | TP Rp0 | 1.00x"
+      "last_action": "Opened LONG SUI/IDR @ Rp14.551 | SL Rp14.260 | TP Rp15.279 | 1.00x"
     },
     "fibonacci-trader": {
       "status": "active",

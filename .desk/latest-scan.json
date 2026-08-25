@@ -1,47 +1,64 @@
 {
-  "timestamp": "2026-08-25T06:20:38.513Z",
+  "timestamp": "2026-08-25T07:13:41.482Z",
   "pairsScanned": 19,
   "candidates": [
     {
-      "pair": "solidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
+      "pair": "btcidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 1422000000, distal 1426000000) retested for the first time and held, 3.2x ATR departure",
       "data": {
-        "prevOpen": 1797887,
-        "prevClose": 1803656,
-        "lastOpen": 1803656,
-        "lastClose": 1797001
+        "zoneProximal": 1422000000,
+        "zoneDistal": 1426000000,
+        "departureToAtr": 3.2244937600155392
+      }
+    },
+    {
+      "pair": "solidr",
+      "agent": "smc-trader",
+      "reason": "buy-side liquidity sweep + bearish CHoCH confirmed (within 5 bars)",
+      "data": {
+        "sweepVolRatio": 1.2107937475213393,
+        "poolPrice": 1801376
       }
     },
     {
       "pair": "suiidr",
-      "agent": "candlestick-trader",
-      "reason": "Bearish Engulfing after a short uptrend (Level 1 reversal pattern)",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 14551, distal 14614) retested for the first time and held, 2.5x ATR departure",
       "data": {
-        "prevOpen": 14617,
-        "prevClose": 14632,
-        "lastOpen": 14677,
-        "lastClose": 14613
+        "zoneProximal": 14551,
+        "zoneDistal": 14614,
+        "departureToAtr": 2.4617912900575183
+      }
+    },
+    {
+      "pair": "bnbidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 12630882, distal 12655139) retested for the first time and held, 3.6x ATR departure",
+      "data": {
+        "zoneProximal": 12630882,
+        "zoneDistal": 12655139,
+        "departureToAtr": 3.5756000460624806
       }
     },
     {
       "pair": "trxidr",
       "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.62x the longer-window baseline",
+      "reason": "realized vol expanding — short-window vol is 1.90x the longer-window baseline",
       "data": {
-        "rvShort": 0.0020169606619301205,
-        "rvLong": 0.0012478401664257383,
-        "ratio": 1.6163613868172069
+        "rvShort": 0.002415590769064878,
+        "rvLong": 0.001272092210303252,
+        "ratio": 1.8989116901274234
       }
     },
     {
-      "pair": "tonidr",
-      "agent": "volatility-analyst",
-      "reason": "realized vol expanding — short-window vol is 1.70x the longer-window baseline",
+      "pair": "adaidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh supply zone (proximal 3980, distal 4004) retested for the first time and held, 2.9x ATR departure",
       "data": {
-        "rvShort": 0.016759817383151677,
-        "rvLong": 0.00988318108566953,
-        "ratio": 1.6957917939450862
+        "zoneProximal": 3980,
+        "zoneDistal": 4004,
+        "departureToAtr": 2.9473684210526314
       }
     }
   ],
