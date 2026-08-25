@@ -437,7 +437,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened SHORT HBAR/IDR @ Rp1.468 | SL Rp1.497 | TP Rp1.395 | 1.00x",
+      "last_action": "Opened SHORT TRX/IDR @ Rp6.099 | SL Rp6.221 | TP Rp5.794 | 0.62x",
       "fired_date": "2026-08-21",
       "fire_reason": "User request 2026-08-21 — making room for the four new pattern-based specialists. Never traded by design (no place_order in its own SKILL.md, pure regime-classification role); freeing its book slot rather than leaving it permanently flat."
     },
@@ -551,7 +551,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened SHORT PEPE/IDR @ Rp0 | SL Rp0 | TP Rp0 | 1.00x"
+      "last_action": "Opened SHORT SUI/IDR @ Rp14.661 | SL Rp14.954 | TP Rp13.928 | 1.00x"
     }
   },
   "exchanges": {}

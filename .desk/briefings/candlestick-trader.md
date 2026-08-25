@@ -152,3 +152,35 @@ _None._
 * **Maximum Risk Target:** Rp350.731
 * **Portfolio Gross Exposure Before:** Rp26.468.703
 * **Portfolio Gross Exposure After:** Rp44.005.252
+
+
+---
+### 2026-08-25T06:20 UTC — Position Opened: SHORT SOL/IDR
+
+* **Entry Price:** Rp1.798.543
+* **Stop Loss:** Rp1.834.514
+* **Target:** Rp1.708.616
+* **Reason:** Bearish Engulfing after a short uptrend (Level 1 reversal pattern)
+* **Notional:** Rp17.745.472
+* **Margin Used:** Rp1.774.547
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp354.909
+* **Maximum Risk Target:** Rp354.909
+* **Portfolio Gross Exposure Before:** Rp43.796.328
+* **Portfolio Gross Exposure After:** Rp61.541.801
+
+
+---
+### 2026-08-25T06:20 UTC — Position Opened: SHORT SUI/IDR
+
+* **Entry Price:** Rp14.661
+* **Stop Loss:** Rp14.954
+* **Target:** Rp13.928
+* **Reason:** Bearish Engulfing after a short uptrend (Level 1 reversal pattern)
+* **Notional:** Rp17.745.472
+* **Margin Used:** Rp1.774.547
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp354.909
+* **Maximum Risk Target:** Rp354.909
+* **Portfolio Gross Exposure Before:** Rp61.541.801
+* **Portfolio Gross Exposure After:** Rp79.287.273
