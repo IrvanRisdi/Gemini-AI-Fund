@@ -1,13 +1,119 @@
 'use client';
 
 import { useState } from 'react';
-import { CodeBlock } from './CodeBlock';
 import type { DeskSnapshot } from '@/lib/desk-data';
+
+function renderFormattedText(text: string) {
+  if (!text) return null;
+
+  const isUserQuestion = text.startsWith('> ');
+  let questionPart = '';
+  let answerPart = text;
+
+  if (isUserQuestion) {
+    const firstNewline = text.indexOf('\n');
+    if (firstNewline !== -1) {
+      questionPart = text.slice(2, firstNewline).trim();
+      answerPart = text.slice(firstNewline).trim();
+    } else {
+      questionPart = text.slice(2).trim();
+      answerPart = '';
+    }
+  }
+
+  const lines = answerPart.split('\n');
+  const elements: React.ReactNode[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    // Header: Ubah ### menjadi sub-judul biru rapi
+    if (line.startsWith('### ') || line.startsWith('#### ')) {
+      const title = line.replace(/^#{3,4}\s+/, '').replace(/\*\*/g, '');
+      elements.push(
+        <h4 key={i} className="mt-3.5 mb-1.5 font-sans text-sm font-semibold text-blue-300 flex items-center gap-1.5 border-b border-border/40 pb-1">
+          {title}
+        </h4>
+      );
+      continue;
+    }
+
+    // Pemisah horizontal ---
+    if (line === '---') {
+      elements.push(<hr key={i} className="my-2.5 border-border/40" />);
+      continue;
+    }
+
+    // Poin bernomor: 1. 2. 3.
+    const numMatch = line.match(/^(\d+)\.\s+(.*)/);
+    if (numMatch) {
+      const content = numMatch;
+      elements.push(
+        <div key={i} className="mt-2 mb-1 flex items-start gap-2 text-xs sm:text-sm font-medium text-ink">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/20 font-mono text-[11px] text-blue-400 font-semibold">
+            {numMatch}
+          </span>
+          <div className="flex-1 pt-0.5 leading-relaxed" dangerouslySetInnerHTML={{ __html: formatInline(content) }} />
+        </div>
+      );
+      continue;
+    }
+
+    // Poin bullet: * atau -
+    if (line.startsWith('* ') || line.startsWith('- ')) {
+      const content = line.slice(2);
+      elements.push(
+        <div key={i} className="ml-2 sm:ml-4 my-1 flex items-start gap-2 text-xs sm:text-sm text-ink-muted">
+          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400/70" />
+          <div className="flex-1 leading-relaxed" dangerouslySetInnerHTML={{ __html: formatInline(content) }} />
+        </div>
+      );
+      continue;
+    }
+
+    // Paragraf biasa
+    elements.push(
+      <p key={i} className="my-1 text-xs sm:text-sm leading-relaxed text-ink-muted" dangerouslySetInnerHTML={{ __html: formatInline(line) }} />
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      {questionPart && (
+        <div className="mb-3 rounded-lg border border-accent/20 bg-accent/5 p-2.5 font-sans text-xs sm:text-sm text-ink">
+          <span className="font-semibold text-accent mr-1.5">Pertanyaan:</span>
+          {questionPart}
+        </div>
+      )}
+      <div className="space-y-0.5 text-xs sm:text-sm leading-relaxed">
+        {elements}
+      </div>
+    </div>
+  );
+}
+
+function formatInline(text: string): string {
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Bold (**teks**)
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-ink">$1</strong>');
+  // Italic (*teks*)
+  html = html.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em class="text-ink-muted italic">$1</em>');
+  // Code (`teks`)
+  html = html.replace(/`(.+?)`/g, '<code class="rounded bg-surface-hover px-1.5 py-0.5 font-mono text-[11px] text-blue-300">$1</code>');
+
+  return html;
+}
 
 export function AiConsole({ snapshot }: { snapshot: DeskSnapshot }) {
   const [question, setQuestion] = useState('');
   const [displayed, setDisplayed] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   async function handleSend() {
     const trimmed = question.trim();
@@ -39,21 +145,33 @@ export function AiConsole({ snapshot }: { snapshot: DeskSnapshot }) {
     }
   }
 
+  async function handleCopy() {
+    if (!displayed) return;
+    try {
+      await navigator.clipboard.writeText(displayed);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {}
+  }
+
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-5">
+    <div className="flex flex-col gap-3.5 rounded-xl border border-border bg-surface p-4 sm:p-5 w-full overflow-hidden">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="font-sans text-lg font-semibold text-ink flex items-center gap-2">
+        <h3 className="font-sans text-base sm:text-lg font-semibold text-ink flex items-center gap-2">
           <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent font-bold">
             Gemini
           </span>{' '}
           Console
         </h3>
-        <span className="rounded-full bg-blue-500/10 px-2.5 py-0.5 font-mono text-[11px] font-medium tracking-wide text-blue-400 border border-blue-500/20 uppercase">
+        <span className="rounded-full bg-blue-500/10 px-2.5 py-0.5 font-mono text-[10px] sm:text-[11px] font-medium tracking-wide text-blue-400 border border-blue-500/20 uppercase flex items-center gap-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" />
           AI LIVE
         </span>
       </div>
 
-      <div className="flex gap-2">
+      {/* Input Form */}
+      <div className="flex flex-col sm:flex-row gap-2">
         <textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
@@ -63,26 +181,46 @@ export function AiConsole({ snapshot }: { snapshot: DeskSnapshot }) {
               handleSend();
             }
           }}
-          placeholder="Tanya apa saja tentang desk, mis. 'Jelaskan mengapa SHIB, LTC, dan ETH dibuka?'"
+          placeholder="Tanya apa saja, mis. 'Jelaskan mengapa SHIB dan ETH dibuka?'"
           rows={2}
           disabled={isLoading}
-          className="flex-1 resize-none rounded-lg border border-border bg-bg/60 px-3 py-2 font-sans text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none disabled:opacity-50"
+          className="flex-1 resize-none rounded-lg border border-border bg-bg/80 px-3 py-2 font-sans text-xs sm:text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none disabled:opacity-50"
         />
         <button
           type="button"
           onClick={handleSend}
           disabled={isLoading || !question.trim()}
-          className="rounded-lg bg-accent px-5 py-2 font-sans text-sm font-semibold text-bg transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center min-w-[75px]"
+          className="rounded-lg bg-accent px-5 py-2.5 font-sans text-xs sm:text-sm font-semibold text-bg transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center min-w-[80px]"
         >
           {isLoading ? (
-            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-bg border-t-transparent"></span>
+            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-bg border-t-transparent" />
           ) : (
             'Kirim'
           )}
         </button>
       </div>
 
-      {displayed && <CodeBlock filename="gemini-ai.md" language="markdown" code={displayed} />}
+      {/* Output Bersih & Responsif */}
+      {displayed && (
+        <div className="relative mt-2 rounded-xl border border-border/80 bg-bg/90 p-3.5 sm:p-4.5 overflow-hidden w-full">
+          <div className="flex items-center justify-between border-b border-border/60 pb-2 mb-3">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-blue-400" />
+              <span className="font-mono text-[11px] text-ink-muted">Analisis Gemini AI</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="font-mono text-[10px] text-ink-faint hover:text-accent transition-colors"
+            >
+              {copied ? 'Tersalin' : 'Salin'}
+            </button>
+          </div>
+          <div className="max-h-[28rem] overflow-y-auto overflow-x-hidden pr-1 break-words">
+            {renderFormattedText(displayed)}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
