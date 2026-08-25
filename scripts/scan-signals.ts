@@ -71,14 +71,32 @@ async function scanPair(pair: string): Promise<Candidate[]> {
   }
   // SMC / Wyckoff own their campaign, while S&D is mandatory and Fib OR candle is the trigger.
   const trigger = fibConfluence(fourHour, one.last.close) ? 'Fibonacci overlap' : bullishCandle(oneHour) ? 'Bullish engulfing 1H' : null;
+
+  // Wyckoff is evaluated independently from SMC.  The old condition compared
+  // the spring with a support window that already contained that spring, which
+  // made a genuine lower-low mathematically impossible to detect.
+  const wyckoffHistory = one.closed.slice(-24, -3);
+  const [spring, reclaim, test] = one.closed.slice(-3);
+  if (wyckoffHistory.length >= 18 && spring && reclaim && test) {
+    const rangeLow = Math.min(...wyckoffHistory.map((bar) => bar.low));
+    const rangeHigh = Math.max(...wyckoffHistory.map((bar) => bar.high));
+    const averageVolume = wyckoffHistory.reduce((sum, bar) => sum + bar.volume, 0) / wyckoffHistory.length;
+    const ranging4h = four.adx < 30 && Math.abs(four.ema9 - four.ema21) / four.ema21 < 0.025;
+    const validSpring = spring.low < rangeLow && spring.close > rangeLow && spring.volume >= averageVolume * 1.1;
+    const validReclaim = reclaim.close > rangeLow && reclaim.close > reclaim.open;
+    const validTest = test.low >= spring.low && test.close > test.open && test.close >= rangeLow;
+    const entry = test.close; const band = limitBand(entry, one.atr, Math.max(rangeLow, entry - one.atr * 0.5), entry);
+    const stop = spring.low - one.atr * 0.4; const target = Math.max((rangeLow + rangeHigh) / 2, band.high + (band.high - stop) * 2);
+    if (ranging4h && validSpring && validReclaim && validTest && valid(band.high, stop, target)) {
+      candidates.push({ id: id('wyckoff-trader'), pair, agent: 'wyckoff-trader', side: 'long', type: 'limit', timeframe: '1h', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Spring volume', 'Reclaim support', 'Bullish retest', 'Range 4H'], score: 5, reason: 'Wyckoff spring, reclaim, lalu retest bullish; entry proximal dekat support.' });
+    }
+  }
   if (zone && trigger) {
     const entry = Math.min(zone.high, one.last.close); const band = limitBand(entry, one.atr, zone.low, entry);
     const stop = zone.low - one.atr * 0.5; const target = Math.max(one.resistance, band.high + (band.high - stop) * 1.8);
     if (valid(band.high, stop, target)) {
       const smc = detectSweepChochConfluence(oneHour, 5);
       if (smc?.choch === 'bullish') candidates.push({ id: id('smc-trader'), pair, agent: 'smc-trader', side: 'long', type: 'limit', timeframe: '1h', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Fresh demand zone', 'Sweep + CHoCH', trigger, 'Entry <=0.5 ATR'], score: 4 + (trigger === 'Fibonacci overlap' ? 1 : 0), reason: 'SMC bullish; entry proximal dekat harga, stop di luar zona.' });
-      const bars = one.closed.slice(-3); const spring = bars[0] && bars[1] && bars[0].low < one.support && bars[0].close > one.support && bars[1].low >= bars[0].low && bars[1].close > bars[1].open;
-      if (spring) candidates.push({ id: id('wyckoff-trader'), pair, agent: 'wyckoff-trader', side: 'long', type: 'limit', timeframe: '1h', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Spring + Test', 'Fresh demand zone', trigger, 'Entry <=0.5 ATR'], score: 4 + (trigger === 'Fibonacci overlap' ? 1 : 0), reason: 'Wyckoff Spring/Test; retest proximal agar order realistis terisi.' });
     }
   }
   return candidates;
