@@ -1,5 +1,1 @@
-{
-  "risk_manager_hired": true,
-  "parameters": {},
-  "warnings": []
-}
+{ "risk_manager_hired": true, "parameters": { "spot_only": true, "starting_capital_idr": 250000000, "books": 5, "book_equity_idr": 50000000, "max_notional_pct": 100, "max_risk_per_campaign_pct": 5, "minimum_rr": 1.5 }, "warnings": [] }

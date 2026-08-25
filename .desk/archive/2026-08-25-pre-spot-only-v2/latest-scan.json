@@ -1,0 +1,78 @@
+{
+  "timestamp": "2026-08-24T23:50:47.734Z",
+  "pairsScanned": 19,
+  "candidates": [
+    {
+      "pair": "ethidr",
+      "agent": "jesse-livermore",
+      "reason": "pivot break up with volume confirmation",
+      "data": {
+        "volRatio": 2.5148010416431354,
+        "close": 43942000,
+        "resistance20": 43905000
+      }
+    },
+    {
+      "pair": "ethidr",
+      "agent": "breakout-specialist",
+      "reason": "squeeze (ATR ratio 0.41, bandwidth pctile 10) resolving up through range high, volume confirms",
+      "data": {
+        "atrRatio": 0.41123704466937394,
+        "bandwidthPercentile": 10,
+        "volRatio": 2.5148010416431354
+      }
+    },
+    {
+      "pair": "ethidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh demand zone (proximal 43877000, distal 43749000) retested for the first time and held, 2.0x ATR departure",
+      "data": {
+        "zoneProximal": 43877000,
+        "zoneDistal": 43749000,
+        "departureToAtr": 2.022455089820359
+      }
+    },
+    {
+      "pair": "solidr",
+      "agent": "mean-reversion-trader",
+      "reason": "range regime, RSI>70, price at/above upper Bollinger, no volume behind the move",
+      "data": {
+        "adx14": 20.96341829943235,
+        "rsi14": 74.0359379417019,
+        "volRatio": 0.9808358551595626
+      }
+    },
+    {
+      "pair": "solidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh demand zone (proximal 1734565, distal 1723999) retested for the first time and held, 2.4x ATR departure",
+      "data": {
+        "zoneProximal": 1734565,
+        "zoneDistal": 1723999,
+        "departureToAtr": 2.391282951395154
+      }
+    },
+    {
+      "pair": "dogeidr",
+      "agent": "supply-demand-trader",
+      "reason": "fresh demand zone (proximal 1588, distal 1582) retested for the first time and held, 2.2x ATR departure",
+      "data": {
+        "zoneProximal": 1588,
+        "zoneDistal": 1582,
+        "departureToAtr": 2.1690140845070425
+      }
+    },
+    {
+      "pair": "suiidr",
+      "agent": "fibonacci-trader",
+      "reason": "61.8% retracement (14205.558000) of swing high 14332->low 14001 tagged with a bearish reaction candle",
+      "data": {
+        "level": 0.618,
+        "price": 14205.558,
+        "swingHigh": 14332,
+        "swingLow": 14001
+      }
+    }
+  ],
+  "errors": []
+}

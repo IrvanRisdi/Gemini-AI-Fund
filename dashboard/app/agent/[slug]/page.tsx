@@ -102,22 +102,38 @@ export default async function AgentPage({ params }: { params: Promise<{ slug: st
         </section>
       )}
 
-      {book.cycles.length > 0 && (
+      {(book.cycles.length > 0 || book.pendingOrders.length > 0) && (
         <section className="mb-6">
-          <h2 className="mb-3 font-sans text-sm font-medium text-ink-muted">
-            Jurnal Transaksi <span className="text-ink-faint">({book.cycles.length})</span>
-          </h2>
-          <TradeJournal cycles={book.cycles} />
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-1.5">
+            <div>
+              <h2 className="font-sans text-sm font-medium text-ink">
+                Aktivitas Posisi Terbaru
+              </h2>
+              <p className="mt-0.5 font-mono text-[10px] text-ink-faint">
+                Posisi terbuka selalu terlihat · riwayat lengkap tersedia per halaman
+              </p>
+            </div>
+            <span className="font-mono text-[10px] text-ink-faint">
+              {openCount} posisi terbuka · {book.pendingOrders.length} pending
+            </span>
+          </div>
+          <TradeJournal cycles={book.cycles} pendingOrders={book.pendingOrders} />
         </section>
       )}
 
-      <section className="mx-auto max-w-3xl rounded-xl border border-border bg-surface p-6">
-        {briefing ? (
-          <div className="briefing-content" dangerouslySetInnerHTML={{ __html: renderBriefingMarkdown(briefing) }} />
-        ) : (
-          <p className="font-sans text-sm text-ink-muted">No briefing on file for this agent yet.</p>
-        )}
-      </section>
+      <details className="mx-auto max-w-3xl rounded-xl border border-border bg-surface">
+        <summary className="cursor-pointer list-none px-5 py-4 font-sans text-sm font-medium text-ink marker:hidden [&::-webkit-details-marker]:hidden">
+          Catatan strategi &amp; metodologi agent
+          <span className="ml-2 font-mono text-[10px] font-normal text-ink-faint">opsional</span>
+        </summary>
+        <div className="border-t border-border p-6">
+          {briefing ? (
+            <div className="briefing-content" dangerouslySetInnerHTML={{ __html: renderBriefingMarkdown(briefing) }} />
+          ) : (
+            <p className="font-sans text-sm text-ink-muted">No briefing on file for this agent yet.</p>
+          )}
+        </div>
+      </details>
     </main>
   );
 }

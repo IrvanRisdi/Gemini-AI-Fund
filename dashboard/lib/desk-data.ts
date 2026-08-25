@@ -3,9 +3,6 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fetchBulkIdrPrices } from './market-data';
 
-const REPO_OWNER = 'IrvanRisdi';
-const REPO_NAME = 'Gemini-AI-Fund';
-const REPO_BRANCH = 'main';
 
 function normalizeIndodaxKey(rawPair: string): string {
   const clean = rawPair.replace('/', '').toLowerCase();
@@ -28,7 +25,7 @@ function getDeskDir(): string {
 export interface LedgerTrade {
   timestamp: string;
   instrument: string;
-  side: 'long' | 'short';
+  side: 'long';
   type: 'open' | 'close' | 'add';
   size: number;
   price: number;
@@ -37,13 +34,33 @@ export interface LedgerTrade {
 }
 
 export interface LedgerPosition {
-  side: 'long' | 'short';
+  side: 'long';
   size: number;
   entryPrice: number;
   stopPrice: number;
   targetPrice?: number;
   opened: string;
   sizingNote?: string;
+  campaignId?: string;
+  leg?: number;
+}
+
+export interface PendingOrder {
+  id: string;
+  campaignId: string;
+  pair: string;
+  side: 'long';
+  type: 'limit' | 'stop';
+  entryLow: number;
+  entryHigh: number;
+  stopPrice: number;
+  targetPrice: number;
+  riskReservedIdr: number;
+  expiresAt: string;
+  createdAt: string;
+  status: 'pending' | 'filled' | 'cancelled' | 'expired' | 'rejected';
+  confirmations: string[];
+  reason: string;
 }
 
 interface LedgerAgent {
@@ -53,6 +70,7 @@ interface LedgerAgent {
   balance: { IDR: number };
   positions: Record<string, LedgerPosition>;
   trades: LedgerTrade[];
+  pendingOrders?: PendingOrder[];
 }
 
 interface PaperLedger {
@@ -102,6 +120,7 @@ export interface AgentSummary {
   pnlPct: number;
   openPositions: LedgerPosition[];
   openPairs: string[];
+  pendingOrders: PendingOrder[];
   latestTrade: LedgerTrade | null;
   lastAction: string;
 }
@@ -119,33 +138,16 @@ export interface DeskSnapshot {
 }
 
 export const DEFAULT_AGENTS = [
-  'momentum-trader',
   'mean-reversion-trader',
-  'jesse-livermore',
   'smc-trader',
   'breakout-specialist',
   'wyckoff-trader',
-  'supply-demand-trader',
-  'fibonacci-trader',
-  'candlestick-trader',
+  'aggressive-breakout-trader',
 ];
 
-const DEFAULT_STARTING_BALANCE = 18000000;
+const DEFAULT_STARTING_BALANCE = 50000000;
 
 async function readJson<T>(file: string): Promise<T | null> {
-  // 1. Tarik data secara LIVE langsung dari GitHub Raw
-  try {
-    const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/.desk/${file}?t=${Date.now()}`;
-    const res = await fetch(rawUrl, {
-      cache: 'no-store',
-    });
-    if (res.ok) {
-      const text = await res.text();
-      return JSON.parse(text) as T;
-    }
-  } catch {}
-
-  // 2. Pembacaan dari penyimpanan lokal
   try {
     const dir = getDeskDir();
     const fullPath = path.join(dir, file);
@@ -187,6 +189,7 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
         pnlPct: 0,
         openPositions: [],
         openPairs: [],
+        pendingOrders: [],
         latestTrade: null,
         lastAction,
       };
@@ -205,7 +208,7 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
         max_portfolio_drawdown_pct: 10,
         stop_loss_required: 1,
       },
-      latestScanCandidates: scan?.candidates ?? [],
+      latestScanCandidates: (scan?.candidates ?? []).filter((candidate) => DEFAULT_AGENTS.includes(candidate.agent)),
     };
   }
 
@@ -242,6 +245,7 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     const pnlPct = startingBal > 0 ? (pnlIdr / startingBal) * 100 : 0;
 
     const trades = book?.trades ?? [];
+    const pendingOrders = (book?.pendingOrders ?? []).filter((order) => order.status === 'pending');
     const latestTrade = trades.length
       ? [...trades].sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0]
       : null;
@@ -264,6 +268,7 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
       pnlPct,
       openPositions: positionsList,
       openPairs: Object.keys(rawPositions),
+      pendingOrders,
       latestTrade,
       lastAction,
     };
@@ -274,6 +279,10 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
   const totalUnrealizedPnl = agents.reduce((sum, a) => sum + a.unrealizedPnlIdr, 0);
   const startingTotal = agents.length * (ledger.starting_balance_per_agent || defaultStartingBalance);
 
+  const activeCandidates = (scan?.candidates ?? []).filter((candidate) =>
+    rosterToUse.includes(candidate.agent),
+  );
+
   return {
     lastCycle,
     deskMode: state.desk?.mode || 'paper',
@@ -283,20 +292,11 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     startingTotal,
     agents,
     riskLimits: state.agents?.['risk-manager']?.risk_limits ?? null,
-    latestScanCandidates: scan?.candidates ?? [],
+    latestScanCandidates: activeCandidates,
   };
 }
 
 export async function getBriefingExcerpt(slug: string, maxChars = 2400): Promise<string> {
-  try {
-    const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/.desk/briefings/${slug}.md?t=${Date.now()}`;
-    const res = await fetch(rawUrl, { cache: 'no-store' });
-    if (res.ok) {
-      const raw = await res.text();
-      return raw.length > maxChars ? raw.slice(0, maxChars) + '\n…' : raw;
-    }
-  } catch {}
-
   try {
     const dir = getDeskDir();
     const fullPath = path.join(dir, 'briefings', `${slug}.md`);
@@ -309,12 +309,6 @@ export async function getBriefingExcerpt(slug: string, maxChars = 2400): Promise
 }
 
 export async function getFullBriefing(slug: string): Promise<string | null> {
-  try {
-    const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/.desk/briefings/${slug}.md?t=${Date.now()}`;
-    const res = await fetch(rawUrl, { cache: 'no-store' });
-    if (res.ok) return await res.text();
-  } catch {}
-
   try {
     const dir = getDeskDir();
     const fullPath = path.join(dir, 'briefings', `${slug}.md`);
@@ -356,6 +350,7 @@ export interface AgentBookBreakdown {
   realizedPnlIdr: number;
   unrealizedPnlIdr: number;
   cycles: PositionCycle[];
+  pendingOrders: PendingOrder[];
 }
 
 export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBreakdown> {
@@ -448,6 +443,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
       realizedPnlIdr: book && ledger ? book.balance.IDR - ledger.starting_balance_per_agent : 0,
       unrealizedPnlIdr,
       cycles,
+      pendingOrders: (book?.pendingOrders ?? []).filter((order) => order.status === 'pending').sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     };
   } catch {
     return {
@@ -456,6 +452,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
       realizedPnlIdr: 0,
       unrealizedPnlIdr: 0,
       cycles: [],
+      pendingOrders: [],
     };
   }
 }
@@ -467,7 +464,17 @@ export async function listBriefingSlugs(): Promise<string[]> {
     if (!existsSync(briefingsPath)) return DEFAULT_AGENTS;
     const files = await readdir(briefingsPath);
     const slugs = files.filter((f) => f.endsWith('.md')).map((f) => f.replace(/\.md$/, ''));
-    return slugs.length > 0 ? slugs : DEFAULT_AGENTS;
+    const [ledger, state] = await Promise.all([
+      readJson<PaperLedger>('paper-ledger.json'),
+      readJson<DeskState>('state.json'),
+    ]);
+    const activeStrategySlugs = new Set(
+      Object.keys(state?.agents ?? {}).filter(
+        (slug) => state?.agents[slug]?.status === 'active' && ledger?.agents?.[slug]?.balance,
+      ),
+    );
+    const activeBriefings = slugs.filter((slug) => activeStrategySlugs.has(slug));
+    return activeBriefings.length > 0 ? activeBriefings : DEFAULT_AGENTS;
   } catch {
     return DEFAULT_AGENTS;
   }
