@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-08-25T19:00:57.208Z",
+  "timestamp": "2026-08-25T19:39:06.844Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
   "candidates": [
     {
-      "id": "breakout-specialist-hypeidr-1787684457207",
+      "id": "breakout-specialist-hypeidr-1787686746837",
       "pair": "hypeidr",
       "agent": "breakout-specialist",
       "side": "long",
@@ -14,7 +14,7 @@
       "entryHigh": 1445604.0892857143,
       "stopPrice": 1417561.0535714286,
       "targetPrice": 1501690.1607142857,
-      "expiresAt": "2026-08-25T23:00:57.208Z",
+      "expiresAt": "2026-08-25T23:39:06.837Z",
       "confirmations": [
         "Trend 4H",
         "Close breakout 1H",
