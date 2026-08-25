@@ -15,7 +15,7 @@ const FEE_RATE = 0.003;
 const OWNERS = new Set(['breakout-specialist', 'aggressive-breakout-trader', 'mean-reversion-trader', 'smc-trader', 'wyckoff-trader']);
 
 type Pending = { id: string; campaignId: string; pair: string; side: 'long'; type: 'limit' | 'stop'; entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number; riskReservedIdr: number; expiresAt: string; createdAt: string; status: 'pending' | 'filled' | 'cancelled' | 'expired' | 'rejected'; confirmations: string[]; reason: string; };
-type Position = { side: 'long'; size: number; entryPrice: number; stopPrice: number; targetPrice: number; opened: string; campaignId: string; leg: number; sizingNote: string; };
+type Position = { side: 'long'; size: number; entryPrice: number; stopPrice: number; targetPrice: number; opened: string; campaignId: string; leg: number; initialRiskPerUnit: number; sizingNote: string; };
 type Book = { balance: { IDR: number }; positions: Record<string, Position>; pendingOrders: Pending[]; trades: unknown[] };
 type Ledger = { last_cycle: string; agents: Record<string, Book> };
 type Candidate = Omit<Pending, 'campaignId' | 'riskReservedIdr' | 'createdAt' | 'status'> & { agent: string; score: number };
@@ -43,13 +43,37 @@ function fill(book: Book, order: Pending, price: number, timestamp: string) {
   const fillPrice = order.type === 'stop' ? Math.max(price, order.entryHigh) : Math.min(Math.max(price, order.entryLow), order.entryHigh);
   const riskPerUnit = fillPrice - order.stopPrice;
   const equity = book.balance.IDR;
-  const size = Math.min((equity * MAX_NOTIONAL_MULTIPLE) / fillPrice, (equity * RISK_PER_CAMPAIGN) / riskPerUnit);
+  // Jesse Livermore manages breakout campaigns in four 25% legs. Other
+  // primary agents may use the full allowed notional at their first fill.
+  const initialNotionalCap = order.campaignId.startsWith('breakout-specialist-') ? equity * 0.25 : equity * MAX_NOTIONAL_MULTIPLE;
+  const size = Math.min(initialNotionalCap / fillPrice, (equity * RISK_PER_CAMPAIGN) / riskPerUnit);
   if (!Number.isFinite(size) || size <= 0 || fillPrice <= order.stopPrice) { order.status = 'rejected'; return; }
   const fee = fillPrice * size * FEE_RATE;
   book.balance.IDR -= fee;
-  book.positions[order.pair] = { side: 'long', size, entryPrice: fillPrice, stopPrice: order.stopPrice, targetPrice: order.targetPrice, opened: timestamp, campaignId: order.campaignId, leg: 1, sizingNote: `Spot-only | Risiko maks 5% | Fee masuk Rp${Math.round(fee).toLocaleString('id-ID')}` };
+  book.positions[order.pair] = { side: 'long', size, entryPrice: fillPrice, stopPrice: order.stopPrice, targetPrice: order.targetPrice, opened: timestamp, campaignId: order.campaignId, leg: 1, initialRiskPerUnit: riskPerUnit, sizingNote: `Spot-only | Risiko maks 5% | Fee masuk Rp${Math.round(fee).toLocaleString('id-ID')}` };
   order.status = 'filled';
   book.trades.push({ timestamp, instrument: order.pair, side: 'long', type: 'open', size, price: fillPrice, reason: order.reason, campaignId: order.campaignId, confirmations: order.confirmations, feeIdr: fee });
+}
+
+function pyramidBreakout(book: Book, pair: string, position: Position, price: number, timestamp: string) {
+  if (position.leg >= 4) return;
+  const initialRisk = position.initialRiskPerUnit;
+  if (initialRisk <= 0 || price < position.entryPrice + initialRisk * position.leg) return;
+  // The first winning leg is protected before any addition. New legs are
+  // added only while total spot notional remains at or below current equity.
+  position.stopPrice = Math.max(position.stopPrice, position.entryPrice);
+  const equity = book.balance.IDR;
+  const currentNotional = position.size * price;
+  const capacity = Math.max(0, equity * MAX_NOTIONAL_MULTIPLE - currentNotional);
+  const addSize = Math.min((equity * 0.25) / price, capacity / price);
+  if (!Number.isFinite(addSize) || addSize <= 0) return;
+  const oldNotional = position.size * position.entryPrice;
+  const addFee = addSize * price * FEE_RATE;
+  position.entryPrice = (oldNotional + addSize * price) / (position.size + addSize);
+  position.size += addSize;
+  position.leg += 1;
+  book.balance.IDR -= addFee;
+  book.trades.push({ timestamp, instrument: pair, side: 'long', type: 'add', size: addSize, price, reason: `Jesse Livermore pyramid leg ${position.leg}/4 setelah +${position.leg - 1}R`, campaignId: position.campaignId, feeIdr: addFee });
 }
 
 function close(book: Book, pair: string, position: Position, price: number, timestamp: string, reason: string) {
@@ -73,6 +97,7 @@ async function main() {
       const price = priceFor(pair, prices); if (!price) continue;
       if (price <= position.stopPrice) close(book, pair, position, price, timestamp, 'Stop loss struktur');
       else if (price >= position.targetPrice) close(book, pair, position, price, timestamp, 'Target tercapai');
+      else if (agent === 'breakout-specialist') pyramidBreakout(book, pair, position, price, timestamp);
     }
     const candidates = (scan.candidates ?? []).filter((item) => item.agent === agent && OWNERS.has(agent));
     for (const candidate of candidates) { const order = reserveCandidate(book, candidate, timestamp); if (order) book.pendingOrders.push(order); }
