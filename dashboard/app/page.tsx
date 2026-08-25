@@ -15,14 +15,18 @@ export const dynamic = 'force-dynamic';
 /**
  * Paper Trading Risk Configuration
  *
- * These values should stay aligned with the
+ * Keep these values synchronized with the
  * automated paper execution engine.
  */
-const RISK_PER_TRADE = 2;
-const STOP_LOSS_PERCENT = 2;
+const RISK_PER_TRADE = 0.02;
+const STOP_LOSS_PERCENT = 0.02;
 const TAKE_PROFIT_RR = 2.5;
 const MAX_LEVERAGE = 10;
 const MAX_POSITION_LEVERAGE = 2.5;
+
+function formatIdr(value: number): string {
+  return `Rp${Math.round(value).toLocaleString('id-ID')}`;
+}
 
 function agentCard(agent: AgentSummary) {
   const hasPosition = agent.openPairs.length > 0;
@@ -43,12 +47,8 @@ function agentCard(agent: AgentSummary) {
   if (agent.unrealizedPnlIdr !== 0) {
     badges.push({
       label: `FL: ${
-        agent.unrealizedPnlIdr >= 0
-          ? '+'
-          : ''
-      }Rp${Math.round(
-        agent.unrealizedPnlIdr
-      ).toLocaleString('id-ID')}`,
+        agent.unrealizedPnlIdr >= 0 ? '+' : ''
+      }${formatIdr(agent.unrealizedPnlIdr)}`,
       tone:
         agent.unrealizedPnlIdr >= 0
           ? 'positive'
@@ -68,46 +68,26 @@ function agentCard(agent: AgentSummary) {
         ? 'positive'
         : 'negative';
 
-    statusLabel = `${pos.side.toUpperCase()} ${
-      agent.openPairs[0]
-    }`;
+    statusLabel = `${pos.side.toUpperCase()} ${agent.openPairs[0]}`;
 
-    /**
-     * FIX:
-     *
-     * The original code had an incorrectly nested
-     * template literal:
-     *
-     * `Entry Rp${... , stop Rp${...}`
-     *
-     * which caused:
-     *
-     * Unexpected token `Rp$`
-     */
     statusDescription =
       pos.sizingNote ??
-      `Entry Rp${pos.entryPrice.toLocaleString(
-        'id-ID'
-      )}, stop Rp${pos.stopPrice.toLocaleString(
-        'id-ID'
+      `Entry ${formatIdr(
+        pos.entryPrice
+      )}, stop ${formatIdr(
+        pos.stopPrice
       )}.`;
   } else if (
-    agent.lastAction.startsWith(
-      '⚡ Signal:'
-    ) ||
-    agent.lastAction.startsWith(
-      '🔥 Signal:'
-    )
+    agent.lastAction.startsWith('⚡ Signal:') ||
+    agent.lastAction.startsWith('🔥 Signal:')
   ) {
     statusTone = 'accent';
     statusLabel = 'SIGNAL DETECTED';
-    statusDescription =
-      agent.lastAction;
+    statusDescription = agent.lastAction;
   } else if (agent.latestTrade) {
     statusTone =
       agent.latestTrade.type === 'close'
-        ? (agent.latestTrade.realizedPnlIdr ??
-            0) >= 0
+        ? (agent.latestTrade.realizedPnlIdr ?? 0) >= 0
           ? 'positive'
           : 'negative'
         : 'accent';
@@ -126,18 +106,14 @@ function agentCard(agent: AgentSummary) {
       key={agent.slug}
       title={agent.slug}
       href={`/agent/${agent.slug}`}
-      subtitle={`Rp${agent.startingBalance.toLocaleString(
-        'id-ID'
-      )} modal · Kas: Rp${Math.round(
-        agent.cash
-      ).toLocaleString('id-ID')}`}
+      subtitle={`${formatIdr(
+        agent.startingBalance
+      )} modal · Kas: ${formatIdr(agent.cash)}`}
       badges={badges}
       statusTone={statusTone}
       statusLabel={statusLabel}
       statusDescription={statusDescription}
-      value={`Rp${Math.round(
-        agent.equity
-      ).toLocaleString('id-ID')}`}
+      value={formatIdr(agent.equity)}
       deltaPct={agent.pnlPct}
       live={agent.status === 'active'}
     />
@@ -145,13 +121,11 @@ function agentCard(agent: AgentSummary) {
 }
 
 export default async function DeskPage() {
-  const [
-    snapshot,
-    allBriefingSlugs,
-  ] = await Promise.all([
-    getDeskSnapshot(),
-    listBriefingSlugs(),
-  ]);
+  const [snapshot, allBriefingSlugs] =
+    await Promise.all([
+      getDeskSnapshot(),
+      listBriefingSlugs(),
+    ]);
 
   const deskPnl =
     snapshot.totalEquity -
@@ -164,15 +138,15 @@ export default async function DeskPage() {
 
   const bookHoldingSlugs = new Set(
     snapshot.agents.map(
-      (a) => a.slug
+      (agent) => agent.slug
     )
   );
 
   const otherSlugs =
     allBriefingSlugs
       .filter(
-        (s) =>
-          !bookHoldingSlugs.has(s)
+        (slug) =>
+          !bookHoldingSlugs.has(slug)
       )
       .sort();
 
@@ -205,10 +179,7 @@ export default async function DeskPage() {
           </p>
 
           <p className="font-mono text-xl sm:text-2xl font-semibold text-ink">
-            Rp
-            {Math.round(
-              snapshot.totalEquity
-            ).toLocaleString('id-ID')}
+            {formatIdr(snapshot.totalEquity)}
           </p>
 
           <div className="flex items-center sm:justify-end gap-2 mt-0.5 font-mono text-xs">
@@ -219,43 +190,25 @@ export default async function DeskPage() {
                   : 'text-negative font-medium'
               }
             >
-              {deskPnlPct >= 0
-                ? '+'
-                : ''}
+              {deskPnlPct >= 0 ? '+' : ''}
               {deskPnlPct.toFixed(3)}%
               {' ('}
-              {deskPnl >= 0
-                ? '+'
-                : ''}
-              Rp
-              {Math.round(
-                deskPnl
-              ).toLocaleString(
-                'id-ID'
-              )}
+              {deskPnl >= 0 ? '+' : ''}
+              {formatIdr(deskPnl)}
               {')'}
             </span>
           </div>
 
-          {snapshot.totalUnrealizedPnl !==
-            0 && (
+          {snapshot.totalUnrealizedPnl !== 0 && (
             <p className="font-mono text-[10px] text-ink-faint mt-0.5">
-              Kas: Rp
-              {Math.round(
-                snapshot.totalCash
-              ).toLocaleString(
-                'id-ID'
-              )}{' '}
-              · Floating:{' '}
-              {snapshot.totalUnrealizedPnl >=
-              0
+              Kas: {formatIdr(snapshot.totalCash)} ·
+              {' '}
+              Floating:{' '}
+              {snapshot.totalUnrealizedPnl >= 0
                 ? '+'
                 : ''}
-              Rp
-              {Math.round(
+              {formatIdr(
                 snapshot.totalUnrealizedPnl
-              ).toLocaleString(
-                'id-ID'
               )}
             </p>
           )}
@@ -264,14 +217,11 @@ export default async function DeskPage() {
 
       {/* Sinyal Pasar Aktif */}
       {snapshot.latestScanCandidates &&
-        snapshot.latestScanCandidates
-          .length > 0 && (
+        snapshot.latestScanCandidates.length > 0 && (
           <section className="mb-6 sm:mb-8 rounded-xl border border-blue-500/30 bg-blue-950/20 p-4 backdrop-blur">
             <div className="flex items-center justify-between mb-2.5">
               <h2 className="font-sans text-xs sm:text-sm font-semibold text-blue-300 flex items-center gap-2">
-                <span>
-                  ⚡ Sinyal Pasar Aktif
-                </span>
+                <span>⚡ Sinyal Pasar Aktif</span>
 
                 <span className="rounded-full bg-blue-500/20 px-2 py-0.5 font-mono text-[10px] text-blue-400 border border-blue-500/30">
                   {
@@ -294,23 +244,23 @@ export default async function DeskPage() {
 
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {snapshot.latestScanCandidates.map(
-                (c, idx) => (
+                (candidate, idx) => (
                   <div
                     key={idx}
                     className="rounded-lg border border-border/60 bg-surface/80 p-2.5 sm:p-3 font-mono text-xs"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-accent">
-                        {c.pair.toUpperCase()}
+                        {candidate.pair.toUpperCase()}
                       </span>
 
                       <span className="text-ink-muted text-[11px]">
-                        {c.agent}
+                        {candidate.agent}
                       </span>
                     </div>
 
                     <p className="mt-1 text-[11px] text-ink-muted leading-relaxed line-clamp-2">
-                      {c.reason}
+                      {candidate.reason}
                     </p>
                   </div>
                 )
@@ -321,9 +271,7 @@ export default async function DeskPage() {
 
       {/* Kartu Agen Trading Aktif */}
       <section className="grid grid-cols-1 gap-3.5 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {snapshot.agents.map(
-          agentCard
-        )}
+        {snapshot.agents.map(agentCard)}
       </section>
 
       {/* Agen Pengawas & Riset Khusus */}
@@ -332,14 +280,13 @@ export default async function DeskPage() {
           <div className="flex items-center justify-between mb-2.5">
             <div>
               <h2 className="font-sans text-xs sm:text-sm font-semibold text-ink">
-                Agen Pengawas &amp; Riset
-                Khusus
+                Agen Pengawas &amp; Riset Khusus
               </h2>
 
               <p className="text-[11px] text-ink-faint">
                 Persona analis makro dan
-                pengawas risiko (tanpa
-                buku saldo langsung)
+                pengawas risiko (tanpa buku
+                saldo langsung)
               </p>
             </div>
 
@@ -349,25 +296,23 @@ export default async function DeskPage() {
           </div>
 
           <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
-            {otherSlugs.map(
-              (slug) => (
-                <Link
-                  key={slug}
-                  href={`/agent/${slug}`}
-                  className="flex items-center gap-1.5 rounded-lg border border-border bg-bg/80 px-2.5 py-1.5 font-mono text-[11px] text-ink-muted transition-colors hover:border-accent hover:text-ink"
-                >
-                  {slug}
-                  <StatBadge tone="neutral">
-                    briefing
-                  </StatBadge>
-                </Link>
-              )
-            )}
+            {otherSlugs.map((slug) => (
+              <Link
+                key={slug}
+                href={`/agent/${slug}`}
+                className="flex items-center gap-1.5 rounded-lg border border-border bg-bg/80 px-2.5 py-1.5 font-mono text-[11px] text-ink-muted transition-colors hover:border-accent hover:text-ink"
+              >
+                {slug}
+                <StatBadge tone="neutral">
+                  briefing
+                </StatBadge>
+              </Link>
+            ))}
           </div>
         </section>
       )}
 
-      {/* Bagian Bawah: Kebijakan Risiko & Gemini AI Console */}
+      {/* Risk Management + Gemini AI Console */}
       <section className="mt-6 sm:mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Risk Management */}
         <div className="flex flex-col justify-between rounded-xl border border-border bg-surface p-4 sm:p-5">
@@ -376,14 +321,12 @@ export default async function DeskPage() {
               <div>
                 <h3 className="font-sans text-base sm:text-lg font-semibold text-ink flex items-center gap-2">
                   <span>🛡️</span>
-                  Kebijakan &amp; Batasan
-                  Risiko
+                  Kebijakan &amp; Batasan Risiko
                 </h3>
 
                 <p className="text-[11px] sm:text-xs text-ink-faint mt-0.5">
                   Dikelola otomatis oleh
-                  Paper Trading Risk
-                  Engine
+                  Paper Trading Risk Engine
                 </p>
               </div>
 
@@ -393,22 +336,20 @@ export default async function DeskPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 text-xs">
-              {/* Risk per trade */}
+              {/* Risk per Trade */}
               <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
                 <p className="font-mono text-[10px] text-ink-faint uppercase">
                   Risiko per Transaksi
                 </p>
 
                 <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  {RISK_PER_TRADE}%
-                  Equity
+                  2% dari Equity
                 </p>
 
                 <p className="text-[10px] text-ink-muted mt-0.5">
-                  Risiko maksimum teoritis
-                  dihitung dari equity
-                  terhadap jarak
-                  stop-loss.
+                  Risiko teoritis maksimum
+                  ditentukan dari equity dan
+                  jarak stop-loss.
                 </p>
               </div>
 
@@ -419,32 +360,47 @@ export default async function DeskPage() {
                 </p>
 
                 <p className="mt-0.5 font-sans font-semibold text-positive text-sm">
-                  {STOP_LOSS_PERCENT}%
-                  dari Entry
+                  2% dari Entry
                 </p>
 
                 <p className="text-[10px] text-ink-muted mt-0.5">
-                  Setiap posisi wajib
-                  memiliki stop-loss
-                  sebelum dieksekusi.
+                  Setiap posisi menggunakan
+                  jarak stop-loss sebesar 2%
+                  dari harga entry.
                 </p>
               </div>
 
-              {/* Risk Reward */}
+              {/* Position Sizing */}
               <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
                 <p className="font-mono text-[10px] text-ink-faint uppercase">
-                  Risk / Reward
+                  Position Sizing
                 </p>
 
                 <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  1 : {TAKE_PROFIT_RR}
+                  Risk ÷ Stop Distance
                 </p>
 
                 <p className="text-[10px] text-ink-muted mt-0.5">
-                  Target profit berada
-                  {` ${TAKE_PROFIT_RR}R `}
-                  dari jarak
-                  stop-loss.
+                  Ukuran posisi ditentukan
+                  berdasarkan nominal risiko
+                  dan jarak stop-loss.
+                </p>
+              </div>
+
+              {/* Take Profit */}
+              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
+                <p className="font-mono text-[10px] text-ink-faint uppercase">
+                  Take-Profit
+                </p>
+
+                <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
+                  2.5R
+                </p>
+
+                <p className="text-[10px] text-ink-muted mt-0.5">
+                  Target profit ditetapkan
+                  sebesar 2.5 kali jarak
+                  risiko dari entry.
                 </p>
               </div>
 
@@ -455,37 +411,49 @@ export default async function DeskPage() {
                 </p>
 
                 <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  {MAX_LEVERAGE}× Equity
+                  10× Equity
                 </p>
 
                 <p className="text-[10px] text-ink-muted mt-0.5">
-                  Total nilai nominal
-                  seluruh posisi tidak
-                  boleh melebihi
-                  {` ${MAX_LEVERAGE}× `}
+                  Total nominal seluruh posisi
+                  dibatasi maksimal 10 kali
                   equity.
                 </p>
               </div>
 
-              {/* Maximum Position */}
+              {/* Maximum Single Position */}
               <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
                 <p className="font-mono text-[10px] text-ink-faint uppercase">
                   Maks. 1 Posisi
                 </p>
 
                 <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  {MAX_POSITION_LEVERAGE}×
-                  Equity
+                  2.5× Equity
                 </p>
 
                 <p className="text-[10px] text-ink-muted mt-0.5">
-                  Satu posisi dibatasi
-                  hingga
-                  {` ${MAX_POSITION_LEVERAGE}× `}
-                  equity, sekaligus
-                  dibatasi oleh sisa
-                  kapasitas leverage
-                  portofolio.
+                  Satu posisi tidak boleh
+                  melebihi 2.5 kali equity
+                  dan tetap dibatasi oleh
+                  kapasitas gross leverage.
+                </p>
+              </div>
+
+              {/* Margin */}
+              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
+                <p className="font-mono text-[10px] text-ink-faint uppercase">
+                  Margin Teoritis
+                </p>
+
+                <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
+                  Notional ÷ 10
+                </p>
+
+                <p className="text-[10px] text-ink-muted mt-0.5">
+                  Dengan leverage maksimum
+                  10×, kebutuhan margin
+                  teoritis adalah 10% dari
+                  nilai nominal posisi.
                 </p>
               </div>
 
@@ -500,49 +468,27 @@ export default async function DeskPage() {
                 </p>
 
                 <p className="text-[10px] text-ink-muted mt-0.5">
-                  Posisi dapat dibuka pada
-                  beberapa aset selama
-                  total gross exposure
-                  tetap di bawah batas
-                  {` ${MAX_LEVERAGE}× `}
-                  equity.
+                  Beberapa aset dapat dibuka
+                  bersamaan selama total
+                  gross exposure tidak
+                  melewati 10× equity.
                 </p>
               </div>
 
-              {/* Margin */}
-              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
-                <p className="font-mono text-[10px] text-ink-faint uppercase">
-                  Margin Model
-                </p>
-
-                <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  Notional ÷ {MAX_LEVERAGE}
-                </p>
-
-                <p className="text-[10px] text-ink-muted mt-0.5">
-                  Margin teoritis dihitung
-                  berdasarkan leverage
-                  maksimum yang
-                  diizinkan.
-                </p>
-              </div>
-
-              {/* Execution Price */}
+              {/* Live Execution */}
               <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
                 <p className="font-mono text-[10px] text-ink-faint uppercase">
                   Execution Price
                 </p>
 
                 <p className="mt-0.5 font-sans font-semibold text-positive text-sm">
-                  Live Indodax Only
+                  Live Indodax
                 </p>
 
                 <p className="text-[10px] text-ink-muted mt-0.5">
-                  Posisi baru hanya
-                  dieksekusi jika harga
-                  live tersedia. Harga
-                  scanner tidak digunakan
-                  sebagai fallback.
+                  Entry baru hanya diproses
+                  apabila harga live dari
+                  Indodax tersedia.
                 </p>
               </div>
 
@@ -559,7 +505,7 @@ export default async function DeskPage() {
                 <p className="text-[10px] text-ink-muted mt-0.5">
                   Belum digunakan sebagai
                   circuit breaker otomatis
-                  oleh execution engine.
+                  pada execution engine.
                 </p>
               </div>
 
@@ -570,14 +516,13 @@ export default async function DeskPage() {
                 </p>
 
                 <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  Not Simulated
+                  Belum Disimulasikan
                 </p>
 
                 <p className="text-[10px] text-ink-muted mt-0.5">
-                  Sistem saat ini adalah
+                  Model saat ini merupakan
                   synthetic leveraged paper
-                  trading dan belum
-                  mensimulasikan
+                  trading dan belum menghitung
                   liquidation exchange.
                 </p>
               </div>
@@ -593,9 +538,9 @@ export default async function DeskPage() {
                 </p>
 
                 <p className="text-[10px] text-ink-muted mt-0.5">
-                  Belum ada hard limit
-                  sektor yang diterapkan
-                  pada execution engine.
+                  Belum ada hard limit sektor
+                  yang diterapkan pada
+                  execution engine.
                 </p>
               </div>
             </div>
@@ -621,4 +566,3 @@ export default async function DeskPage() {
     </main>
   );
 }
-```
