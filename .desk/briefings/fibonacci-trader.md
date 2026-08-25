@@ -96,3 +96,35 @@ _None._
 * **Notional:** Rp4.689.804
 * **Margin Used:** Rp468.980
 * **New Balance:** Rp18.195.225
+
+
+---
+### 2026-08-25T04:03 UTC — Position Opened: LONG SOL/IDR
+
+* **Entry Price:** Rp1.794.935
+* **Stop Loss:** Rp1.759.036
+* **Target:** Rp1.884.682
+* **Reason:** 38.2% retracement (1790506.920000) of swing low 1767060->high 1805000 tagged with a bullish reaction candle
+* **Notional:** Rp18.200.665
+* **Margin Used:** Rp1.820.067
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp364.013
+* **Maximum Risk Target:** Rp364.013
+* **Portfolio Gross Exposure Before:** Rp4.427.931
+* **Portfolio Gross Exposure After:** Rp22.628.596
+
+
+---
+### 2026-08-25T04:03 UTC — Position Opened: LONG BNB/IDR
+
+* **Entry Price:** Rp12.655.136
+* **Stop Loss:** Rp12.402.033
+* **Target:** Rp13.287.893
+* **Reason:** 38.2% retracement (12631257.954000) of swing low 12520047->high 12700000 tagged with a bullish reaction candle
+* **Notional:** Rp18.200.665
+* **Margin Used:** Rp1.820.067
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp364.013
+* **Maximum Risk Target:** Rp364.013
+* **Portfolio Gross Exposure Before:** Rp22.628.596
+* **Portfolio Gross Exposure After:** Rp40.829.261

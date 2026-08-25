@@ -143,3 +143,67 @@ _None._
 * **Maximum Risk Target:** Rp356.742
 * **Portfolio Gross Exposure Before:** Rp85.329.769
 * **Portfolio Gross Exposure After:** Rp103.166.853
+
+
+---
+### 2026-08-25T04:03 UTC — Position Opened: SHORT XRP/IDR
+
+* **Entry Price:** Rp26.800
+* **Stop Loss:** Rp27.336
+* **Target:** Rp25.460
+* **Reason:** realized vol expanding — short-window vol is 1.77x the longer-window baseline
+* **Notional:** Rp18.080.122
+* **Margin Used:** Rp1.808.012
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp361.602
+* **Maximum Risk Target:** Rp361.602
+* **Portfolio Gross Exposure Before:** Rp102.900.209
+* **Portfolio Gross Exposure After:** Rp120.980.331
+
+
+---
+### 2026-08-25T04:03 UTC — Position Opened: SHORT DOGE/IDR
+
+* **Entry Price:** Rp1.628
+* **Stop Loss:** Rp1.661
+* **Target:** Rp1.547
+* **Reason:** realized vol expanding — short-window vol is 1.80x the longer-window baseline
+* **Notional:** Rp18.080.122
+* **Margin Used:** Rp1.808.012
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp361.602
+* **Maximum Risk Target:** Rp361.602
+* **Portfolio Gross Exposure Before:** Rp120.980.331
+* **Portfolio Gross Exposure After:** Rp139.060.453
+
+
+---
+### 2026-08-25T04:03 UTC — Position Opened: SHORT PEPE/IDR
+
+* **Entry Price:** Rp0
+* **Stop Loss:** Rp0
+* **Target:** Rp0
+* **Reason:** realized vol expanding — short-window vol is 1.80x the longer-window baseline
+* **Notional:** Rp18.080.122
+* **Margin Used:** Rp1.808.012
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp361.602
+* **Maximum Risk Target:** Rp361.602
+* **Portfolio Gross Exposure Before:** Rp139.060.453
+* **Portfolio Gross Exposure After:** Rp157.140.575
+
+
+---
+### 2026-08-25T04:03 UTC — Position Opened: SHORT HBAR/IDR
+
+* **Entry Price:** Rp1.468
+* **Stop Loss:** Rp1.497
+* **Target:** Rp1.395
+* **Reason:** realized vol expanding — short-window vol is 1.85x the longer-window baseline
+* **Notional:** Rp18.080.122
+* **Margin Used:** Rp1.808.012
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp361.602
+* **Maximum Risk Target:** Rp361.602
+* **Portfolio Gross Exposure Before:** Rp157.140.575
+* **Portfolio Gross Exposure After:** Rp175.220.697

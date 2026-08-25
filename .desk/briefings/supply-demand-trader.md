@@ -153,3 +153,19 @@ _None._
 * **Maximum Risk Target:** Rp378.374
 * **Portfolio Gross Exposure Before:** Rp88.127.859
 * **Portfolio Gross Exposure After:** Rp107.046.542
+
+
+---
+### 2026-08-25T04:03 UTC — Position Opened: LONG HBAR/IDR
+
+* **Entry Price:** Rp1.468
+* **Stop Loss:** Rp1.439
+* **Target:** Rp1.541
+* **Reason:** fresh supply zone (proximal 1475, distal 1487) retested for the first time and held, 2.1x ATR departure
+* **Notional:** Rp18.531.971
+* **Margin Used:** Rp1.853.197
+* **Effective Leverage:** 1.00x
+* **Risk at Stop:** Rp370.639
+* **Maximum Risk Target:** Rp370.639
+* **Portfolio Gross Exposure Before:** Rp106.659.830
+* **Portfolio Gross Exposure After:** Rp125.191.800

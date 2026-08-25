@@ -437,7 +437,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened SHORT LTC/IDR @ Rp936.000 | SL Rp954.720 | TP Rp889.200 | 1.00x",
+      "last_action": "Opened SHORT HBAR/IDR @ Rp1.468 | SL Rp1.497 | TP Rp1.395 | 1.00x",
       "fired_date": "2026-08-21",
       "fire_reason": "User request 2026-08-21 — making room for the four new pattern-based specialists. Never traded by design (no place_order in its own SKILL.md, pure regime-classification role); freeing its book slot rather than leaving it permanently flat."
     },
@@ -495,7 +495,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Opened LONG LTC/IDR @ Rp936.000 | SL Rp917.280 | TP Rp982.800 | 1.00x"
+      "last_action": "Opened LONG HBAR/IDR @ Rp1.468 | SL Rp1.439 | TP Rp1.541 | 1.00x"
     },
     "fibonacci-trader": {
       "status": "active",
@@ -523,7 +523,7 @@
         "SHIB/IDR",
         "UNI/IDR"
       ],
-      "last_action": "Closed LONG BTC/IDR (+Rp199.249) — Take Profit hit @ Rp1.424.956.000 (2026-08-25T03:08 UTC)"
+      "last_action": "Opened LONG BNB/IDR @ Rp12.655.136 | SL Rp12.402.033 | TP Rp13.287.893 | 1.00x"
     },
     "candlestick-trader": {
       "status": "active",
