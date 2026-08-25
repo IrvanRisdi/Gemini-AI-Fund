@@ -6,6 +6,7 @@
  * and updates .desk/paper-ledger.json, .desk/state.json, and .desk/briefings/.
  */
 
+
 import fs from 'node:fs';
 import path from 'node:path';
 
