@@ -3,6 +3,23 @@
 import { useState } from 'react';
 import type { DeskSnapshot } from '@/lib/desk-data';
 
+function formatInline(text: string): string {
+  if (!text) return '';
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Bold (**teks**)
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-ink">$1</strong>');
+  // Italic (*teks*)
+  html = html.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em class="text-ink-muted italic">$1</em>');
+  // Code (`teks`)
+  html = html.replace(/`(.+?)`/g, '<code class="rounded bg-surface-hover px-1.5 py-0.5 font-mono text-[11px] text-blue-300">$1</code>');
+
+  return html;
+}
+
 function renderFormattedText(text: string) {
   if (!text) return null;
 
@@ -48,13 +65,14 @@ function renderFormattedText(text: string) {
     // Poin bernomor: 1. 2. 3.
     const numMatch = line.match(/^(\d+)\.\s+(.*)/);
     if (numMatch) {
-      const content = numMatch;
+      const numStr = numMatch;
+      const contentStr = numMatch || '';
       elements.push(
         <div key={i} className="mt-2 mb-1 flex items-start gap-2 text-xs sm:text-sm font-medium text-ink">
           <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/20 font-mono text-[11px] text-blue-400 font-semibold">
-            {numMatch}
+            {numStr}
           </span>
-          <div className="flex-1 pt-0.5 leading-relaxed" dangerouslySetInnerHTML={{ __html: formatInline(content) }} />
+          <div className="flex-1 pt-0.5 leading-relaxed" dangerouslySetInnerHTML={{ __html: formatInline(contentStr) }} />
         </div>
       );
       continue;
@@ -62,11 +80,11 @@ function renderFormattedText(text: string) {
 
     // Poin bullet: * atau -
     if (line.startsWith('* ') || line.startsWith('- ')) {
-      const content = line.slice(2);
+      const contentStr = line.slice(2);
       elements.push(
         <div key={i} className="ml-2 sm:ml-4 my-1 flex items-start gap-2 text-xs sm:text-sm text-ink-muted">
           <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400/70" />
-          <div className="flex-1 leading-relaxed" dangerouslySetInnerHTML={{ __html: formatInline(content) }} />
+          <div className="flex-1 leading-relaxed" dangerouslySetInnerHTML={{ __html: formatInline(contentStr) }} />
         </div>
       );
       continue;
@@ -91,22 +109,6 @@ function renderFormattedText(text: string) {
       </div>
     </div>
   );
-}
-
-function formatInline(text: string): string {
-  let html = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-
-  // Bold (**teks**)
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-ink">$1</strong>');
-  // Italic (*teks*)
-  html = html.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em class="text-ink-muted italic">$1</em>');
-  // Code (`teks`)
-  html = html.replace(/`(.+?)`/g, '<code class="rounded bg-surface-hover px-1.5 py-0.5 font-mono text-[11px] text-blue-300">$1</code>');
-
-  return html;
 }
 
 export function AiConsole({ snapshot }: { snapshot: DeskSnapshot }) {
@@ -175,52 +177,3 @@ export function AiConsole({ snapshot }: { snapshot: DeskSnapshot }) {
         <textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              handleSend();
-            }
-          }}
-          placeholder="Tanya apa saja, mis. 'Jelaskan mengapa SHIB dan ETH dibuka?'"
-          rows={2}
-          disabled={isLoading}
-          className="flex-1 resize-none rounded-lg border border-border bg-bg/80 px-3 py-2 font-sans text-xs sm:text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none disabled:opacity-50"
-        />
-        <button
-          type="button"
-          onClick={handleSend}
-          disabled={isLoading || !question.trim()}
-          className="rounded-lg bg-accent px-5 py-2.5 font-sans text-xs sm:text-sm font-semibold text-bg transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center min-w-[80px]"
-        >
-          {isLoading ? (
-            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-bg border-t-transparent" />
-          ) : (
-            'Kirim'
-          )}
-        </button>
-      </div>
-
-      {/* Output Bersih & Responsif */}
-      {displayed && (
-        <div className="relative mt-2 rounded-xl border border-border/80 bg-bg/90 p-3.5 sm:p-4.5 overflow-hidden w-full">
-          <div className="flex items-center justify-between border-b border-border/60 pb-2 mb-3">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-blue-400" />
-              <span className="font-mono text-[11px] text-ink-muted">Analisis Gemini AI</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="font-mono text-[10px] text-ink-faint hover:text-accent transition-colors"
-            >
-              {copied ? 'Tersalin' : 'Salin'}
-            </button>
-          </div>
-          <div className="max-h-[28rem] overflow-y-auto overflow-x-hidden pr-1 break-words">
-            {renderFormattedText(displayed)}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
