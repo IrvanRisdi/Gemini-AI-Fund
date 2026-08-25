@@ -1,4 +1,3 @@
-```tsx
 import Link from 'next/link';
 import { DataCard, type DataCardBadge } from '@/components/DataCard';
 import { AiConsole } from '@/components/AiConsole';
