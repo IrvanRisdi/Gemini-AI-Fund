@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-25T20:39:33.342Z",
+  "last_cycle": "2026-08-25T21:11:24.920Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -37,7 +37,7 @@
           "campaignId": "breakout-specialist-hypeidr-1787684460056",
           "riskReservedIdr": 969941.7676710499,
           "createdAt": "2026-08-25T19:01:00.056Z",
-          "status": "pending"
+          "status": "cancelled"
         }
       ],
       "trades": []
