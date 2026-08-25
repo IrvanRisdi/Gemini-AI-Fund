@@ -97,8 +97,9 @@ function simulate(agent: Agent, pair: string, candles: OHLCV[], fourHour: OHLCV[
       if (fills) { filledAt = future; entry = setup.entryLow === setup.entryHigh ? setup.entryHigh : Math.min(setup.entryHigh, Math.max(setup.entryLow, bar.open)); break; }
     }
     if (filledAt < 0) { available = index + setup.expiryBars; continue; }
-    let outcome: Trade['outcome'] = 'expired'; let exit = candles.at(-1)!.close; let closedAt = candles.length - 1;
-    for (let future = filledAt; future < Math.min(candles.length, filledAt + 72); future++) {
+    const expiryAt = Math.min(candles.length - 1, filledAt + 72);
+    let outcome: Trade['outcome'] = 'expired'; let exit = candles[expiryAt].close; let closedAt = expiryAt;
+    for (let future = filledAt; future <= expiryAt; future++) {
       const bar = candles[future]; const hitStop = bar.low <= setup.stop; const hitTarget = bar.high >= setup.target;
       if (hitStop || hitTarget) { outcome = hitStop ? 'stop' : 'target'; exit = hitStop ? setup.stop : setup.target; closedAt = future; break; }
     }
