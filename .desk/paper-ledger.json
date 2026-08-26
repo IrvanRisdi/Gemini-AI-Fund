@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-26T11:37:28.462Z",
+  "last_cycle": "2026-08-26T12:00:50.621Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -62,7 +62,7 @@
           "campaignId": "breakout-specialist-hypeidr-1787744248462",
           "riskReservedIdr": 561795.706915031,
           "createdAt": "2026-08-26T11:37:28.462Z",
-          "status": "pending"
+          "status": "cancelled"
         }
       ],
       "trades": []
@@ -96,7 +96,7 @@
           "campaignId": "mean-reversion-trader-ethidr-1787744248462",
           "riskReservedIdr": 363682.1418080622,
           "createdAt": "2026-08-26T11:37:28.462Z",
-          "status": "pending"
+          "status": "cancelled"
         }
       ],
       "trades": []
@@ -130,7 +130,7 @@
           "campaignId": "smc-trader-ethidr-1787744248462",
           "riskReservedIdr": 363682.1418080622,
           "createdAt": "2026-08-26T11:37:28.462Z",
-          "status": "pending"
+          "status": "cancelled"
         }
       ],
       "trades": []
@@ -172,7 +172,7 @@
           "campaignId": "aggressive-breakout-trader-hypeidr-1787744248462",
           "riskReservedIdr": 561795.706915031,
           "createdAt": "2026-08-26T11:37:28.462Z",
-          "status": "pending"
+          "status": "cancelled"
         }
       ],
       "trades": []
