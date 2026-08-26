@@ -29,7 +29,10 @@ function now() { return new Date().toISOString(); }
 function campaignId(agent: string, pair: string) { return `${agent}-${pair}-${Date.now()}`; }
 function priceFor(pair: string, prices: Record<string, number>) { return prices[key(pair)] ?? 0; }
 function hasLiveCampaign(book: Book, pair: string) { return Boolean(book.positions[pair]) || book.pendingOrders.some((order) => order.pair === pair && order.status === 'pending'); }
-function valid(candidate: Candidate) { return candidate.validationStatus === 'validated' && candidate.side === 'long' && candidate.entryHigh > candidate.stopPrice && (candidate.targetPrice - candidate.entryHigh) / (candidate.entryHigh - candidate.stopPrice) >= 1.5; }
+// Research candidates remain executable while this desk is in paper-trading
+// mode, so their real-time outcomes can be measured independently. The status
+// is retained in the scan data for reporting and later live-trading gating.
+function valid(candidate: Candidate) { return candidate.side === 'long' && candidate.entryHigh > candidate.stopPrice && (candidate.targetPrice - candidate.entryHigh) / (candidate.entryHigh - candidate.stopPrice) >= 1.5; }
 
 async function pendingTouches(ledger: Ledger) {
   const pairs = [...new Set(Object.values(ledger.agents).flatMap((book) => book.pendingOrders.filter((order) => order.status === 'pending').map((order) => order.pair)))];
