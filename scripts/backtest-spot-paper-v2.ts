@@ -47,65 +47,61 @@ function bollinger(values: number[]) {
 function valid(setup: Pick<Setup, 'entryHigh' | 'stop' | 'target'>) {
   const risk = (setup.entryHigh - setup.stop) / setup.entryHigh;
   const reward = (setup.target - setup.entryHigh) / setup.entryHigh;
-  return setup.entryHigh > setup.stop && reward >= Math.max(risk * 1.8, 0.012);
+  return setup.entryHigh > setup.stop && reward >= Math.max(risk * 1.5, 0.01);
 }
 function limitBand(entry: number, atrValue: number, floor: number, ceiling: number) {
   const high = Math.min(ceiling, entry);
-  return { low: Math.max(floor, high - atrValue * 0.5), high };
+  return { low: Math.max(floor, high - atrValue * 0.3), high };
 }
 function demandZone(candles: OHLCV[], price: number) {
-  const recent = candles.slice(-32); const low = Math.min(...recent.map(c => c.low)); const high = Math.max(...recent.map(c => c.high)); const zoneHigh = low + (high - low) * 0.22;
-  return price >= low * 0.995 && price <= zoneHigh * 1.02 ? { low, high: zoneHigh } : null;
+  const recent = candles.slice(-32); const low = Math.min(...recent.map(c => c.low)); const high = Math.max(...recent.map(c => c.high)); const zoneHigh = low + (high - low) * 0.3;
+  return price >= low * 0.995 && price <= zoneHigh * 1.025 ? { low, high: zoneHigh } : null;
 }
 function fibConfluence(candles: OHLCV[], price: number) {
   const recent = candles.slice(-50); const low = Math.min(...recent.map(c => c.low)); const high = Math.max(...recent.map(c => c.high));
   return [0.382, 0.5, 0.618].some(ratio => Math.abs(price - (high - (high - low) * ratio)) / price < 0.008);
 }
 function bullishEngulfing(candles: OHLCV[]) { const [previous, last] = candles.slice(-2); return Boolean(previous && last && last.close > last.open && last.close >= previous.open && last.open <= previous.close); }
-function priorFourHour(candles: OHLCV[], timestamp: number) { return candles.filter(candle => candle.timestamp <= timestamp).slice(-70); }
+function priorFourHour(candles: OHLCV[], timestamp: number) { return candles.filter(candle => candle.timestamp + 4 * 3_600_000 <= timestamp).slice(-70); }
 
 function setups(one: OHLCV[], four: OHLCV[], btcFour: OHLCV[]): Setup[] {
   if (one.length < 60 || four.length < 55 || btcFour.length < 55) return [];
   const current = one.at(-1)!; const prior = one.slice(-21, -1); const closes = one.map(c => c.close); const fourCloses = four.map(c => c.close);
   const resistance = Math.max(...prior.map(c => c.high)); const support = Math.min(...prior.map(c => c.low)); const a = atr(one); const volume = current.volume / mean(prior.map(c => c.volume));
-  const btcCloses = btcFour.map(candle => candle.close); const btcBullish = ema(btcCloses, 9) >= ema(btcCloses, 21) && btcFour.at(-1)!.close >= ema(btcCloses, 21); const btcNeutral = btcFour.at(-1)!.close >= ema(btcCloses, 21) * .985;
-  const trendUp = ema(fourCloses, 9) > ema(fourCloses, 21) && latestAdx(four) >= 22; const fourAdx = latestAdx(four); const out: Setup[] = [];
-  const liquid = one.slice(-20).every(candle => candle.volume > 0) && a / current.close <= .08; const candleRange = Math.max(current.high - current.low, Number.EPSILON); const closeStrength = (current.close - current.low) / candleRange; const body = Math.abs(current.close - current.open);
-  if (btcBullish && liquid && trendUp && current.close > resistance && volume >= 1.5 && closeStrength >= .65 && body / a <= 2.2) {
-    const entry = Math.max(resistance, current.close - a * .45); const stop = Math.max(support - a * .15, entry - 1.5 * a); const target = entry + (entry - stop) * 2;
-    const band = limitBand(entry, a, resistance, current.close); const extension = (current.close - resistance) / a;
-    if (extension <= 1.25 && valid({ entryHigh: band.high, stop, target })) out.push({ agent: 'breakout-specialist', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 4 });
+  const btcCloses = btcFour.map(candle => candle.close); const btcAdx = latestAdx(btcFour); const btcBullish = ema(btcCloses, 9) >= ema(btcCloses, 21) && btcFour.at(-1)!.close >= ema(btcCloses, 21); const btcStrong = btcBullish && btcAdx >= 18; const btcNeutral = btcFour.at(-1)!.close >= ema(btcCloses, 21) * .985;
+  const trendUp = ema(fourCloses, 9) > ema(fourCloses, 21) && four.at(-1)!.close >= ema(fourCloses, 9) && latestAdx(four) >= 22; const fourAdx = latestAdx(four); const out: Setup[] = [];
+  const liquid = one.slice(-20).filter(candle => candle.volume > 0).length >= 18 && a / current.close <= .08; const candleRange = Math.max(current.high - current.low, Number.EPSILON); const closeStrength = (current.close - current.low) / candleRange; const body = Math.abs(current.close - current.open);
+  const extension = (current.close - resistance) / a;
+  const aggressiveScore = Number(volume >= 1.5) + Number(closeStrength >= .7) + Number(body / a >= .5 && body / a <= 1.8) + Number(ema(closes, 9) > ema(closes, 21)) + Number(extension <= .75);
+  if (btcStrong && liquid && trendUp && current.close > resistance && aggressiveScore >= 4) {
+    const entry = current.high * 1.001; const stop = Math.max(resistance - a * .2, entry - 1.2 * a); const target = entry + (entry - stop) * 1.5;
+    if (valid({ entryHigh: entry, stop, target })) out.push({ agent: 'breakout-specialist', entryLow: entry, entryHigh: entry, stop, target, expiryBars: 3 });
   }
-  const previous = one.at(-2)!; const priorToPrevious = one.slice(-22, -2); const previousResistance = Math.max(...priorToPrevious.map(candle => candle.high));
-  const followThrough = previous.close > previousResistance && current.close > previous.high && closeStrength >= .6;
-  if (btcBullish && liquid && trendUp && followThrough && volume >= 1.2 && fourAdx >= 25) {
-    const entry = current.close * 1.001; const stop = Math.max(previousResistance - a * .15, entry - 1.4 * a); const target = entry + (entry - stop) * 2.2;
-    if (valid({ entryHigh: entry, stop, target })) out.push({ agent: 'aggressive-breakout-trader', entryLow: entry, entryHigh: entry, stop, target, expiryBars: 3 });
+  if (btcStrong && liquid && trendUp && fourAdx >= 22 && current.close > resistance && aggressiveScore >= 4) {
+    const entry = current.high * 1.001; const stop = Math.max(resistance - a * .2, entry - 1.2 * a); const target = entry + (entry - stop) * 1.5;
+    if (valid({ entryHigh: entry, stop, target })) out.push({ agent: 'aggressive-breakout-trader', entryLow: entry, entryHigh: entry, stop, target, expiryBars: 2 });
   }
-  const bb = bollinger(closes);
-  const previousRsi = rsi(closes.slice(0, -1)); const reversal = previousRsi < 32 && rsi(closes) > previousRsi && current.close > current.open && current.low <= bb.lower;
-  if (btcNeutral && liquid && fourAdx < 22 && ema(fourCloses, 9) >= ema(fourCloses, 21) * .99 && reversal) {
-    const entry = current.close; const stop = entry - 1.8 * a; const band = limitBand(entry, a, entry - a * .45, entry);
-    if (valid({ entryHigh: band.high, stop, target: bb.mid })) out.push({ agent: 'mean-reversion-trader', entryLow: band.low, entryHigh: band.high, stop, target: bb.mid, expiryBars: 6 });
+  const oneEma9 = ema(closes, 9); const oneEma21 = ema(closes, 21); const previousEma9 = ema(closes.slice(0, -1), 9);
+  const pullbackScore = Number(current.low <= oneEma21 * 1.003) + Number(one.at(-2)!.close <= previousEma9) + Number(current.close > oneEma9) + Number(current.close > current.open) + Number(rsi(closes) >= 42 && rsi(closes) <= 65);
+  if (btcStrong && liquid && trendUp && volume >= 1 && pullbackScore >= 5) {
+    const entry = current.high * 1.001; const pullbackLow = Math.min(...one.slice(-6).map(candle => candle.low)); const stop = Math.max(pullbackLow - a * .15, entry - a * 1.3); const target = entry + (entry - stop) * 1.5;
+    if (valid({ entryHigh: entry, stop, target })) out.push({ agent: 'mean-reversion-trader', entryLow: entry, entryHigh: entry, stop, target, expiryBars: 2 });
   }
-  const zone = demandZone(one, current.close); const trigger = fibConfluence(four, current.close) || bullishEngulfing(one);
-  const wyckoffHistory = one.slice(-34, -3); const [spring, reclaim, test] = one.slice(-3);
-  if (wyckoffHistory.length >= 18 && spring && reclaim && test) {
+  const zone = demandZone(one, current.close); const fib = fibConfluence(four, current.close); const engulfing = bullishEngulfing(one);
+  const wyckoffHistory = one.slice(-41, -1);
+  if (wyckoffHistory.length >= 24) {
     const rangeLow = Math.min(...wyckoffHistory.map(bar => bar.low)); const rangeHigh = Math.max(...wyckoffHistory.map(bar => bar.high));
-    const averageVolume = mean(wyckoffHistory.map(bar => bar.volume));
-    const ranging4h = fourAdx < 28 && Math.abs(ema(fourCloses, 9) - ema(fourCloses, 21)) / ema(fourCloses, 21) < .022;
-    const validSpring = spring.low < rangeLow && spring.close > rangeLow && spring.volume >= averageVolume * 1.3;
-    const validReclaim = reclaim.close > rangeLow && reclaim.close > reclaim.open && reclaim.close >= (reclaim.high + reclaim.low) / 2;
-    const validTest = test.low >= spring.low && test.close >= reclaim.close && test.close > test.open && test.volume <= reclaim.volume * 1.1;
-    const entry = test.close; const band = limitBand(entry, a, Math.max(rangeLow, entry - a * .5), entry); const stop = spring.low - a * .4;
-    const target = Math.max((rangeLow + rangeHigh) / 2, band.high + (band.high - stop) * 2);
-    if (btcNeutral && liquid && ranging4h && validSpring && validReclaim && validTest && valid({ entryHigh: band.high, stop, target })) out.push({ agent: 'wyckoff-trader', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 8 });
+    const ranging4h = fourAdx >= 18 && fourAdx < 30 && ema(fourCloses, 9) >= ema(fourCloses, 21) && Math.abs(ema(fourCloses, 9) - ema(fourCloses, 21)) / ema(fourCloses, 21) < .03;
+    const sosScore = Number(current.close > rangeHigh) + Number(volume >= 1.5) + Number(closeStrength >= .7) + Number(body >= a * .5) + Number((rangeHigh - rangeLow) / a <= 7);
+    const entry = Math.max(rangeHigh, current.close - a * .25); const band = limitBand(entry, a, rangeHigh, entry); const stop = Math.max(rangeHigh - a * .55, band.high - a * 1.2); const target = band.high + (band.high - stop) * 1.5;
+    if (btcStrong && liquid && ranging4h && sosScore >= 5 && valid({ entryHigh: band.high, stop, target })) out.push({ agent: 'wyckoff-trader', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 3 });
   }
-  if (btcBullish && liquid && ema(fourCloses, 9) >= ema(fourCloses, 21) * .995 && zone && trigger && body >= a * .75) {
-    const entry = Math.min(zone.high, current.close); const band = limitBand(entry, a, zone.low, entry); const stop = zone.low - a * .5; const target = Math.max(resistance, band.high + (band.high - stop) * 1.8);
-    if (valid({ entryHigh: band.high, stop, target })) {
-      const recent = one.slice(-7, -1); const swept = recent.at(-2)!.low < Math.min(...recent.slice(0, -2).map(c => c.low)); const choch = current.close > Math.max(...recent.slice(0, -1).map(c => c.high));
-      if (swept && choch) out.push({ agent: 'smc-trader', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 8 });
+  const sweepWindow = one.slice(-9, -2); const sweepCandle = one.at(-2)!; const swept = sweepWindow.length >= 5 && sweepCandle.low < Math.min(...sweepWindow.map(c => c.low)); const choch = current.close > sweepCandle.high && current.close > current.open;
+  const smcScore = Number(Boolean(zone)) + Number(fib || engulfing) + Number(body >= a * .4) + Number(closeStrength >= .55);
+  if (btcStrong && liquid && trendUp && swept && choch && smcScore >= 3) {
+    const entry = current.high * 1.001; const stop = Math.max(sweepCandle.low - a * .15, entry - a * 1.3); const target = entry + (entry - stop) * 1.5;
+    if (valid({ entryHigh: entry, stop, target })) {
+      out.push({ agent: 'smc-trader', entryLow: entry, entryHigh: entry, stop, target, expiryBars: 2 });
     }
   }
   return out;
@@ -123,10 +119,13 @@ function simulate(agent: Agent, pair: string, candles: OHLCV[], fourHour: OHLCV[
     }
     if (filledAt < 0) { available = index + setup.expiryBars; continue; }
     const expiryAt = Math.min(candles.length - 1, filledAt + 72);
-    let outcome: Trade['outcome'] = 'expired'; let exit = candles[expiryAt].close; let closedAt = expiryAt;
+    let outcome: Trade['outcome'] = 'expired'; let exit = candles[expiryAt].close; let closedAt = expiryAt; let activeStop = setup.stop; const initialRisk = entry - setup.stop;
     for (let future = filledAt; future <= expiryAt; future++) {
-      const bar = candles[future]; const hitStop = bar.low <= setup.stop; const hitTarget = bar.high >= setup.target;
-      if (hitStop || hitTarget) { outcome = hitStop ? 'stop' : 'target'; exit = hitStop ? setup.stop : setup.target; closedAt = future; break; }
+      const bar = candles[future]; const hitStop = bar.low <= activeStop; const hitTarget = bar.high >= setup.target;
+      if (hitStop || hitTarget) { outcome = hitStop ? 'stop' : 'target'; exit = hitStop ? activeStop : setup.target; closedAt = future; break; }
+      // Conservative ordering: breakeven becomes active only after this candle,
+      // so a candle that first touches both the old stop and +1R remains a loss.
+      if (bar.high >= entry + initialRisk * 1.25) activeStop = Math.max(activeStop, entry * (1 + FEE_PER_SIDE * 2));
     }
     const netReturn = (exit - entry) / entry - 2 * FEE_PER_SIDE;
     trades.push({ agent, pair, openedAt: candles[filledAt].timestamp, closedAt: candles[closedAt].timestamp, outcome, netReturn, plannedRr: (setup.target - entry) / (entry - setup.stop) });
@@ -157,7 +156,11 @@ async function mapLimit<T, R>(items: T[], concurrency: number, task: (item: T) =
 
 async function main() {
   const bars = Number(process.env.BACKTEST_BARS ?? 8760); console.log(`Downloading ${bars} 1H bars and 4H context for ${PAIRS.length} pairs...`);
-  const datasets = await mapLimit(PAIRS, 3, async pair => ({ pair, one: await fetchOhlcv(pair, '1h', bars), four: await fetchOhlcv(pair, '4h', Math.ceil(bars / 4) + 80) }));
+  const cachePath = path.resolve(process.cwd(), 'work', `backtest-market-cache-1h-${bars}.json`);
+  const datasets: Array<{ pair: string; one: OHLCV[]; four: OHLCV[] }> = fs.existsSync(cachePath)
+    ? JSON.parse(fs.readFileSync(cachePath, 'utf8'))
+    : await mapLimit(PAIRS, 3, async pair => ({ pair, one: await fetchOhlcv(pair, '1h', bars), four: await fetchOhlcv(pair, '4h', Math.ceil(bars / 4) + 80) }));
+  if (!fs.existsSync(cachePath)) { fs.mkdirSync(path.dirname(cachePath), { recursive: true }); fs.writeFileSync(cachePath, JSON.stringify(datasets)); }
   const btcFour = datasets.find(data => data.pair === 'btcidr')?.four ?? [];
   const all = AGENTS.flatMap(agent => datasets.flatMap(data => simulate(agent, data.pair, data.one, data.four, btcFour)));
   const split = datasets[0]?.one[Math.floor(datasets[0].one.length * .7)]?.timestamp ?? 0;
@@ -176,4 +179,3 @@ async function main() {
   console.log(`Backtest report: ${destination}`);
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });
-

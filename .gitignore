@@ -23,6 +23,7 @@ dist/
 
 # Demo output artifacts (per-user)
 out/
+/work/
 
 # OS
 .DS_Store
