@@ -46,7 +46,10 @@ function bullishCandle(candles: OHLCV[]) { const [prev, last] = candles.slice(-3
 async function scanPair(pair: string, btc: ReturnType<typeof metric>): Promise<Candidate[]> {
   const [oneHour, fourHour] = await Promise.all([fetchOhlcv(pair, '1h', 160), fetchOhlcv(pair, '4h', 140)]);
   const one = metric(oneHour); const four = metric(fourHour); if (!one || !four) return [];
-  const candidates: Candidate[] = []; const trendUp = four.ema9 > four.ema21 && four.last.close >= four.ema9 && four.adx >= 22; const btcBullish = !!btc && btc.ema9 >= btc.ema21 && btc.last.close >= btc.ema21; const btcStrong = btcBullish && !!btc && btc.adx >= 18; const liquid = one.closed.slice(-20).filter((bar) => bar.volume > 0).length >= 18 && one.atr / one.last.close <= 0.08; const zone = demandZone(oneHour, one.last.close);
+  // A 4H ADX of 20 still filters sideways noise, while allowing early trends
+  // that were previously excluded by the 22 threshold. BTC remains unchanged
+  // as the market-regime gate for this long-only desk.
+  const candidates: Candidate[] = []; const trendUp = four.ema9 > four.ema21 && four.last.close >= four.ema9 && four.adx >= 20; const btcBullish = !!btc && btc.ema9 >= btc.ema21 && btc.last.close >= btc.ema21; const btcStrong = btcBullish && !!btc && btc.adx >= 18; const liquid = one.closed.slice(-20).filter((bar) => bar.volume > 0).length >= 18 && one.atr / one.last.close <= 0.08; const zone = demandZone(oneHour, one.last.close);
   const id = (owner: Owner) => `${owner}-${pair}-${Date.now()}`;
 
   // Breakout: accept only a shallow retest; never park a wish-price far below market.
@@ -67,7 +70,9 @@ async function scanPair(pair: string, btc: ReturnType<typeof metric>): Promise<C
   // Long-only mean reversion is treated as a pullback inside a verified uptrend.
   const previous = one.closed.at(-2)!; const previousEma9 = ema(one.closes.slice(0, -1), 9).at(-1)!;
   const pullbackScore = Number(one.last.low <= one.ema21 * 1.003) + Number(previous.close <= previousEma9) + Number(one.last.close > one.ema9) + Number(one.last.close > one.last.open) + Number(one.rsi >= 42 && one.rsi <= 65);
-  if (btcStrong && liquid && trendUp && one.vol >= 1 && pullbackScore >= 5) {
+  // Four confirmations retain a structured pullback while avoiding the
+  // impractical requirement that every candle-level condition align at once.
+  if (btcStrong && liquid && trendUp && one.vol >= 1 && pullbackScore >= 4) {
     const entry = one.last.high * 1.001; const pullbackLow = Math.min(...one.closed.slice(-6).map((bar) => bar.low)); const stop = Math.max(pullbackLow - one.atr * .15, entry - one.atr * 1.3); const target = entry + (entry - stop) * 1.5;
     if (valid(entry, stop, target)) candidates.push({ id: id('mean-reversion-trader'), pair, agent: 'mean-reversion-trader', side: 'long', type: 'stop', timeframe: '1h', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(2), confirmations: ['Pullback EMA 1H', 'Trend 4H + BTC kuat', `Skor pullback ${pullbackScore}/5`], score: pullbackScore, validationStatus: 'research', reason: 'Kandidat riset pullback-to-mean dalam uptrend; belum boleh dieksekusi otomatis.' });
   }
