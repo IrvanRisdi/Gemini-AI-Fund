@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-26T10:55:33.039Z",
+  "last_cycle": "2026-08-26T11:37:28.462Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -38,6 +38,31 @@
           "riskReservedIdr": 969941.7676710499,
           "createdAt": "2026-08-25T19:01:00.056Z",
           "status": "cancelled"
+        },
+        {
+          "id": "breakout-specialist-hypeidr-1787744247028",
+          "pair": "hypeidr",
+          "agent": "breakout-specialist",
+          "side": "long",
+          "type": "stop",
+          "timeframe": "1h",
+          "entryLow": 1478433.957,
+          "entryHigh": 1478433.957,
+          "stopPrice": 1461822.4,
+          "targetPrice": 1503351.2925,
+          "expiresAt": "2026-08-26T14:37:27.028Z",
+          "confirmations": [
+            "Trend 4H + BTC kuat",
+            "Skor breakout 5/5",
+            "Continuation di atas high 1H"
+          ],
+          "score": 5,
+          "validationStatus": "validated",
+          "reason": "Breakout 1H tervalidasi; buy-stop hanya terisi bila momentum berlanjut.",
+          "campaignId": "breakout-specialist-hypeidr-1787744248462",
+          "riskReservedIdr": 561795.706915031,
+          "createdAt": "2026-08-26T11:37:28.462Z",
+          "status": "pending"
         }
       ],
       "trades": []
@@ -47,7 +72,33 @@
         "IDR": 50000000
       },
       "positions": {},
-      "pendingOrders": [],
+      "pendingOrders": [
+        {
+          "id": "mean-reversion-trader-ethidr-1787744247033",
+          "pair": "ethidr",
+          "agent": "mean-reversion-trader",
+          "side": "long",
+          "type": "stop",
+          "timeframe": "1h",
+          "entryLow": 43813769.99999999,
+          "entryHigh": 43813769.99999999,
+          "stopPrice": 43495084.285714276,
+          "targetPrice": 44291798.57142857,
+          "expiresAt": "2026-08-26T13:37:27.033Z",
+          "confirmations": [
+            "Pullback EMA 1H",
+            "Trend 4H + BTC kuat",
+            "Skor pullback 5/5"
+          ],
+          "score": 5,
+          "validationStatus": "research",
+          "reason": "Kandidat riset pullback-to-mean dalam uptrend; belum boleh dieksekusi otomatis.",
+          "campaignId": "mean-reversion-trader-ethidr-1787744248462",
+          "riskReservedIdr": 363682.1418080622,
+          "createdAt": "2026-08-26T11:37:28.462Z",
+          "status": "pending"
+        }
+      ],
       "trades": []
     },
     "smc-trader": {
@@ -55,7 +106,33 @@
         "IDR": 50000000
       },
       "positions": {},
-      "pendingOrders": [],
+      "pendingOrders": [
+        {
+          "id": "smc-trader-ethidr-1787744247033",
+          "pair": "ethidr",
+          "agent": "smc-trader",
+          "side": "long",
+          "type": "stop",
+          "timeframe": "1h",
+          "entryLow": 43813769.99999999,
+          "entryHigh": 43813769.99999999,
+          "stopPrice": 43495084.285714276,
+          "targetPrice": 44291798.57142857,
+          "expiresAt": "2026-08-26T13:37:27.033Z",
+          "confirmations": [
+            "Sweep + reclaim high 1H",
+            "Skor konteks 4/4",
+            "Demand zone"
+          ],
+          "score": 4,
+          "validationStatus": "research",
+          "reason": "Kandidat riset SMC sweep/reclaim; belum boleh dieksekusi otomatis.",
+          "campaignId": "smc-trader-ethidr-1787744248462",
+          "riskReservedIdr": 363682.1418080622,
+          "createdAt": "2026-08-26T11:37:28.462Z",
+          "status": "pending"
+        }
+      ],
       "trades": []
     },
     "wyckoff-trader": {
@@ -71,7 +148,33 @@
         "IDR": 50000000
       },
       "positions": {},
-      "pendingOrders": [],
+      "pendingOrders": [
+        {
+          "id": "aggressive-breakout-trader-hypeidr-1787744247028",
+          "pair": "hypeidr",
+          "agent": "aggressive-breakout-trader",
+          "side": "long",
+          "type": "stop",
+          "timeframe": "1h",
+          "entryLow": 1478433.957,
+          "entryHigh": 1478433.957,
+          "stopPrice": 1461822.4,
+          "targetPrice": 1503351.2925,
+          "expiresAt": "2026-08-26T13:37:27.028Z",
+          "confirmations": [
+            "Trend 4H",
+            "Skor momentum 5/5",
+            "Buy-stop di atas high 1H"
+          ],
+          "score": 5,
+          "validationStatus": "validated",
+          "reason": "Momentum 1H berkualitas tinggi; buy-stop membatalkan entry bila harga tidak melanjutkan breakout.",
+          "campaignId": "aggressive-breakout-trader-hypeidr-1787744248462",
+          "riskReservedIdr": 561795.706915031,
+          "createdAt": "2026-08-26T11:37:28.462Z",
+          "status": "pending"
+        }
+      ],
       "trades": []
     }
   }
