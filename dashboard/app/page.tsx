@@ -19,11 +19,17 @@ export const dynamic = 'force-dynamic';
  * Keep these values synchronized with the
  * automated paper execution engine.
  */
-const RISK_PER_TRADE = 0.02;
-const STOP_LOSS_PERCENT = 0.02;
-const TAKE_PROFIT_RR = 2.5;
-const MAX_LEVERAGE = 10;
-const MAX_POSITION_LEVERAGE = 2.5;
+const RISK_POLICY = [
+  { label: 'Mode & Modal', value: 'Spot-only · Rp250 jt', detail: 'Lima buku paper trading, masing-masing modal awal Rp50 juta. Tidak ada short atau leverage.' },
+  { label: 'Risiko per Campaign', value: 'Maks. 5% Equity', detail: 'Ukuran posisi dihitung dari equity dan jarak stop struktural; nominal risiko per campaign dibatasi 5%.' },
+  { label: 'Batas Notional', value: 'Maks. 100% Equity', detail: 'Total nilai spot sebuah campaign tidak boleh melebihi equity buku agen saat ini.' },
+  { label: 'Stop & Target', value: 'Struktural · min. 1:1,5', detail: 'Stop mengikuti invalidasi struktur/ATR. Target wajib minimal 1,5R dan potensi kotor minimal 1%.' },
+  { label: 'Biaya & Proteksi', value: 'Fee 0,30% per sisi', detail: 'Stop dinaikkan untuk menutup estimasi biaya setelah harga mencapai +1,25R.' },
+  { label: 'Pending Order', value: 'Limit / Buy-stop · 2–3 jam', detail: 'Order otomatis kedaluwarsa; sentuhan intracycle dicek dari candle 15 menit, tetapi sinyal tetap 1H.' },
+  { label: 'Konsentrasi Pair', value: '1 campaign / pair / agen', detail: 'Posisi atau pending order pada pair yang sama mengunci campaign baru dari agen tersebut.' },
+  { label: 'Pyramid Breakout', value: 'Maks. 4 leg × 25%', detail: 'Hanya Breakout Specialist yang boleh menambah posisi saat campaign bergerak profit; total tetap ≤100% equity.' },
+  { label: 'Status Strategi', value: '2 validated · 3 research', detail: 'Kelima agen tetap boleh open posisi paper. Label riset dipakai untuk evaluasi performa, bukan untuk memblokir order.' },
+] as const;
 
 function formatIdr(value: number): string {
   return `Rp${Math.round(value).toLocaleString('id-ID')}`;
@@ -333,213 +339,21 @@ export default async function DeskPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 text-xs">
-              {/* Risk per Trade */}
-              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
-                <p className="font-mono text-[10px] text-ink-faint uppercase">
-                  Risiko per Transaksi
-                </p>
+              {RISK_POLICY.map((policy) => (
+                <div key={policy.label} className="rounded-lg border border-border/60 bg-bg/60 p-3">
+                  <p className="font-mono text-[10px] text-ink-faint uppercase">
+                    {policy.label}
+                  </p>
 
-                <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  2% dari Equity
-                </p>
+                  <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
+                    {policy.value}
+                  </p>
 
-                <p className="text-[10px] text-ink-muted mt-0.5">
-                  Risiko teoritis maksimum
-                  ditentukan dari equity dan
-                  jarak stop-loss.
-                </p>
-              </div>
-
-              {/* Stop Loss */}
-              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
-                <p className="font-mono text-[10px] text-ink-faint uppercase">
-                  Stop-Loss
-                </p>
-
-                <p className="mt-0.5 font-sans font-semibold text-positive text-sm">
-                  2% dari Entry
-                </p>
-
-                <p className="text-[10px] text-ink-muted mt-0.5">
-                  Setiap posisi menggunakan
-                  jarak stop-loss sebesar 2%
-                  dari harga entry.
-                </p>
-              </div>
-
-              {/* Position Sizing */}
-              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
-                <p className="font-mono text-[10px] text-ink-faint uppercase">
-                  Position Sizing
-                </p>
-
-                <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  Risk ÷ Stop Distance
-                </p>
-
-                <p className="text-[10px] text-ink-muted mt-0.5">
-                  Ukuran posisi ditentukan
-                  berdasarkan nominal risiko
-                  dan jarak stop-loss.
-                </p>
-              </div>
-
-              {/* Take Profit */}
-              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
-                <p className="font-mono text-[10px] text-ink-faint uppercase">
-                  Take-Profit
-                </p>
-
-                <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  2.5R
-                </p>
-
-                <p className="text-[10px] text-ink-muted mt-0.5">
-                  Target profit ditetapkan
-                  sebesar 2.5 kali jarak
-                  risiko dari entry.
-                </p>
-              </div>
-
-              {/* Maximum Gross Leverage */}
-              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
-                <p className="font-mono text-[10px] text-ink-faint uppercase">
-                  Maks. Gross Leverage
-                </p>
-
-                <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  10× Equity
-                </p>
-
-                <p className="text-[10px] text-ink-muted mt-0.5">
-                  Total nominal seluruh posisi
-                  dibatasi maksimal 10 kali
-                  equity.
-                </p>
-              </div>
-
-              {/* Maximum Single Position */}
-              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
-                <p className="font-mono text-[10px] text-ink-faint uppercase">
-                  Maks. 1 Posisi
-                </p>
-
-                <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  2.5× Equity
-                </p>
-
-                <p className="text-[10px] text-ink-muted mt-0.5">
-                  Satu posisi tidak boleh
-                  melebihi 2.5 kali equity
-                  dan tetap dibatasi oleh
-                  kapasitas gross leverage.
-                </p>
-              </div>
-
-              {/* Margin */}
-              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
-                <p className="font-mono text-[10px] text-ink-faint uppercase">
-                  Margin Teoritis
-                </p>
-
-                <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  Notional ÷ 10
-                </p>
-
-                <p className="text-[10px] text-ink-muted mt-0.5">
-                  Dengan leverage maksimum
-                  10×, kebutuhan margin
-                  teoritis adalah 10% dari
-                  nilai nominal posisi.
-                </p>
-              </div>
-
-              {/* Multi Asset */}
-              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
-                <p className="font-mono text-[10px] text-ink-faint uppercase">
-                  Cakupan Multi-Aset
-                </p>
-
-                <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  1 Posisi / Pair
-                </p>
-
-                <p className="text-[10px] text-ink-muted mt-0.5">
-                  Beberapa aset dapat dibuka
-                  bersamaan selama total
-                  gross exposure tidak
-                  melewati 10× equity.
-                </p>
-              </div>
-
-              {/* Live Execution */}
-              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
-                <p className="font-mono text-[10px] text-ink-faint uppercase">
-                  Execution Price
-                </p>
-
-                <p className="mt-0.5 font-sans font-semibold text-positive text-sm">
-                  Live Indodax
-                </p>
-
-                <p className="text-[10px] text-ink-muted mt-0.5">
-                  Entry baru hanya diproses
-                  apabila harga live dari
-                  Indodax tersedia.
-                </p>
-              </div>
-
-              {/* Drawdown */}
-              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
-                <p className="font-mono text-[10px] text-ink-faint uppercase">
-                  Portfolio Drawdown
-                </p>
-
-                <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  Monitoring
-                </p>
-
-                <p className="text-[10px] text-ink-muted mt-0.5">
-                  Belum digunakan sebagai
-                  circuit breaker otomatis
-                  pada execution engine.
-                </p>
-              </div>
-
-              {/* Liquidation */}
-              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
-                <p className="font-mono text-[10px] text-ink-faint uppercase">
-                  Margin Call / Liquidation
-                </p>
-
-                <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  Belum Disimulasikan
-                </p>
-
-                <p className="text-[10px] text-ink-muted mt-0.5">
-                  Model saat ini merupakan
-                  synthetic leveraged paper
-                  trading dan belum menghitung
-                  liquidation exchange.
-                </p>
-              </div>
-
-              {/* Sector Diversification */}
-              <div className="rounded-lg border border-border/60 bg-bg/60 p-3">
-                <p className="font-mono text-[10px] text-ink-faint uppercase">
-                  Diversifikasi Sektor
-                </p>
-
-                <p className="mt-0.5 font-sans font-semibold text-ink text-sm">
-                  Tidak Dibatasi
-                </p>
-
-                <p className="text-[10px] text-ink-muted mt-0.5">
-                  Belum ada hard limit sektor
-                  yang diterapkan pada
-                  execution engine.
-                </p>
-              </div>
+                  <p className="text-[10px] text-ink-muted mt-0.5">
+                    {policy.detail}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
 
