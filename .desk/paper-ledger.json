@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-28T15:45:38.841Z",
+  "last_cycle": "2026-08-28T16:00:48.304Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -221,7 +221,7 @@
           "campaignId": "mean-reversion-trader-ethidr-1787931939629",
           "riskReservedIdr": 393720.01736476587,
           "createdAt": "2026-08-28T15:45:38.841Z",
-          "status": "pending"
+          "status": "cancelled"
         }
       ],
       "trades": []
