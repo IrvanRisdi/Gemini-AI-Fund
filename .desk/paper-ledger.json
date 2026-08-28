@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-28T15:00:45.818Z",
+  "last_cycle": "2026-08-28T15:15:41.632Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -146,6 +146,31 @@
           "campaignId": "mean-reversion-trader-ethidr-1787929245819",
           "riskReservedIdr": 393720.01736476587,
           "createdAt": "2026-08-28T15:00:45.818Z",
+          "status": "cancelled"
+        },
+        {
+          "id": "mean-reversion-trader-ethidr-1787930139754",
+          "pair": "ethidr",
+          "agent": "mean-reversion-trader",
+          "side": "long",
+          "type": "stop",
+          "timeframe": "1h",
+          "entryLow": 44751706.99999999,
+          "entryHigh": 44751706.99999999,
+          "stopPrice": 44399314.142857134,
+          "targetPrice": 45280296.28571428,
+          "expiresAt": "2026-08-28T19:15:39.755Z",
+          "confirmations": [
+            "Pullback EMA 1H",
+            "Trend 4H + BTC kuat",
+            "Skor pullback 4/5"
+          ],
+          "score": 4,
+          "validationStatus": "research",
+          "reason": "Kandidat riset pullback-to-mean dalam uptrend; belum boleh dieksekusi otomatis.",
+          "campaignId": "mean-reversion-trader-ethidr-1787930142366",
+          "riskReservedIdr": 393720.01736476587,
+          "createdAt": "2026-08-28T15:15:41.632Z",
           "status": "pending"
         }
       ],
@@ -153,22 +178,9 @@
     },
     "smc-trader": {
       "balance": {
-        "IDR": 48841007.44645843
+        "IDR": 48773037.09869216
       },
-      "positions": {
-        "hypeidr": {
-          "side": "long",
-          "size": 33.7743375807929,
-          "entryPrice": 1480413.9349999998,
-          "stopPrice": 1489296.4186099998,
-          "targetPrice": 1507034.4392857137,
-          "opened": "2026-08-28T11:30:44.437Z",
-          "campaignId": "smc-trader-hypeidr-1787914845824",
-          "leg": 1,
-          "initialRiskPerUnit": 17747.002857142594,
-          "sizingNote": "Spot-only | Risiko maks 5% | Fee masuk Rp150.000"
-        }
-      },
+      "positions": {},
       "pendingOrders": [
         {
           "id": "smc-trader-ethidr-1787744247033",
@@ -315,6 +327,18 @@
           "reason": "Stop loss struktur",
           "campaignId": "smc-trader-linkidr-1787918451534",
           "feeIdr": 147413.91408162017
+        },
+        {
+          "timestamp": "2026-08-28T15:15:41.632Z",
+          "instrument": "hypeidr",
+          "side": "long",
+          "type": "close",
+          "size": 33.7743375807929,
+          "price": 1482850,
+          "realizedPnlIdr": -67970.34776627604,
+          "reason": "Stop loss struktur",
+          "campaignId": "smc-trader-hypeidr-1787914845824",
+          "feeIdr": 150246.82944503627
         }
       ]
     },
