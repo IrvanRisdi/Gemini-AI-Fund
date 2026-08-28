@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-28T15:15:41.632Z",
+  "last_cycle": "2026-08-28T15:30:45.845Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -171,6 +171,31 @@
           "campaignId": "mean-reversion-trader-ethidr-1787930142366",
           "riskReservedIdr": 393720.01736476587,
           "createdAt": "2026-08-28T15:15:41.632Z",
+          "status": "cancelled"
+        },
+        {
+          "id": "mean-reversion-trader-ethidr-1787931043760",
+          "pair": "ethidr",
+          "agent": "mean-reversion-trader",
+          "side": "long",
+          "type": "stop",
+          "timeframe": "1h",
+          "entryLow": 44751706.99999999,
+          "entryHigh": 44751706.99999999,
+          "stopPrice": 44399314.142857134,
+          "targetPrice": 45280296.28571428,
+          "expiresAt": "2026-08-28T19:30:43.760Z",
+          "confirmations": [
+            "Pullback EMA 1H",
+            "Trend 4H + BTC kuat",
+            "Skor pullback 4/5"
+          ],
+          "score": 4,
+          "validationStatus": "research",
+          "reason": "Kandidat riset pullback-to-mean dalam uptrend; belum boleh dieksekusi otomatis.",
+          "campaignId": "mean-reversion-trader-ethidr-1787931046646",
+          "riskReservedIdr": 393720.01736476587,
+          "createdAt": "2026-08-28T15:30:45.845Z",
           "status": "pending"
         }
       ],
