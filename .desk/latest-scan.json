@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-08-28T13:15:38.177Z",
+  "timestamp": "2026-08-28T13:30:39.335Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
   "candidates": [
     {
-      "id": "mean-reversion-trader-solidr-1787922938176",
+      "id": "mean-reversion-trader-solidr-1787923839335",
       "pair": "solidr",
       "agent": "mean-reversion-trader",
       "side": "long",
@@ -14,7 +14,7 @@
       "entryHigh": 1877456.5809999998,
       "stopPrice": 1848501.892857143,
       "targetPrice": 1920888.613214285,
-      "expiresAt": "2026-08-28T17:15:38.176Z",
+      "expiresAt": "2026-08-28T17:30:39.335Z",
       "confirmations": [
         "Pullback EMA 1H",
         "Trend 4H + BTC kuat",
