@@ -1,7 +1,29 @@
 {
-  "timestamp": "2026-08-28T10:45:35.057Z",
+  "timestamp": "2026-08-28T11:00:43.948Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [],
+  "candidates": [
+    {
+      "id": "smc-trader-hypeidr-1787914843941",
+      "pair": "hypeidr",
+      "agent": "smc-trader",
+      "side": "long",
+      "type": "stop",
+      "timeframe": "1h",
+      "entryLow": 1480413.9349999998,
+      "entryHigh": 1480413.9349999998,
+      "stopPrice": 1462666.9321428572,
+      "targetPrice": 1507034.4392857137,
+      "expiresAt": "2026-08-28T15:00:43.941Z",
+      "confirmations": [
+        "Sweep + reclaim high 1H",
+        "Skor konteks 4/4",
+        "Demand zone"
+      ],
+      "score": 4,
+      "validationStatus": "research",
+      "reason": "Kandidat riset SMC sweep/reclaim; belum boleh dieksekusi otomatis."
+    }
+  ],
   "errors": []
 }
