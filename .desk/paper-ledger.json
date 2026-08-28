@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-28T14:30:46.663Z",
+  "last_cycle": "2026-08-28T14:45:44.361Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -128,7 +128,7 @@
     },
     "smc-trader": {
       "balance": {
-        "IDR": 49700450
+        "IDR": 48841007.44645843
       },
       "positions": {
         "hypeidr": {
@@ -142,18 +142,6 @@
           "leg": 1,
           "initialRiskPerUnit": 17747.002857142594,
           "sizingNote": "Spot-only | Risiko maks 5% | Fee masuk Rp150.000"
-        },
-        "linkidr": {
-          "side": "long",
-          "size": 238.89914850640568,
-          "entryPrice": 208665.45699999997,
-          "stopPrice": 206705.26071428572,
-          "targetPrice": 211605.75142857136,
-          "opened": "2026-08-28T12:15:37.176Z",
-          "campaignId": "smc-trader-linkidr-1787918451534",
-          "leg": 1,
-          "initialRiskPerUnit": 1960.1962857142498,
-          "sizingNote": "Spot-only | Risiko maks 5% | Fee masuk Rp149.550"
         }
       },
       "pendingOrders": [
@@ -290,6 +278,18 @@
             "Demand zone"
           ],
           "feeIdr": 149550
+        },
+        {
+          "timestamp": "2026-08-28T14:45:44.361Z",
+          "instrument": "linkidr",
+          "side": "long",
+          "type": "close",
+          "size": 238.89914850640568,
+          "price": 205685,
+          "realizedPnlIdr": -859442.5535415683,
+          "reason": "Stop loss struktur",
+          "campaignId": "smc-trader-linkidr-1787918451534",
+          "feeIdr": 147413.91408162017
         }
       ]
     },
