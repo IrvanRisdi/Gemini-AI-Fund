@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-08-28T11:30:42.471Z",
+  "timestamp": "2026-08-28T11:45:41.518Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
   "candidates": [
     {
-      "id": "smc-trader-hypeidr-1787916642467",
+      "id": "smc-trader-hypeidr-1787917541509",
       "pair": "hypeidr",
       "agent": "smc-trader",
       "side": "long",
@@ -14,7 +14,7 @@
       "entryHigh": 1480413.9349999998,
       "stopPrice": 1462666.9321428572,
       "targetPrice": 1507034.4392857137,
-      "expiresAt": "2026-08-28T15:30:42.467Z",
+      "expiresAt": "2026-08-28T15:45:41.509Z",
       "confirmations": [
         "Sweep + reclaim high 1H",
         "Skor konteks 4/4",
