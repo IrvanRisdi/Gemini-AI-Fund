@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-08-28T12:15:35.286Z",
+  "timestamp": "2026-08-28T12:30:45.125Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
   "candidates": [
     {
-      "id": "smc-trader-bnbidr-1787919335080",
+      "id": "smc-trader-bnbidr-1787920243106",
       "pair": "bnbidr",
       "agent": "smc-trader",
       "side": "long",
@@ -14,7 +14,7 @@
       "entryHigh": 12562462.912999999,
       "stopPrice": 12468190.720142856,
       "targetPrice": 12703871.202285713,
-      "expiresAt": "2026-08-28T16:15:35.080Z",
+      "expiresAt": "2026-08-28T16:30:43.106Z",
       "confirmations": [
         "Sweep + reclaim high 1H",
         "Skor konteks 4/4",
@@ -25,7 +25,7 @@
       "reason": "Kandidat riset SMC sweep/reclaim; belum boleh dieksekusi otomatis."
     },
     {
-      "id": "smc-trader-linkidr-1787919335157",
+      "id": "smc-trader-linkidr-1787920243097",
       "pair": "linkidr",
       "agent": "smc-trader",
       "side": "long",
@@ -35,7 +35,7 @@
       "entryHigh": 208665.45699999997,
       "stopPrice": 206705.26071428572,
       "targetPrice": 211605.75142857136,
-      "expiresAt": "2026-08-28T16:15:35.157Z",
+      "expiresAt": "2026-08-28T16:30:43.097Z",
       "confirmations": [
         "Sweep + reclaim high 1H",
         "Skor konteks 3/4",
