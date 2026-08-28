@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-28T11:15:41.539Z",
+  "last_cycle": "2026-08-28T11:30:44.437Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -103,9 +103,22 @@
     },
     "smc-trader": {
       "balance": {
-        "IDR": 50000000
+        "IDR": 49850000
       },
-      "positions": {},
+      "positions": {
+        "hypeidr": {
+          "side": "long",
+          "size": 33.7743375807929,
+          "entryPrice": 1480413.9349999998,
+          "stopPrice": 1462666.9321428572,
+          "targetPrice": 1507034.4392857137,
+          "opened": "2026-08-28T11:30:44.437Z",
+          "campaignId": "smc-trader-hypeidr-1787914845824",
+          "leg": 1,
+          "initialRiskPerUnit": 17747.002857142594,
+          "sizingNote": "Spot-only | Risiko maks 5% | Fee masuk Rp150.000"
+        }
+      },
       "pendingOrders": [
         {
           "id": "smc-trader-ethidr-1787744247033",
@@ -155,10 +168,27 @@
           "campaignId": "smc-trader-hypeidr-1787914845824",
           "riskReservedIdr": 599393.2655444301,
           "createdAt": "2026-08-28T11:00:45.823Z",
-          "status": "pending"
+          "status": "filled"
         }
       ],
-      "trades": []
+      "trades": [
+        {
+          "timestamp": "2026-08-28T11:30:44.437Z",
+          "instrument": "hypeidr",
+          "side": "long",
+          "type": "open",
+          "size": 33.7743375807929,
+          "price": 1480413.9349999998,
+          "reason": "Kandidat riset SMC sweep/reclaim; belum boleh dieksekusi otomatis.",
+          "campaignId": "smc-trader-hypeidr-1787914845824",
+          "confirmations": [
+            "Sweep + reclaim high 1H",
+            "Skor konteks 4/4",
+            "Demand zone"
+          ],
+          "feeIdr": 149999.99999999997
+        }
+      ]
     },
     "wyckoff-trader": {
       "balance": {
