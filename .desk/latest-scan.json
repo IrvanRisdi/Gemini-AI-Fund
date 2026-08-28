@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-08-28T15:30:43.807Z",
+  "timestamp": "2026-08-28T15:45:38.119Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
   "candidates": [
     {
-      "id": "mean-reversion-trader-ethidr-1787931043760",
+      "id": "mean-reversion-trader-ethidr-1787931938118",
       "pair": "ethidr",
       "agent": "mean-reversion-trader",
       "side": "long",
@@ -14,7 +14,7 @@
       "entryHigh": 44751706.99999999,
       "stopPrice": 44399314.142857134,
       "targetPrice": 45280296.28571428,
-      "expiresAt": "2026-08-28T19:30:43.760Z",
+      "expiresAt": "2026-08-28T19:45:38.118Z",
       "confirmations": [
         "Pullback EMA 1H",
         "Trend 4H + BTC kuat",
