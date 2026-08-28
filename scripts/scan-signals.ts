@@ -63,7 +63,7 @@ async function scanPair(pair: string, btc: ReturnType<typeof metric>): Promise<C
     if (valid(entry, stop, target)) candidates.push({ id: id('breakout-specialist'), pair, agent: 'breakout-specialist', side: 'long', type: 'stop', timeframe: '1h', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(6), confirmations: ['Trend 4H + BTC kuat', `Skor breakout ${aggressiveScore}/5`, 'Continuation di atas high 1H'], score: aggressiveScore, validationStatus: 'validated', reason: 'Breakout 1H tervalidasi; buy-stop hanya terisi bila momentum berlanjut.' });
   }
   // Aggressive is a premium stop-entry and never pyramids.
-  if (btcStrong && liquid && trendUp && four.adx >= 16 && one.last.close > one.resistance && aggressiveScore >= 4) {
+  if (btcStrong && liquid && trendUp && four.adx >= 16 && one.last.close > one.resistance && aggressiveScore >= 3 {
     const entry = one.last.high * 1.001; const stop = Math.max(one.resistance - one.atr * .2, entry - 1.2 * one.atr); const target = entry + (entry - stop) * 1.5;
     if (valid(entry, stop, target)) candidates.push({ id: id('aggressive-breakout-trader'), pair, agent: 'aggressive-breakout-trader', side: 'long', type: 'stop', timeframe: '1h', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(4), confirmations: ['Trend 4H', `Skor momentum ${aggressiveScore}/5`, 'Buy-stop di atas high 1H'], score: aggressiveScore, validationStatus: 'validated', reason: 'Momentum 1H berkualitas tinggi; buy-stop membatalkan entry bila harga tidak melanjutkan breakout.' });
   }
