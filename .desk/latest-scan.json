@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-08-30T18:15:38.460Z",
+  "timestamp": "2026-08-30T18:30:45.662Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
   "candidates": [
     {
-      "id": "wyckoff-trader-hypeidr-1788113738451",
+      "id": "wyckoff-trader-hypeidr-1788114645654",
       "pair": "hypeidr",
       "agent": "wyckoff-trader",
       "side": "long",
@@ -14,7 +14,7 @@
       "entryHigh": 1486000,
       "stopPrice": 1480397.5035714286,
       "targetPrice": 1500860,
-      "expiresAt": "2026-08-31T00:15:38.451Z",
+      "expiresAt": "2026-08-31T00:30:45.654Z",
       "confirmations": [
         "Wyckoff phase D / SoS",
         "Skor 3/5",
