@@ -22,6 +22,9 @@ function metric(candles: OHLCV[]) {
 }
 // A 1.5R gross plan is too thin after a 0.6% round-trip paper fee. Keep a
 // buffer while retaining the executor's absolute 1.5R safety floor.
+function targetFor(entry: number, stop: number) {
+  return entry + Math.max((entry - stop) * 1.5, entry * 0.01);
+}
 function valid(entry: number, stop: number, target: number) {
   const risk = (entry - stop) / entry;
   const reward = (target - entry) / entry;
@@ -46,10 +49,15 @@ function bullishCandle(candles: OHLCV[]) { const [prev, last] = candles.slice(-3
 async function scanPair(pair: string, btc: ReturnType<typeof metric>): Promise<Candidate[]> {
   const [oneHour, fourHour] = await Promise.all([fetchOhlcv(pair, '1h', 160), fetchOhlcv(pair, '4h', 140)]);
   const one = metric(oneHour); const four = metric(fourHour); if (!one || !four) return [];
-  // A 4H ADX of 20 still filters sideways noise, while allowing early trends
-  // that were previously excluded by the 22 threshold. BTC remains unchanged
-  // as the market-regime gate for this long-only desk.
-  const candidates: Candidate[] = []; const trendUp = four.ema9 > four.ema21 && four.last.close >= four.ema9 && four.adx >= 14; const btcBullish = !!btc && btc.ema9 >= btc.ema21 && btc.last.close >= btc.ema21; const btcStrong = btcBullish && !!btc && btc.adx >= 12; const liquid = one.closed.slice(-20).filter((bar) => bar.volume > 0).length >= 18 && one.atr / one.last.close <= 0.08; const zone = demandZone(oneHour, one.last.close);
+  const candidates: Candidate[] = [];
+  const trendUp = four.ema9 > four.ema21 && four.last.close >= four.ema9 && four.adx >= 14;
+  const btcBullish = !!btc && btc.ema9 >= btc.ema21 && btc.last.close >= btc.ema21;
+  // Breakout needs an expanding BTC trend. Pullback and structure strategies
+  // may trade in a neutral BTC regime, but never into a sharp BTC breakdown.
+  const btcStrong = btcBullish && !!btc && btc.adx >= 12;
+  const btcSupportive = !!btc && btc.last.close >= btc.ema21 * .985 && btc.ema9 >= btc.ema21 * .99;
+  const liquid = one.closed.slice(-20).filter((bar) => bar.volume > 0).length >= 18 && one.atr / one.last.close <= 0.08;
+  const zone = demandZone(oneHour, one.last.close);
   const id = (owner: Owner) => `${owner}-${pair}-${Date.now()}`;
 
   // Breakout: accept only a shallow retest; never park a wish-price far below market.
@@ -59,22 +67,24 @@ async function scanPair(pair: string, btc: ReturnType<typeof metric>): Promise<C
   // difference is campaign management: Jesse may pyramid; aggressive is all-in once.
   const aggressiveScore = Number(one.vol >= 1.5) + Number(closeStrength >= .7) + Number(body / one.atr >= .5 && body / one.atr <= 1.8) + Number(one.ema9 > one.ema21) + Number(breakoutExtension <= .75);
   if (btcStrong && liquid && trendUp && one.last.close > one.resistance && aggressiveScore >= 3) {
-    const entry = one.last.high * 1.001; const stop = Math.max(one.resistance - one.atr * .2, entry - 1.2 * one.atr); const target = entry + (entry - stop) * 1.5;
+    const entry = one.last.high * 1.001; const stop = Math.max(one.resistance - one.atr * .2, entry - 1.2 * one.atr); const target = targetFor(entry, stop);
     if (valid(entry, stop, target)) candidates.push({ id: id('breakout-specialist'), pair, agent: 'breakout-specialist', side: 'long', type: 'stop', timeframe: '1h', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(6), confirmations: ['Trend 4H + BTC kuat', `Skor breakout ${aggressiveScore}/5`, 'Continuation di atas high 1H'], score: aggressiveScore, validationStatus: 'validated', reason: 'Breakout 1H tervalidasi; buy-stop hanya terisi bila momentum berlanjut.' });
   }
   // Aggressive is a premium stop-entry and never pyramids.
   if (btcStrong && liquid && trendUp && four.adx >= 16 && one.last.close > one.resistance && aggressiveScore >= 3) {
-    const entry = one.last.high * 1.001; const stop = Math.max(one.resistance - one.atr * .2, entry - 1.2 * one.atr); const target = entry + (entry - stop) * 1.5;
+    const entry = one.last.high * 1.001; const stop = Math.max(one.resistance - one.atr * .2, entry - 1.2 * one.atr); const target = targetFor(entry, stop);
     if (valid(entry, stop, target)) candidates.push({ id: id('aggressive-breakout-trader'), pair, agent: 'aggressive-breakout-trader', side: 'long', type: 'stop', timeframe: '1h', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(4), confirmations: ['Trend 4H', `Skor momentum ${aggressiveScore}/5`, 'Buy-stop di atas high 1H'], score: aggressiveScore, validationStatus: 'validated', reason: 'Momentum 1H berkualitas tinggi; buy-stop membatalkan entry bila harga tidak melanjutkan breakout.' });
   }
   // Long-only mean reversion is treated as a pullback inside a verified uptrend.
   const previous = one.closed.at(-2)!; const previousEma9 = ema(one.closes.slice(0, -1), 9).at(-1)!;
   const pullbackScore = Number(one.last.low <= one.ema21 * 1.003) + Number(previous.close <= previousEma9) + Number(one.last.close > one.ema9) + Number(one.last.close > one.last.open) + Number(one.rsi >= 42 && one.rsi <= 65);
-  // Four confirmations retain a structured pullback while avoiding the
-  // impractical requirement that every candle-level condition align at once.
-  if (btcStrong && liquid && trendUp && one.vol >= 1 && pullbackScore >= 3) {
-    const entry = one.last.high * 1.001; const pullbackLow = Math.min(...one.closed.slice(-6).map((bar) => bar.low)); const stop = Math.max(pullbackLow - one.atr * .15, entry - one.atr * 1.3); const target = entry + (entry - stop) * 1.5;
-    if (valid(entry, stop, target)) candidates.push({ id: id('mean-reversion-trader'), pair, agent: 'mean-reversion-trader', side: 'long', type: 'stop', timeframe: '1h', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(4), confirmations: ['Pullback EMA 1H', 'Trend 4H + BTC kuat', `Skor pullback ${pullbackScore}/5`], score: pullbackScore, validationStatus: 'research', reason: 'Kandidat riset pullback-to-mean dalam uptrend; belum boleh dieksekusi otomatis.' });
+  if (btcSupportive && liquid && trendUp && one.vol >= 1 && pullbackScore >= 3) {
+    const entry = Math.max(one.ema21, Math.min(one.ema9, one.last.close));
+    const band = limitBand(entry, one.atr, one.ema21 * .995, one.last.close);
+    const pullbackLow = Math.min(...one.closed.slice(-6).map((bar) => bar.low));
+    const stop = Math.min(pullbackLow - one.atr * .15, band.low - one.atr * .5);
+    const target = targetFor(band.high, stop);
+    if (valid(band.high, stop, target)) candidates.push({ id: id('mean-reversion-trader'), pair, agent: 'mean-reversion-trader', side: 'long', type: 'limit', timeframe: '1h', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Pullback EMA 1H', 'BTC netral/positif', `Skor pullback ${pullbackScore}/5`], score: pullbackScore, validationStatus: 'research', reason: 'Pullback-to-mean: buy limit di zona EMA, bukan mengejar breakout.' });
   }
   // SMC and Wyckoff remain separate research strategies.
   const fib = fibConfluence(fourHour, one.last.close); const engulfing = bullishCandle(oneHour);
@@ -87,17 +97,21 @@ async function scanPair(pair: string, btc: ReturnType<typeof metric>): Promise<C
     const rangeHigh = Math.max(...wyckoffHistory.map((bar) => bar.high));
     const ranging4h = four.adx >= 12 && four.adx < 30 && four.ema9 >= four.ema21 && Math.abs(four.ema9 - four.ema21) / four.ema21 < .03;
     const sosScore = Number(one.last.close > rangeHigh) + Number(one.vol >= 1.5) + Number(closeStrength >= .7) + Number(body >= one.atr * .5) + Number((rangeHigh - rangeLow) / one.atr <= 7);
-    const entry = Math.max(rangeHigh, one.last.close - one.atr * .25); const band = limitBand(entry, one.atr, rangeHigh, entry); const stop = Math.max(rangeHigh - one.atr * .55, band.high - one.atr * 1.2); const target = band.high + (band.high - stop) * 1.5;
-    if (btcStrong && liquid && ranging4h && sosScore >= 4 && valid(band.high, stop, target)) {
+    const entry = Math.max(rangeHigh, one.last.close - one.atr * .25); const band = limitBand(entry, one.atr, rangeHigh, entry); const stop = Math.max(rangeHigh - one.atr * .55, band.high - one.atr * 1.2); const target = targetFor(band.high, stop);
+    if (btcSupportive && liquid && ranging4h && sosScore >= 3 && valid(band.high, stop, target)) {
       candidates.push({ id: id('wyckoff-trader'), pair, agent: 'wyckoff-trader', side: 'long', type: 'limit', timeframe: '1h', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(6), confirmations: ['Wyckoff phase D / SoS', `Skor ${sosScore}/5`, 'Retest last point of support'], score: sosScore, validationStatus: 'research', reason: 'Kandidat riset sign-of-strength dan last-point-of-support; belum boleh dieksekusi otomatis.' });
     }
   }
   const sweepWindow = one.closed.slice(-9, -2); const sweepCandle = one.closed.at(-2)!; const swept = sweepWindow.length >= 5 && sweepCandle.low < Math.min(...sweepWindow.map((bar) => bar.low)); const choch = one.last.close > sweepCandle.high && one.last.close > one.last.open;
   const smcScore = Number(Boolean(zone)) + Number(fib || engulfing) + Number(body >= one.atr * .4) + Number(closeStrength >= .55);
-  if (btcStrong && liquid && trendUp && swept && choch && smcScore >= 2) {
-    const entry = one.last.high * 1.001; const stop = Math.max(sweepCandle.low - one.atr * .15, entry - one.atr * 1.3); const target = entry + (entry - stop) * 1.5;
-    if (valid(entry, stop, target)) {
-      candidates.push({ id: id('smc-trader'), pair, agent: 'smc-trader', side: 'long', type: 'stop', timeframe: '1h', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(4), confirmations: ['Sweep + reclaim high 1H', `Skor konteks ${smcScore}/4`, zone ? 'Demand zone' : fib ? 'Fibonacci overlap' : 'Candle reversal'], score: smcScore, validationStatus: 'research', reason: 'Kandidat riset SMC sweep/reclaim; belum boleh dieksekusi otomatis.' });
+  if (btcSupportive && liquid && trendUp && swept && choch && smcScore >= 2) {
+    const entry = zone ? Math.min(zone.high, one.last.close) : Math.min(sweepCandle.high, one.last.close);
+    const floor = zone?.low ?? Math.min(sweepCandle.low, entry - one.atr * .5);
+    const band = limitBand(entry, one.atr, floor, one.last.close);
+    const stop = Math.min(floor - one.atr * .15, band.low - one.atr * .5);
+    const target = targetFor(band.high, stop);
+    if (valid(band.high, stop, target)) {
+      candidates.push({ id: id('smc-trader'), pair, agent: 'smc-trader', side: 'long', type: 'limit', timeframe: '1h', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Sweep + reclaim high 1H', 'Buy limit demand/order block', `Skor konteks ${smcScore}/4`], score: smcScore, validationStatus: 'research', reason: 'SMC sweep/reclaim: buy limit pada demand/order block.' });
     }
   }
   return candidates;
