@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-30T14:15:38.250Z",
+  "last_cycle": "2026-08-30T14:30:43.923Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -222,6 +222,31 @@
           "riskReservedIdr": 393720.01736476587,
           "createdAt": "2026-08-28T15:45:38.841Z",
           "status": "cancelled"
+        },
+        {
+          "id": "mean-reversion-trader-hypeidr-1788100241929",
+          "pair": "hypeidr",
+          "agent": "mean-reversion-trader",
+          "side": "long",
+          "type": "limit",
+          "timeframe": "1h",
+          "entryLow": 1475217.5376790888,
+          "entryHigh": 1477498.351964803,
+          "stopPrice": 1463970.592857143,
+          "targetPrice": 1497789.990626293,
+          "expiresAt": "2026-08-30T22:30:41.929Z",
+          "confirmations": [
+            "Pullback EMA 1H",
+            "BTC netral/positif",
+            "Skor pullback 3/5"
+          ],
+          "score": 3,
+          "validationStatus": "research",
+          "reason": "Pullback-to-mean: buy limit di zona EMA, bukan mengejar breakout.",
+          "campaignId": "mean-reversion-trader-hypeidr-1788100243924",
+          "riskReservedIdr": 457792.69701622974,
+          "createdAt": "2026-08-30T14:30:43.923Z",
+          "status": "pending"
         }
       ],
       "trades": []
@@ -397,7 +422,33 @@
         "IDR": 50000000
       },
       "positions": {},
-      "pendingOrders": [],
+      "pendingOrders": [
+        {
+          "id": "wyckoff-trader-hypeidr-1788100241929",
+          "pair": "hypeidr",
+          "agent": "wyckoff-trader",
+          "side": "long",
+          "type": "limit",
+          "timeframe": "1h",
+          "entryLow": 1485000,
+          "entryHigh": 1485000,
+          "stopPrice": 1480818.5071428572,
+          "targetPrice": 1499850,
+          "expiresAt": "2026-08-30T20:30:41.929Z",
+          "confirmations": [
+            "Wyckoff phase D / SoS",
+            "Skor 3/5",
+            "Retest last point of support"
+          ],
+          "score": 3,
+          "validationStatus": "research",
+          "reason": "Kandidat riset sign-of-strength dan last-point-of-support; belum boleh dieksekusi otomatis.",
+          "campaignId": "wyckoff-trader-hypeidr-1788100243924",
+          "riskReservedIdr": 140791.00529100394,
+          "createdAt": "2026-08-30T14:30:43.923Z",
+          "status": "pending"
+        }
+      ],
       "trades": []
     },
     "aggressive-breakout-trader": {
