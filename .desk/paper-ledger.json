@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-30T22:30:44.926Z",
+  "last_cycle": "2026-08-30T22:45:38.483Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -655,6 +655,31 @@
           "riskReservedIdr": 188509.3010959424,
           "createdAt": "2026-08-30T18:45:44.029Z",
           "status": "cancelled"
+        },
+        {
+          "id": "wyckoff-trader-ethidr-1788129937526",
+          "pair": "ethidr",
+          "agent": "wyckoff-trader",
+          "side": "long",
+          "type": "limit",
+          "timeframe": "15m",
+          "entryLow": 44800000,
+          "entryHigh": 44800000,
+          "stopPrice": 44720525,
+          "targetPrice": 45248000,
+          "expiresAt": "2026-08-31T04:45:37.526Z",
+          "confirmations": [
+            "Wyckoff phase D / SoS",
+            "Skor 3/5",
+            "Retest last point of support"
+          ],
+          "score": 3,
+          "validationStatus": "research",
+          "reason": "Kandidat riset sign-of-strength dan last-point-of-support; belum boleh dieksekusi otomatis.",
+          "campaignId": "wyckoff-trader-ethidr-1788129938484",
+          "riskReservedIdr": 88699.77678571429,
+          "createdAt": "2026-08-30T22:45:38.483Z",
+          "status": "pending"
         }
       ],
       "trades": []
