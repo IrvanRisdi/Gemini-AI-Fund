@@ -4,6 +4,7 @@ import type { OHLCV } from './indicators';
 // adapter calls internally — fetched directly here so the dashboard doesn't
 // need ccxt as a dependency of its own.
 const TF_MAP: Record<string, string> = {
+  '1m': '1',
   '15m': '15',
   '1h': '60',
   '4h': '240',
@@ -19,10 +20,10 @@ interface RawCandle {
   Volume: string | number;
 }
 
-export async function fetchOhlcv(indodaxId: string, timeframe: '15m' | '1h' | '4h' | '1d', limit: number): Promise<OHLCV[]> {
+export async function fetchOhlcv(indodaxId: string, timeframe: '1m' | '15m' | '1h' | '4h' | '1d', limit: number): Promise<OHLCV[]> {
   const tf = TF_MAP[timeframe];
   const now = Math.floor(Date.now() / 1000);
-  const durationSec = timeframe === '15m' ? 900 : timeframe === '1h' ? 3600 : timeframe === '4h' ? 14400 : 86400;
+  const durationSec = timeframe === '1m' ? 60 : timeframe === '15m' ? 900 : timeframe === '1h' ? 3600 : timeframe === '4h' ? 14400 : 86400;
   const from = now - limit * durationSec - durationSec;
 
   const url = `https://indodax.com/tradingview/history_v2?symbol=${indodaxId}&tf=${tf}&from=${from}&to=${now}`;
