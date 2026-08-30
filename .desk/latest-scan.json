@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-08-30T14:30:41.929Z",
+  "timestamp": "2026-08-30T14:45:39.435Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
   "candidates": [
     {
-      "id": "mean-reversion-trader-hypeidr-1788100241929",
+      "id": "mean-reversion-trader-hypeidr-1788101139423",
       "pair": "hypeidr",
       "agent": "mean-reversion-trader",
       "side": "long",
@@ -14,7 +14,7 @@
       "entryHigh": 1477498.351964803,
       "stopPrice": 1463970.592857143,
       "targetPrice": 1497789.990626293,
-      "expiresAt": "2026-08-30T22:30:41.929Z",
+      "expiresAt": "2026-08-30T22:45:39.423Z",
       "confirmations": [
         "Pullback EMA 1H",
         "BTC netral/positif",
@@ -25,7 +25,7 @@
       "reason": "Pullback-to-mean: buy limit di zona EMA, bukan mengejar breakout."
     },
     {
-      "id": "wyckoff-trader-hypeidr-1788100241929",
+      "id": "wyckoff-trader-hypeidr-1788101139423",
       "pair": "hypeidr",
       "agent": "wyckoff-trader",
       "side": "long",
@@ -35,7 +35,7 @@
       "entryHigh": 1485000,
       "stopPrice": 1480818.5071428572,
       "targetPrice": 1499850,
-      "expiresAt": "2026-08-30T20:30:41.929Z",
+      "expiresAt": "2026-08-30T20:45:39.423Z",
       "confirmations": [
         "Wyckoff phase D / SoS",
         "Skor 3/5",
