@@ -1,29 +1,7 @@
 {
-  "timestamp": "2026-08-30T22:15:39.461Z",
+  "timestamp": "2026-08-30T22:30:42.353Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [
-    {
-      "id": "mean-reversion-trader-uniidr-1788128139431",
-      "pair": "uniidr",
-      "agent": "mean-reversion-trader",
-      "side": "long",
-      "type": "limit",
-      "timeframe": "1h",
-      "entryLow": 92458.98128719513,
-      "entryHigh": 93250.53128719513,
-      "stopPrice": 91139.73128719513,
-      "targetPrice": 96416.73128719514,
-      "expiresAt": "2026-08-31T06:15:39.431Z",
-      "confirmations": [
-        "Pullback EMA 1H",
-        "BTC netral/positif",
-        "Skor pullback 4/5"
-      ],
-      "score": 4,
-      "validationStatus": "research",
-      "reason": "Pullback-to-mean: buy limit di zona EMA, bukan mengejar breakout."
-    }
-  ],
+  "candidates": [],
   "errors": []
 }
