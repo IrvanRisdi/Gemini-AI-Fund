@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-30T23:15:36.576Z",
+  "last_cycle": "2026-08-30T23:30:45.874Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -69,22 +69,9 @@
     },
     "mean-reversion-trader": {
       "balance": {
-        "IDR": -7.450580596923828e-9
+        "IDR": 47819938.37752759
       },
-      "positions": {
-        "uniidr": {
-          "side": "long",
-          "size": 526.5022653061942,
-          "entryPrice": 93250.53128719513,
-          "stopPrice": 91139.73128719513,
-          "targetPrice": 96416.73128719514,
-          "opened": "2026-08-30T22:30:44.926Z",
-          "campaignId": "mean-reversion-trader-uniidr-1788127250165",
-          "leg": 1,
-          "initialRiskPerUnit": 2110.800000000003,
-          "sizingNote": "Spot-only | Risiko maks 5% | Fee masuk Rp147.290"
-        }
-      },
+      "positions": {},
       "pendingOrders": [
         {
           "id": "mean-reversion-trader-ethidr-1787744247033",
@@ -331,6 +318,18 @@
             "Skor pullback 4/5"
           ],
           "feeIdr": 147289.84789114314
+        },
+        {
+          "timestamp": "2026-08-30T23:30:45.874Z",
+          "instrument": "uniidr",
+          "side": "long",
+          "type": "close",
+          "size": 526.5022653061942,
+          "price": 91099,
+          "realizedPnlIdr": -1276677.5861867757,
+          "reason": "Stop loss struktur",
+          "campaignId": "mean-reversion-trader-uniidr-1788127250165",
+          "feeIdr": 143891.48960138694
         }
       ]
     },
@@ -680,6 +679,31 @@
           "riskReservedIdr": 88699.77678571429,
           "createdAt": "2026-08-30T22:45:38.483Z",
           "status": "cancelled"
+        },
+        {
+          "id": "wyckoff-trader-ethidr-1788132643422",
+          "pair": "ethidr",
+          "agent": "wyckoff-trader",
+          "side": "long",
+          "type": "limit",
+          "timeframe": "15m",
+          "entryLow": 44800000,
+          "entryHigh": 44800000,
+          "stopPrice": 44697582.14285714,
+          "targetPrice": 45248000,
+          "expiresAt": "2026-08-31T05:30:43.422Z",
+          "confirmations": [
+            "Wyckoff phase D / SoS",
+            "Skor 3/5",
+            "Retest last point of support"
+          ],
+          "score": 3,
+          "validationStatus": "research",
+          "reason": "Kandidat riset sign-of-strength dan last-point-of-support; belum boleh dieksekusi otomatis.",
+          "campaignId": "wyckoff-trader-ethidr-1788132645874",
+          "riskReservedIdr": 114305.64413265426,
+          "createdAt": "2026-08-30T23:30:45.874Z",
+          "status": "pending"
         }
       ],
       "trades": []

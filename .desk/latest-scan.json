@@ -1,7 +1,29 @@
 {
-  "timestamp": "2026-08-30T23:15:34.653Z",
+  "timestamp": "2026-08-30T23:30:43.443Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [],
+  "candidates": [
+    {
+      "id": "wyckoff-trader-ethidr-1788132643422",
+      "pair": "ethidr",
+      "agent": "wyckoff-trader",
+      "side": "long",
+      "type": "limit",
+      "timeframe": "15m",
+      "entryLow": 44800000,
+      "entryHigh": 44800000,
+      "stopPrice": 44697582.14285714,
+      "targetPrice": 45248000,
+      "expiresAt": "2026-08-31T05:30:43.422Z",
+      "confirmations": [
+        "Wyckoff phase D / SoS",
+        "Skor 3/5",
+        "Retest last point of support"
+      ],
+      "score": 3,
+      "validationStatus": "research",
+      "reason": "Kandidat riset sign-of-strength dan last-point-of-support; belum boleh dieksekusi otomatis."
+    }
+  ],
   "errors": []
 }
