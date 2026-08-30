@@ -59,11 +59,17 @@ function fill(book: Book, order: Pending, price: number, timestamp: string) {
   const equity = book.balance.IDR;
   // Jesse Livermore manages breakout campaigns in four 25% legs. Other
   // primary agents may use the full allowed notional at their first fill.
-  const initialNotionalCap = order.campaignId.startsWith('breakout-specialist-') ? equity * 0.25 : equity * MAX_NOTIONAL_MULTIPLE;
+  // Keep the entry fee inside the cash budget rather than sizing to 100% of
+  // cash and then charging the fee on top.
+  const initialNotionalCap = (order.campaignId.startsWith('breakout-specialist-') ? equity * 0.25 : equity * MAX_NOTIONAL_MULTIPLE) / (1 + FEE_RATE);
   const size = Math.min(initialNotionalCap / fillPrice, (equity * RISK_PER_CAMPAIGN) / riskPerUnit);
   if (!Number.isFinite(size) || size <= 0 || fillPrice <= order.stopPrice) { order.status = 'rejected'; return; }
-  const fee = fillPrice * size * FEE_RATE;
-  book.balance.IDR -= fee;
+  const notional = fillPrice * size;
+  const fee = notional * FEE_RATE;
+  if (notional + fee > book.balance.IDR + 1) { order.status = 'rejected'; return; }
+  // Spot purchases spend both notional and fee. This prevents later fills
+  // from sizing against capital that is already tied up in a position.
+  book.balance.IDR -= notional + fee;
   book.positions[order.pair] = { side: 'long', size, entryPrice: fillPrice, stopPrice: order.stopPrice, targetPrice: order.targetPrice, opened: timestamp, campaignId: order.campaignId, leg: 1, initialRiskPerUnit: riskPerUnit, sizingNote: `Spot-only | Risiko maks 5% | Fee masuk Rp${Math.round(fee).toLocaleString('id-ID')}` };
   order.status = 'filled';
   book.trades.push({ timestamp, instrument: order.pair, side: 'long', type: 'open', size, price: fillPrice, reason: order.reason, campaignId: order.campaignId, confirmations: order.confirmations, feeIdr: fee });
@@ -76,23 +82,30 @@ function pyramidBreakout(book: Book, pair: string, position: Position, price: nu
   // The first winning leg is protected before any addition. New legs are
   // added only while total spot notional remains at or below current equity.
   position.stopPrice = Math.max(position.stopPrice, position.entryPrice);
-  const equity = book.balance.IDR;
   const currentNotional = position.size * price;
-  const capacity = Math.max(0, equity * MAX_NOTIONAL_MULTIPLE - currentNotional);
-  const addSize = Math.min((equity * 0.25) / price, capacity / price);
+  // Cash is now reduced at entry, so include this campaign's current market
+  // value when calculating the capacity for the next pyramid leg.
+  const equity = book.balance.IDR + currentNotional;
+  const capacity = Math.max(0, (equity * MAX_NOTIONAL_MULTIPLE - currentNotional) / (1 + FEE_RATE));
+  const addSize = Math.min((equity * 0.25) / (price * (1 + FEE_RATE)), capacity / price);
   if (!Number.isFinite(addSize) || addSize <= 0) return;
   const oldNotional = position.size * position.entryPrice;
-  const addFee = addSize * price * FEE_RATE;
-  position.entryPrice = (oldNotional + addSize * price) / (position.size + addSize);
+  const addNotional = addSize * price;
+  const addFee = addNotional * FEE_RATE;
+  if (addNotional + addFee > book.balance.IDR + 1) return;
+  position.entryPrice = (oldNotional + addNotional) / (position.size + addSize);
   position.size += addSize;
   position.leg += 1;
-  book.balance.IDR -= addFee;
+  book.balance.IDR -= addNotional + addFee;
   book.trades.push({ timestamp, instrument: pair, side: 'long', type: 'add', size: addSize, price, reason: `Jesse Livermore pyramid leg ${position.leg}/4 setelah +${position.leg - 1}R`, campaignId: position.campaignId, feeIdr: addFee });
 }
 
 function close(book: Book, pair: string, position: Position, price: number, timestamp: string, reason: string) {
   const gross = (price - position.entryPrice) * position.size; const fee = price * position.size * FEE_RATE; const pnl = gross - fee;
-  book.balance.IDR += pnl; delete book.positions[pair];
+  // Return the full sale proceeds because the entry notional was removed from
+  // cash when the position was opened; realized P&L remains reported below.
+  const proceeds = price * position.size;
+  book.balance.IDR += proceeds - fee; delete book.positions[pair];
   book.trades.push({ timestamp, instrument: pair, side: 'long', type: 'close', size: position.size, price, realizedPnlIdr: pnl, reason, campaignId: position.campaignId, feeIdr: fee });
 }
 
@@ -129,3 +142,4 @@ async function main() {
   ledger.last_cycle = timestamp; write(LEDGER, ledger); write(STATE, state); console.log(`[Spot paper] cycle ${timestamp} complete`);
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });
+
