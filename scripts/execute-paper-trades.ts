@@ -37,7 +37,7 @@ function valid(candidate: Candidate) { return candidate.side === 'long' && candi
 async function pendingTouches(ledger: Ledger) {
   const pairs = [...new Set(Object.values(ledger.agents).flatMap((book) => book.pendingOrders.filter((order) => order.status === 'pending').map((order) => order.pair)))];
   const entries = await Promise.all(pairs.map(async (pair) => {
-    try { return [pair, await fetchOhlcv(pair, '15m', 24)] as const; }
+    try { return [pair, await fetchOhlcv(pair, '1m', 30)] as const; }
     catch { return [pair, [] as OHLCV[]] as const; }
   }));
   return new Map(entries);
@@ -117,13 +117,26 @@ async function main() {
       const price = priceFor(order.pair, prices);
       if (timestamp >= order.expiresAt) { order.status = 'expired'; continue; }
       const created = Date.parse(order.createdAt); const bars = (touches.get(order.pair) ?? []).filter((bar) => bar.timestamp >= created);
-      const invalidated = bars.some((bar) => bar.low <= order.stopPrice) || (price > 0 && price <= order.stopPrice);
-      if (invalidated) { order.status = 'cancelled'; continue; }
-      const intrabarTouch = order.type === 'limit'
-        ? bars.some((bar) => bar.low <= order.entryHigh && bar.high >= order.entryLow)
-        : bars.some((bar) => bar.high >= order.entryHigh);
+      let resolved = false;
+      for (const bar of bars) {
+        const touched = order.type === 'limit'
+          ? bar.low <= order.entryHigh && bar.high >= order.entryLow
+          : bar.high >= order.entryHigh;
+        if (touched) {
+          // A candle that reaches entry and stop has no known order in OHLC
+          // data. Record a fill and then the protective stop conservatively.
+          fill(book, order, order.entryHigh, timestamp);
+          if (order.status === 'filled' && bar.low <= order.stopPrice) {
+            close(book, order.pair, book.positions[order.pair]!, order.stopPrice, timestamp, 'Stop loss struktur pada candle entry');
+          }
+          resolved = true; break;
+        }
+        if (bar.low <= order.stopPrice) { order.status = 'cancelled'; resolved = true; break; }
+      }
+      if (resolved) continue;
       const snapshotTouch = order.type === 'limit' ? price >= order.entryLow && price <= order.entryHigh : price >= order.entryHigh;
-      if (intrabarTouch || snapshotTouch) fill(book, order, intrabarTouch ? order.entryHigh : price, timestamp);
+      if (snapshotTouch) fill(book, order, price, timestamp);
+      else if (price > 0 && price <= order.stopPrice) order.status = 'cancelled';
     }
     for (const [pair, position] of Object.entries(book.positions)) {
       const price = priceFor(pair, prices); if (!price) continue;
