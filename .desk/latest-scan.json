@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-08-30T22:00:47.612Z",
+  "timestamp": "2026-08-30T22:09:14.685Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
   "candidates": [
     {
-      "id": "mean-reversion-trader-uniidr-1788127247597",
+      "id": "mean-reversion-trader-uniidr-1788127754648",
       "pair": "uniidr",
       "agent": "mean-reversion-trader",
       "side": "long",
@@ -14,7 +14,7 @@
       "entryHigh": 93250.53128719513,
       "stopPrice": 91139.73128719513,
       "targetPrice": 96416.73128719514,
-      "expiresAt": "2026-08-31T06:00:47.597Z",
+      "expiresAt": "2026-08-31T06:09:14.648Z",
       "confirmations": [
         "Pullback EMA 1H",
         "BTC netral/positif",
