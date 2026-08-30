@@ -1,50 +1,7 @@
 {
-  "timestamp": "2026-08-30T22:45:37.552Z",
+  "timestamp": "2026-08-30T23:00:42.331Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [
-    {
-      "id": "mean-reversion-trader-ethidr-1788129937526",
-      "pair": "ethidr",
-      "agent": "mean-reversion-trader",
-      "side": "long",
-      "type": "limit",
-      "timeframe": "15m",
-      "entryLow": 43819987.917820096,
-      "entryHigh": 43789000,
-      "stopPrice": 43659325,
-      "targetPrice": 44226890,
-      "expiresAt": "2026-08-31T06:45:37.526Z",
-      "confirmations": [
-        "Pullback EMA 15m",
-        "BTC netral/positif",
-        "Skor pullback 3/5"
-      ],
-      "score": 3,
-      "validationStatus": "research",
-      "reason": "Pullback-to-mean: buy limit di zona EMA, bukan mengejar breakout."
-    },
-    {
-      "id": "wyckoff-trader-ethidr-1788129937526",
-      "pair": "ethidr",
-      "agent": "wyckoff-trader",
-      "side": "long",
-      "type": "limit",
-      "timeframe": "15m",
-      "entryLow": 44800000,
-      "entryHigh": 44800000,
-      "stopPrice": 44720525,
-      "targetPrice": 45248000,
-      "expiresAt": "2026-08-31T04:45:37.526Z",
-      "confirmations": [
-        "Wyckoff phase D / SoS",
-        "Skor 3/5",
-        "Retest last point of support"
-      ],
-      "score": 3,
-      "validationStatus": "research",
-      "reason": "Kandidat riset sign-of-strength dan last-point-of-support; belum boleh dieksekusi otomatis."
-    }
-  ],
+  "candidates": [],
   "errors": []
 }
