@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-30T14:45:40.183Z",
+  "last_cycle": "2026-08-30T15:00:48.678Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -69,9 +69,22 @@
     },
     "mean-reversion-trader": {
       "balance": {
-        "IDR": 50000000
+        "IDR": -7.450580596923828e-9
       },
-      "positions": {},
+      "positions": {
+        "hypeidr": {
+          "side": "long",
+          "size": 33.739765995505785,
+          "entryPrice": 1477498.351964803,
+          "stopPrice": 1463970.592857143,
+          "targetPrice": 1497789.990626293,
+          "opened": "2026-08-30T15:00:48.678Z",
+          "campaignId": "mean-reversion-trader-hypeidr-1788100243924",
+          "leg": 1,
+          "initialRiskPerUnit": 13527.759107660037,
+          "sizingNote": "Spot-only | Risiko maks 5% | Fee masuk Rp149.551"
+        }
+      },
       "pendingOrders": [
         {
           "id": "mean-reversion-trader-ethidr-1787744247033",
@@ -246,10 +259,27 @@
           "campaignId": "mean-reversion-trader-hypeidr-1788100243924",
           "riskReservedIdr": 457792.69701622974,
           "createdAt": "2026-08-30T14:30:43.923Z",
-          "status": "pending"
+          "status": "filled"
         }
       ],
-      "trades": []
+      "trades": [
+        {
+          "timestamp": "2026-08-30T15:00:48.678Z",
+          "instrument": "hypeidr",
+          "side": "long",
+          "type": "open",
+          "size": 33.739765995505785,
+          "price": 1477498.351964803,
+          "reason": "Pullback-to-mean: buy limit di zona EMA, bukan mengejar breakout.",
+          "campaignId": "mean-reversion-trader-hypeidr-1788100243924",
+          "confirmations": [
+            "Pullback EMA 1H",
+            "BTC netral/positif",
+            "Skor pullback 3/5"
+          ],
+          "feeIdr": 149551.34596211367
+        }
+      ]
     },
     "smc-trader": {
       "balance": {
@@ -471,7 +501,7 @@
           "campaignId": "wyckoff-trader-hypeidr-1788101140877",
           "riskReservedIdr": 140791.00529100394,
           "createdAt": "2026-08-30T14:45:40.183Z",
-          "status": "pending"
+          "status": "cancelled"
         }
       ],
       "trades": []
