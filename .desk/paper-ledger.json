@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-30T21:45:42.266Z",
+  "last_cycle": "2026-08-30T22:00:50.164Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -247,6 +247,31 @@
           "riskReservedIdr": 457792.69701622974,
           "createdAt": "2026-08-30T14:30:43.923Z",
           "status": "filled"
+        },
+        {
+          "id": "mean-reversion-trader-uniidr-1788127247597",
+          "pair": "uniidr",
+          "agent": "mean-reversion-trader",
+          "side": "long",
+          "type": "limit",
+          "timeframe": "1h",
+          "entryLow": 92458.98128719513,
+          "entryHigh": 93250.53128719513,
+          "stopPrice": 91139.73128719513,
+          "targetPrice": 96416.73128719514,
+          "expiresAt": "2026-08-31T06:00:47.597Z",
+          "confirmations": [
+            "Pullback EMA 1H",
+            "BTC netral/positif",
+            "Skor pullback 4/5"
+          ],
+          "score": 4,
+          "validationStatus": "research",
+          "reason": "Pullback-to-mean: buy limit di zona EMA, bukan mengejar breakout.",
+          "campaignId": "mean-reversion-trader-uniidr-1788127250165",
+          "riskReservedIdr": 1114675.004553141,
+          "createdAt": "2026-08-30T22:00:50.164Z",
+          "status": "pending"
         }
       ],
       "trades": [
