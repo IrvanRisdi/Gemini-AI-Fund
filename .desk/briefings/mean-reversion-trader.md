@@ -41,3 +41,15 @@ Order limit berlaku 8 jam. Stop tidak diperlebar setelah entry: bila struktur pu
 - Posisi hanya dibuka pada zona limit yang tersentuh.
 - Setelah +1,25R, stop dinaikkan untuk menutup biaya.
 - Auditor perlu mencatat skor pullback, RSI, volume relatif, jarak stop (%), serta outcome per pair.
+
+
+## Alokasi portofolio
+
+- Maksimum **25% ekuitas agen per koin** dan maksimal **empat campaign** aktif (posisi atau pending order).
+- Minimal 10% ekuitas tetap menjadi kas cadangan.
+- Risiko gabungan posisi terbuka dan pending order dibatasi 10% ekuitas; setiap campaign tetap maksimum 5%.
+- Dengan demikian ukuran akhir menggunakan batas terkecil berikut:
+
+```text
+Size = min(25%×Equity/Entry, 5%×Equity/R, SisaRisk/R, SisaKas/(Entry×1.003))
+```
