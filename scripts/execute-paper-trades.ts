@@ -12,16 +12,20 @@ const LEDGER = path.join(DESK, 'paper-ledger.json');
 const SCAN = path.join(DESK, 'latest-scan.json');
 const STATE = path.join(DESK, 'state.json');
 const RISK_PER_CAMPAIGN = 0.05;
-const MAX_NOTIONAL_MULTIPLE = 1;
+const MAX_NOTIONAL_PER_PAIR = 0.25;
+const BREAKOUT_INITIAL_ALLOCATION = 0.10;
+const MAX_ACTIVE_CAMPAIGNS = 4;
+const CASH_RESERVE_PCT = 0.10;
+const MAX_AGGREGATE_RISK_PCT = 0.10;
 const FEE_RATE = 0.003;
 const ATTEMPT_COOLDOWN_MS = 2 * 60 * 60 * 1000;
 const OWNERS = new Set(['breakout-specialist', 'aggressive-breakout-trader', 'mean-reversion-trader', 'smc-trader', 'wyckoff-trader']);
 
-type Pending = { id: string; campaignId: string; pair: string; side: 'long'; type: 'limit' | 'stop'; entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number; riskReservedIdr: number; expiresAt: string; createdAt: string; status: 'pending' | 'filled' | 'cancelled' | 'expired' | 'rejected'; confirmations: string[]; reason: string; };
+type Pending = { id: string; campaignId: string; pair: string; side: 'long'; type: 'limit' | 'stop'; entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number; riskReservedIdr: number; notionalReservedIdr: number; expiresAt: string; createdAt: string; status: 'pending' | 'filled' | 'cancelled' | 'expired' | 'rejected'; confirmations: string[]; reason: string; };
 type Position = { side: 'long'; size: number; entryPrice: number; stopPrice: number; targetPrice: number; opened: string; campaignId: string; leg: number; initialRiskPerUnit: number; sizingNote: string; };
 type Book = { balance: { IDR: number }; positions: Record<string, Position>; pendingOrders: Pending[]; trades: unknown[] };
 type Ledger = { last_cycle: string; agents: Record<string, Book> };
-type Candidate = Omit<Pending, 'campaignId' | 'riskReservedIdr' | 'createdAt' | 'status'> & { agent: string; score: number; validationStatus: 'validated' | 'research' };
+type Candidate = Omit<Pending, 'campaignId' | 'riskReservedIdr' | 'notionalReservedIdr' | 'createdAt' | 'status'> & { agent: string; score: number; validationStatus: 'validated' | 'research' };
 
 function read<T>(file: string): T { return JSON.parse(fs.readFileSync(file, 'utf8')) as T; }
 function write(file: string, value: unknown) { fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n'); }
@@ -33,6 +37,14 @@ function hasLiveCampaign(book: Book, pair: string) { return Boolean(book.positio
 function hasRecentAttempt(book: Book, pair: string, timestamp: string) {
   const cutoff = Date.parse(timestamp) - ATTEMPT_COOLDOWN_MS;
   return book.pendingOrders.some((order) => order.pair === pair && Date.parse(order.createdAt) >= cutoff);
+}
+function accountEquity(book: Book) { return book.balance.IDR + Object.values(book.positions).reduce((total, position) => total + position.size * position.entryPrice, 0); }
+function activeCampaigns(book: Book) { return Object.keys(book.positions).length + book.pendingOrders.filter((order) => order.status === 'pending').length; }
+function reservedCash(book: Book, excludeId?: string) { return book.pendingOrders.filter((order) => order.status === 'pending' && order.id !== excludeId).reduce((total, order) => total + (order.notionalReservedIdr ?? 0), 0); }
+function reservedRisk(book: Book, excludeId?: string) {
+  const openRisk = Object.values(book.positions).reduce((total, position) => total + position.size * Math.max(0, position.entryPrice - position.stopPrice), 0);
+  const pendingRisk = book.pendingOrders.filter((order) => order.status === 'pending' && order.id !== excludeId).reduce((total, order) => total + order.riskReservedIdr, 0);
+  return openRisk + pendingRisk;
 }
 // Research candidates remain executable while this desk is in paper-trading
 // mode, so their real-time outcomes can be measured independently. The status
@@ -49,25 +61,37 @@ async function pendingTouches(ledger: Ledger) {
 }
 
 function reserveCandidate(book: Book, candidate: Candidate, timestamp: string): Pending | null {
-  if (!valid(candidate) || hasLiveCampaign(book, candidate.pair) || hasRecentAttempt(book, candidate.pair, timestamp)) return null;
-  const equity = book.balance.IDR;
+  if (!valid(candidate) || hasLiveCampaign(book, candidate.pair) || hasRecentAttempt(book, candidate.pair, timestamp) || activeCampaigns(book) >= MAX_ACTIVE_CAMPAIGNS) return null;
+  const equity = accountEquity(book);
   const riskPerUnit = candidate.entryHigh - candidate.stopPrice;
-  const size = Math.min(equity / candidate.entryHigh, (equity * RISK_PER_CAMPAIGN) / riskPerUnit);
-  const risk = size * riskPerUnit;
+  const cashAvailable = Math.max(0, book.balance.IDR - equity * CASH_RESERVE_PCT - reservedCash(book));
+  const riskAvailable = Math.max(0, equity * MAX_AGGREGATE_RISK_PCT - reservedRisk(book));
+  const size = Math.min(
+    (equity * MAX_NOTIONAL_PER_PAIR) / candidate.entryHigh,
+    (equity * RISK_PER_CAMPAIGN) / riskPerUnit,
+    riskAvailable / riskPerUnit,
+    cashAvailable / (candidate.entryHigh * (1 + FEE_RATE)),
+  );
+  const risk = size * riskPerUnit; const notionalReservedIdr = size * candidate.entryHigh * (1 + FEE_RATE);
   if (!Number.isFinite(size) || size <= 0 || risk <= 0) return null;
-  return { ...candidate, campaignId: campaignId(candidate.agent, candidate.pair), riskReservedIdr: risk, createdAt: timestamp, status: 'pending' };
+  return { ...candidate, campaignId: campaignId(candidate.agent, candidate.pair), riskReservedIdr: risk, notionalReservedIdr, createdAt: timestamp, status: 'pending' };
 }
 
 function fill(book: Book, order: Pending, price: number, timestamp: string) {
   const fillPrice = order.type === 'stop' ? Math.max(price, order.entryHigh) : Math.min(Math.max(price, order.entryLow), order.entryHigh);
   const riskPerUnit = fillPrice - order.stopPrice;
-  const equity = book.balance.IDR;
-  // Jesse Livermore manages breakout campaigns in four 25% legs. Other
-  // primary agents may use the full allowed notional at their first fill.
-  // Keep the entry fee inside the cash budget rather than sizing to 100% of
-  // cash and then charging the fee on top.
-  const initialNotionalCap = (order.campaignId.startsWith('breakout-specialist-') ? equity * 0.25 : equity * MAX_NOTIONAL_MULTIPLE) / (1 + FEE_RATE);
-  const size = Math.min(initialNotionalCap / fillPrice, (equity * RISK_PER_CAMPAIGN) / riskPerUnit);
+  const equity = accountEquity(book);
+  const allocationCap = order.campaignId.startsWith('breakout-specialist-') ? BREAKOUT_INITIAL_ALLOCATION : MAX_NOTIONAL_PER_PAIR;
+  const cashAvailable = Math.max(0, book.balance.IDR - equity * CASH_RESERVE_PCT - reservedCash(book, order.id));
+  const riskAvailable = Math.max(0, equity * MAX_AGGREGATE_RISK_PCT - reservedRisk(book, order.id));
+  // Every coin is capped at 25% of equity. Breakout campaigns start smaller
+  // (10%) so their winning pyramid legs can still add up within that cap.
+  const size = Math.min(
+    (equity * allocationCap) / fillPrice,
+    (equity * RISK_PER_CAMPAIGN) / riskPerUnit,
+    riskAvailable / riskPerUnit,
+    cashAvailable / (fillPrice * (1 + FEE_RATE)),
+  );
   if (!Number.isFinite(size) || size <= 0 || fillPrice <= order.stopPrice) { order.status = 'rejected'; return; }
   const notional = fillPrice * size;
   const fee = notional * FEE_RATE;
@@ -75,7 +99,7 @@ function fill(book: Book, order: Pending, price: number, timestamp: string) {
   // Spot purchases spend both notional and fee. This prevents later fills
   // from sizing against capital that is already tied up in a position.
   book.balance.IDR -= notional + fee;
-  book.positions[order.pair] = { side: 'long', size, entryPrice: fillPrice, stopPrice: order.stopPrice, targetPrice: order.targetPrice, opened: timestamp, campaignId: order.campaignId, leg: 1, initialRiskPerUnit: riskPerUnit, sizingNote: `Spot-only | Risiko maks 5% | Fee masuk Rp${Math.round(fee).toLocaleString('id-ID')}` };
+  book.positions[order.pair] = { side: 'long', size, entryPrice: fillPrice, stopPrice: order.stopPrice, targetPrice: order.targetPrice, opened: timestamp, campaignId: order.campaignId, leg: 1, initialRiskPerUnit: riskPerUnit, sizingNote: `Spot-only | Maks. 25% ekuitas per koin | Risiko maks. 5% | Kas cadangan 10% | Fee masuk Rp${Math.round(fee).toLocaleString('id-ID')}` };
   order.status = 'filled';
   book.trades.push({ timestamp, instrument: order.pair, side: 'long', type: 'open', size, price: fillPrice, reason: order.reason, campaignId: order.campaignId, confirmations: order.confirmations, feeIdr: fee });
 }
@@ -84,15 +108,15 @@ function pyramidBreakout(book: Book, pair: string, position: Position, price: nu
   if (position.leg >= 4) return;
   const initialRisk = position.initialRiskPerUnit;
   if (initialRisk <= 0 || price < position.entryPrice + initialRisk * position.leg) return;
-  // The first winning leg is protected before any addition. New legs are
-  // added only while total spot notional remains at or below current equity.
+  // The first winning leg is protected before any addition. The full
+  // campaign is still capped at 25% of account equity, leaving room for
+  // other coins rather than concentrating the agent in a single pair.
   position.stopPrice = Math.max(position.stopPrice, position.entryPrice);
   const currentNotional = position.size * price;
-  // Cash is now reduced at entry, so include this campaign's current market
-  // value when calculating the capacity for the next pyramid leg.
-  const equity = book.balance.IDR + currentNotional;
-  const capacity = Math.max(0, (equity * MAX_NOTIONAL_MULTIPLE - currentNotional) / (1 + FEE_RATE));
-  const addSize = Math.min((equity * 0.25) / (price * (1 + FEE_RATE)), capacity / price);
+  const equity = accountEquity(book);
+  const capacity = Math.max(0, equity * MAX_NOTIONAL_PER_PAIR - currentNotional);
+  const cashAvailable = Math.max(0, book.balance.IDR - equity * CASH_RESERVE_PCT - reservedCash(book));
+  const addSize = Math.min((equity * 0.05) / (price * (1 + FEE_RATE)), capacity / price, cashAvailable / (price * (1 + FEE_RATE)));
   if (!Number.isFinite(addSize) || addSize <= 0) return;
   const oldNotional = position.size * position.entryPrice;
   const addNotional = addSize * price;
