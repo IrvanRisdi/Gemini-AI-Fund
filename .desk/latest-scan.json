@@ -1,29 +1,7 @@
 {
-  "timestamp": "2026-08-31T00:00:43.125Z",
+  "timestamp": "2026-08-31T00:15:35.127Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [
-    {
-      "id": "wyckoff-trader-hypeidr-1788134443096",
-      "pair": "hypeidr",
-      "agent": "wyckoff-trader",
-      "side": "long",
-      "type": "limit",
-      "timeframe": "15m",
-      "entryLow": 1486000,
-      "entryHigh": 1486000,
-      "stopPrice": 1481075.6535714285,
-      "targetPrice": 1500860,
-      "expiresAt": "2026-08-31T06:00:43.096Z",
-      "confirmations": [
-        "Wyckoff phase D / SoS",
-        "Skor 3/5",
-        "Retest last point of support"
-      ],
-      "score": 3,
-      "validationStatus": "research",
-      "reason": "Kandidat riset sign-of-strength dan last-point-of-support; belum boleh dieksekusi otomatis."
-    }
-  ],
+  "candidates": [],
   "errors": []
 }
