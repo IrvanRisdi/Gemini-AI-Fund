@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-30T23:45:40.286Z",
+  "last_cycle": "2026-08-31T00:00:45.956Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -704,6 +704,31 @@
           "riskReservedIdr": 114305.64413265426,
           "createdAt": "2026-08-30T23:30:45.874Z",
           "status": "cancelled"
+        },
+        {
+          "id": "wyckoff-trader-hypeidr-1788134443096",
+          "pair": "hypeidr",
+          "agent": "wyckoff-trader",
+          "side": "long",
+          "type": "limit",
+          "timeframe": "15m",
+          "entryLow": 1486000,
+          "entryHigh": 1486000,
+          "stopPrice": 1481075.6535714285,
+          "targetPrice": 1500860,
+          "expiresAt": "2026-08-31T06:00:43.096Z",
+          "confirmations": [
+            "Wyckoff phase D / SoS",
+            "Skor 3/5",
+            "Retest last point of support"
+          ],
+          "score": 3,
+          "validationStatus": "research",
+          "reason": "Kandidat riset sign-of-strength dan last-point-of-support; belum boleh dieksekusi otomatis.",
+          "campaignId": "wyckoff-trader-hypeidr-1788134445956",
+          "riskReservedIdr": 165691.33339742603,
+          "createdAt": "2026-08-31T00:00:45.956Z",
+          "status": "pending"
         }
       ],
       "trades": []
