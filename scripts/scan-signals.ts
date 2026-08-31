@@ -14,11 +14,21 @@ export interface Candidate {
   confirmations: string[]; reason: string; score: number; validationStatus: 'validated' | 'research';
 }
 
+function choppiness(candles: OHLCV[], period = 14) {
+  const bars = candles.slice(-(period + 1)); if (bars.length < period + 1) return 0;
+  let trueRangeSum = 0;
+  for (let index = 1; index < bars.length; index += 1) {
+    const bar = bars[index]!; const previousClose = bars[index - 1]!.close;
+    trueRangeSum += Math.max(bar.high - bar.low, Math.abs(bar.high - previousClose), Math.abs(bar.low - previousClose));
+  }
+  const span = Math.max(...bars.slice(1).map((bar) => bar.high)) - Math.min(...bars.slice(1).map((bar) => bar.low));
+  return span > 0 ? 100 * Math.log10(trueRangeSum / span) / Math.log10(period) : 100;
+}
 function metric(candles: OHLCV[]) {
   const closed = candles.slice(0, -1); if (closed.length < 55) return null;
   const closes = closed.map((c) => c.close); const last = closed.at(-1)!; const prior = closed.slice(-21, -1);
   const bands = bollingerBands(closes, 20, 2); const av = prior.reduce((s, c) => s + c.volume, 0) / prior.length;
-  return { last, closes, adx: adx(closed, 14).at(-1)!, ema9: ema(closes, 9).at(-1)!, ema21: ema(closes, 21).at(-1)!, rsi: rsi(closes, 14).at(-1)!, previousRsi: rsi(closes.slice(0, -1), 14).at(-1)!, atr: atr(closed, 14).at(-1)!, upper: bands.upper.at(-1)!, lower: bands.lower.at(-1)!, mid: bands.middle.at(-1)!, resistance: Math.max(...prior.map((c) => c.high)), support: Math.min(...prior.map((c) => c.low)), vol: av > 0 ? last.volume / av : 0, closed };
+  return { last, closes, chop: choppiness(closed), adx: adx(closed, 14).at(-1)!, ema9: ema(closes, 9).at(-1)!, ema21: ema(closes, 21).at(-1)!, rsi: rsi(closes, 14).at(-1)!, previousRsi: rsi(closes.slice(0, -1), 14).at(-1)!, atr: atr(closed, 14).at(-1)!, upper: bands.upper.at(-1)!, lower: bands.lower.at(-1)!, mid: bands.middle.at(-1)!, resistance: Math.max(...prior.map((c) => c.high)), support: Math.min(...prior.map((c) => c.low)), vol: av > 0 ? last.volume / av : 0, closed };
 }
 // A 1.5R gross plan is too thin after a 0.6% round-trip paper fee. Keep a
 // buffer while retaining the executor's absolute 1.5R safety floor.
@@ -73,17 +83,23 @@ async function scanPair(pair: string): Promise<Candidate[]> {
     const entry = one.last.high * 1.0003; const stop = Math.max(one.resistance - one.atr * .25, entry - 1.15 * one.atr); const target = targetFor(entry, stop);
     if (valid(entry, stop, target)) candidates.push({ id: id('aggressive-breakout-trader'), pair, agent: 'aggressive-breakout-trader', side: 'long', type: 'stop', timeframe: '15m', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(4), confirmations: ['Trend 4H', `Skor momentum ${aggressiveScore}/5`, 'Buy-stop di atas high 15m'], score: aggressiveScore, validationStatus: 'validated', reason: 'Momentum 15m berkualitas tinggi; buy-stop membatalkan entry bila harga tidak melanjutkan breakout.' });
   }
-  // Long-only mean reversion is treated as a pullback inside a verified uptrend.
-  const previous = one.closed.at(-2)!; const previousEma9 = ema(one.closes.slice(0, -1), 9).at(-1)!;
-  const pullbackScore = Number(one.last.low <= one.ema21 * 1.003) + Number(previous.close <= previousEma9) + Number(one.last.close > one.ema9) + Number(one.last.close > one.last.open) + Number(one.rsi >= 42 && one.rsi <= 65);
-  // Require a clearer reclaimed pullback rather than widening the stop.
-  if (liquid && trendUp && one.vol >= 1 && one.rsi >= 48 && pullbackScore >= 4) {
-    const entry = Math.max(one.ema21, Math.min(one.ema9, one.last.close));
-    const band = limitBand(entry, one.atr, one.ema21 * .995, one.last.close);
-    const pullbackLow = Math.min(...one.closed.slice(-6).map((bar) => bar.low));
-    const stop = Math.min(pullbackLow - one.atr * .15, band.low - one.atr * .5);
-    const target = targetFor(band.high, stop, 1.8);
-    if (valid(band.high, stop, target)) candidates.push({ id: id('mean-reversion-trader'), pair, agent: 'mean-reversion-trader', side: 'long', type: 'limit', timeframe: '15m', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Pullback EMA 15m tervalidasi', 'RSI ≥48 + volume normal', `Skor pullback ${pullbackScore}/5`], score: pullbackScore, validationStatus: 'research', reason: 'Pullback-to-mean tervalidasi: buy limit EMA dengan target 1,8R.' });
+  // Mean reversion is deliberately a ranging-market strategy, not a
+  // trend-pullback strategy. ADX/EMA compression identifies the regime;
+  // Choppiness, Bollinger and RSI locate a controlled lower-range reversal.
+  const emaSpread4h = Math.abs(four.ema9 - four.ema21) / four.ema21;
+  const range4h = four.adx <= 24 && emaSpread4h <= .018 && four.chop >= 52;
+  const range15m = one.chop >= 50 && (one.resistance - one.support) / one.last.close <= .12;
+  const nearLowerBand = one.last.low <= one.lower * 1.006 && one.last.close <= one.mid;
+  const rsiReclaim = one.rsi <= 48 && (one.previousRsi <= 42 || one.rsi >= one.previousRsi);
+  const containedVolume = one.vol >= .4 && one.vol <= 2.2;
+  const meanScore = Number(range4h) + Number(range15m) + Number(nearLowerBand) + Number(rsiReclaim) + Number(one.last.close > one.last.open) + Number(containedVolume);
+  if (liquid && range4h && range15m && nearLowerBand && rsiReclaim && containedVolume && meanScore >= 5) {
+    const entry = Math.min(one.last.close, one.lower + one.atr * .15);
+    const band = limitBand(entry, one.atr, one.lower - one.atr * .20, entry);
+    const stop = Math.min(one.support - one.atr * .25, band.low - one.atr * .35);
+    // The mean/middle Bollinger band is the natural first exit in a range.
+    const target = one.mid;
+    if (valid(band.high, stop, target)) candidates.push({ id: id('mean-reversion-trader'), pair, agent: 'mean-reversion-trader', side: 'long', type: 'limit', timeframe: '15m', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Regime ranging: ADX rendah + EMA rapat + CHOP tinggi', 'Reversal di Bollinger bawah', 'RSI oversold/reclaim + volume terkendali', `Skor range-reversion ${meanScore}/6`], score: meanScore, validationStatus: 'research', reason: 'Range mean reversion: buy limit dekat Bollinger bawah, target middle band.' });
   }
   // SMC and Wyckoff remain separate research strategies.
   const fib = fibConfluence(fourHour, one.last.close); const engulfing = bullishCandle(fifteenMinute);
