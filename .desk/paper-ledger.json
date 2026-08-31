@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-08-31T21:45:40.106Z",
+  "last_cycle": "2026-08-31T22:00:46.853Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -761,7 +761,7 @@
     },
     "aggressive-breakout-trader": {
       "balance": {
-        "IDR": 50000000
+        "IDR": 49910451.78680531
       },
       "positions": {},
       "pendingOrders": [
@@ -814,10 +814,39 @@
           "riskReservedIdr": 13558.66672771447,
           "notionalReservedIdr": 12537499.999999998,
           "createdAt": "2026-08-31T21:45:40.106Z",
-          "status": "pending"
+          "status": "filled"
         }
       ],
-      "trades": []
+      "trades": [
+        {
+          "timestamp": "2026-08-31T22:00:46.853Z",
+          "instrument": "hypeidr",
+          "side": "long",
+          "type": "open",
+          "size": 8.33444567623477,
+          "price": 1499799.805,
+          "reason": "Momentum 15m berkualitas tinggi; buy-stop membatalkan entry bila harga tidak melanjutkan breakout.",
+          "campaignId": "aggressive-breakout-trader-hypeidr-1788212740106",
+          "confirmations": [
+            "Trend 4H",
+            "Skor momentum 4/5",
+            "Buy-stop di atas high 15m"
+          ],
+          "feeIdr": 37500
+        },
+        {
+          "timestamp": "2026-08-31T22:00:46.853Z",
+          "instrument": "hypeidr",
+          "side": "long",
+          "type": "close",
+          "size": 8.33444567623477,
+          "price": 1498049,
+          "realizedPnlIdr": -52048.21319469313,
+          "reason": "Stop loss struktur",
+          "campaignId": "aggressive-breakout-trader-hypeidr-1788212740106",
+          "feeIdr": 37456.22403251346
+        }
+      ]
     }
   }
 }
