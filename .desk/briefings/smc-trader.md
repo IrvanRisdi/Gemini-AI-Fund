@@ -48,3 +48,15 @@ Order limit berlaku 8 jam. Setup yang tidak memiliki demand zone tidak dieksekus
 - Risiko maksimum 5% ekuitas.
 - Target 1,8R dipilih agar payoff setelah fee 0,6% lebih memadai.
 - Evaluasi wajib membandingkan kedalaman sweep, jarak entry ke ZoneLow, volume relatif, skor konteks, dan hasil target/stop.
+
+
+## Alokasi portofolio
+
+- Maksimum **25% ekuitas agen per koin** dan maksimal **empat campaign** aktif (posisi atau pending order).
+- Minimal 10% ekuitas tetap menjadi kas cadangan.
+- Risiko gabungan posisi terbuka dan pending order dibatasi 10% ekuitas; setiap campaign tetap maksimum 5%.
+- Dengan demikian ukuran akhir menggunakan batas terkecil berikut:
+
+```text
+Size = min(25%×Equity/Entry, 5%×Equity/R, SisaRisk/R, SisaKas/(Entry×1.003))
+```
