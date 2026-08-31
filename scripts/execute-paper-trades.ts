@@ -14,6 +14,7 @@ const STATE = path.join(DESK, 'state.json');
 const RISK_PER_CAMPAIGN = 0.05;
 const MAX_NOTIONAL_MULTIPLE = 1;
 const FEE_RATE = 0.003;
+const ATTEMPT_COOLDOWN_MS = 2 * 60 * 60 * 1000;
 const OWNERS = new Set(['breakout-specialist', 'aggressive-breakout-trader', 'mean-reversion-trader', 'smc-trader', 'wyckoff-trader']);
 
 type Pending = { id: string; campaignId: string; pair: string; side: 'long'; type: 'limit' | 'stop'; entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number; riskReservedIdr: number; expiresAt: string; createdAt: string; status: 'pending' | 'filled' | 'cancelled' | 'expired' | 'rejected'; confirmations: string[]; reason: string; };
@@ -29,6 +30,10 @@ function now() { return new Date().toISOString(); }
 function campaignId(agent: string, pair: string) { return `${agent}-${pair}-${Date.now()}`; }
 function priceFor(pair: string, prices: Record<string, number>) { return prices[key(pair)] ?? 0; }
 function hasLiveCampaign(book: Book, pair: string) { return Boolean(book.positions[pair]) || book.pendingOrders.some((order) => order.pair === pair && order.status === 'pending'); }
+function hasRecentAttempt(book: Book, pair: string, timestamp: string) {
+  const cutoff = Date.parse(timestamp) - ATTEMPT_COOLDOWN_MS;
+  return book.pendingOrders.some((order) => order.pair === pair && Date.parse(order.createdAt) >= cutoff);
+}
 // Research candidates remain executable while this desk is in paper-trading
 // mode, so their real-time outcomes can be measured independently. The status
 // is retained in the scan data for reporting and later live-trading gating.
@@ -44,7 +49,7 @@ async function pendingTouches(ledger: Ledger) {
 }
 
 function reserveCandidate(book: Book, candidate: Candidate, timestamp: string): Pending | null {
-  if (!valid(candidate) || hasLiveCampaign(book, candidate.pair)) return null;
+  if (!valid(candidate) || hasLiveCampaign(book, candidate.pair) || hasRecentAttempt(book, candidate.pair, timestamp)) return null;
   const equity = book.balance.IDR;
   const riskPerUnit = candidate.entryHigh - candidate.stopPrice;
   const size = Math.min(equity / candidate.entryHigh, (equity * RISK_PER_CAMPAIGN) / riskPerUnit);
