@@ -48,3 +48,15 @@ Order limit berlaku 8 jam. Jika harga menembus stop sebelum retest zone, order d
 ## Risiko
 
 Risk per campaign maksimum 5% ekuitas; ukuran posisi dihitung dari jarak entry–stop dan dibatasi oleh kas spot yang tersedia.
+
+
+## Alokasi portofolio
+
+- Maksimum **25% ekuitas agen per koin** dan maksimal **empat campaign** aktif (posisi atau pending order).
+- Minimal 10% ekuitas tetap menjadi kas cadangan.
+- Risiko gabungan posisi terbuka dan pending order dibatasi 10% ekuitas; setiap campaign tetap maksimum 5%.
+- Dengan demikian ukuran akhir menggunakan batas terkecil berikut:
+
+```text
+Size = min(25%×Equity/Entry, 5%×Equity/R, SisaRisk/R, SisaKas/(Entry×1.003))
+```
