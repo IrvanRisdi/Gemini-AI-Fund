@@ -57,12 +57,24 @@ Order berlaku 6 jam. Bila harga turun melewati stop sebelum entry, order dibatal
 ## Risiko dan audit
 
 - Risiko maksimum per campaign: 5% ekuitas agen.
-- Notional maksimum: 100% ekuitas; fee masuk 0,3% tetap masuk batas kas.
+- Breakout dimulai 10% ekuitas agar penambahan leg yang menang tetap berada dalam batas 25% per koin.
 - Ukuran posisi:
 
 ```text
 Size = min(NotionalCap / Entry, 0.05×Equity / (Entry-Stop))
 ```
 
-- Breakout Specialist dapat menambah maksimal empat leg 25% hanya setelah posisi bergerak menguntungkan per 1R.
+- Breakout Specialist dapat menambah hingga empat leg setelah posisi bergerak menguntungkan per 1R; total eksposur campaign tetap maksimum 25% ekuitas.
 - Setelah +1,25R, stop dinaikkan minimal ke level biaya.
+
+
+## Alokasi portofolio
+
+- Maksimum **25% ekuitas agen per koin** dan maksimal **empat campaign** aktif (posisi atau pending order).
+- Minimal 10% ekuitas tetap menjadi kas cadangan.
+- Risiko gabungan posisi terbuka dan pending order dibatasi 10% ekuitas; setiap campaign tetap maksimum 5%.
+- Dengan demikian ukuran akhir menggunakan batas terkecil berikut:
+
+```text
+Size = min(25%×Equity/Entry, 5%×Equity/R, SisaRisk/R, SisaKas/(Entry×1.003))
+```
