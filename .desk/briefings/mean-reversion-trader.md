@@ -2,53 +2,61 @@
 
 ## Tujuan
 
-Membeli pullback yang sudah kembali menunjukkan penerimaan harga dalam tren naik 4H. Agen tidak lagi memakai buy-stop di atas high; entry memakai buy-limit dekat EMA agar tidak mengejar harga.
+Membeli pantulan dari batas bawah range menuju rata-rata harga. Agen ini **tidak aktif pada tren kuat** dan tidak memakai pullback EMA sebagai syarat entry.
 
-## Filter tren dan kualitas
+## Regime pasar
+
+Signal hanya boleh muncul ketika 4H dan 15 menit sama-sama menunjukkan kondisi ranging:
 
 ```text
-EMA9_4H > EMA21_4H
-Close_4H >= EMA9_4H
-ADX14_4H >= 14
-Volume_15m >= rata-rata volume 20 candle
-RSI14_15m >= 48
+ADX14_4H <= 24
+|EMA9_4H - EMA21_4H| / EMA21_4H <= 1.8%
+CHOP14_4H >= 52
+CHOP14_15m >= 50
+(RangeHigh20 - RangeLow20) / Close15m <= 12%
+ATR14_15m / Close15m <= 8%
 ```
 
-Skor pullback minimal 4 dari 5:
+CHOP (Choppiness Index) mengukur apakah pergerakan lebih bolak-balik daripada directional. Nilai tinggi bersama ADX rendah dan EMA rapat berarti mean reversion lebih layak daripada breakout.
 
-1. Low menyentuh/berada dekat EMA21: Low <= 1.003×EMA21.
-2. Close candle sebelumnya <= EMA9 sebelumnya.
-3. Close sekarang > EMA9.
-4. Candle sekarang bullish.
-5. RSI berada pada 42–65.
+## Setup entry
+
+Harga harus menguji Bollinger Band bawah lalu menunjukkan pantulan yang masih berada di bawah middle band:
+
+```text
+Low15m <= 1.006 × LowerBB20,2
+Close15m <= MiddleBB20,2
+RSI14_15m <= 48
+RSI sekarang naik atau RSI candle sebelumnya <= 42
+0.4 <= RelativeVolume15m <= 2.2
+Close15m > Open15m
+```
+
+Volume yang terlalu besar justru ditolak karena dapat menandakan breakdown/breakout, bukan pantulan range.
 
 ## Trading plan
 
 ```text
-EntryRef = max(EMA21, min(EMA9, Close))
-Entry zone = [EntryRef - 0.30×ATR, EntryRef]
-SwingLow = min(Low 6 candle terakhir)
-Stop = min(SwingLow - 0.15×ATR, ZoneLow - 0.50×ATR)
-Target = Entry + max(1.8R, 1%×Entry)
+EntryRef = min(Close, LowerBB + 0.15×ATR)
+Entry zone = [max(LowerBB - 0.20×ATR, EntryRef - 0.30×ATR), EntryRef]
+Stop = min(RangeLow20 - 0.25×ATR, ZoneLow - 0.35×ATR)
+Target = MiddleBB20,2
 R = Entry - Stop
 ```
 
-Order limit berlaku 8 jam. Stop tidak diperlebar setelah entry: bila struktur pullback gagal, thesis dianggap salah. Target 1,8R dipakai agar payoff bersih lebih layak terhadap total fee 0,6%.
+Order buy-limit berlaku 8 jam dan hanya dibuat bila target middle band masih memberi reward/risk minimal 1,5:1. Jika harga menembus stop sebelum menyentuh zona entry, order dibatalkan.
 
-## Risiko dan evaluasi
+## Risiko dan audit
 
-- Risiko maksimum 5% ekuitas.
-- Posisi hanya dibuka pada zona limit yang tersentuh.
-- Setelah +1,25R, stop dinaikkan untuk menutup biaya.
-- Auditor perlu mencatat skor pullback, RSI, volume relatif, jarak stop (%), serta outcome per pair.
-
+- Risiko maksimum 5% ekuitas per campaign.
+- Catat ADX, CHOP, lebar range, posisi terhadap Bollinger, RSI, volume relatif, serta hasil target/stop per pair.
+- Hasil strategi harus dievaluasi terpisah dari strategi tren; jangan gabungkan metriknya.
 
 ## Alokasi portofolio
 
 - Maksimum **25% ekuitas agen per koin** dan maksimal **empat campaign** aktif (posisi atau pending order).
 - Minimal 10% ekuitas tetap menjadi kas cadangan.
 - Risiko gabungan posisi terbuka dan pending order dibatasi 10% ekuitas; setiap campaign tetap maksimum 5%.
-- Dengan demikian ukuran akhir menggunakan batas terkecil berikut:
 
 ```text
 Size = min(25%×Equity/Entry, 5%×Equity/R, SisaRisk/R, SisaKas/(Entry×1.003))
