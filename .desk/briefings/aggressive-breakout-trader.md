@@ -1,3 +1,41 @@
-# Aggressive Breakout Trader — Spot-only V2
+# Aggressive Breakout Trader — Metodologi Terukur
 
-Fresh paper-trading book started 25 Aug 2026 with Rp50,000,000 equity. Uses one premium breakout campaign at a time; maximum notional is equity and maximum campaign risk is 5%.
+## Tujuan
+
+Agen momentum cepat untuk breakout 15 menit. Berbeda dari Breakout Specialist, agen ini tidak melakukan pyramid: satu entry berkualitas tinggi, satu campaign.
+
+## Data dan filter
+
+- Signal: 15 menit; konteks: 4H; fill: 1 menit.
+- BTC tidak menjadi syarat.
+- Pair wajib memenuhi:
+
+```text
+EMA9_4H > EMA21_4H
+Close_4H >= EMA9_4H
+ADX14_4H >= 14
+ATR_15m / Close_15m <= 8%
+```
+
+## Kondisi momentum
+
+```text
+Close_15m >= 0.998 × Resistance_20bar
+```
+
+dan skor minimal 3/5 dari volume relatif >=1,5, close strength >=70%, body 0,5–1,8 ATR, EMA9_15m > EMA21_15m, serta ekstensi breakout <=0,75 ATR.
+
+## Trading plan
+
+```text
+Entry  = High_15m × 1.0003
+Stop   = max(Resistance - 0.25×ATR, Entry - 1.15×ATR)
+Target = Entry + max(1.5R, 1%×Entry)
+R      = Entry - Stop
+```
+
+Order buy-stop berlaku 4 jam. Jika tidak ada kelanjutan harga, tidak ada posisi. Ini sengaja: strategi agresif mengejar continuation, bukan memprediksi pembalikan.
+
+## Risiko
+
+Risiko nominal maksimum 5% ekuitas, notional maksimum 100% ekuitas termasuk fee 0,3%. Tidak ada averaging down atau pyramid.
