@@ -1,30 +1,7 @@
 {
-  "timestamp": "2026-09-01T21:30:39.727Z",
+  "timestamp": "2026-09-01T21:45:42.678Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [
-    {
-      "id": "mean-reversion-trader-xrpidr-1788298239534",
-      "pair": "xrpidr",
-      "agent": "mean-reversion-trader",
-      "side": "long",
-      "type": "limit",
-      "timeframe": "15m",
-      "entryLow": 23702.362714159008,
-      "entryHigh": 23740.59128558758,
-      "stopPrice": 23654.14285714286,
-      "targetPrice": 24001.65,
-      "expiresAt": "2026-09-02T05:30:39.534Z",
-      "confirmations": [
-        "Regime ranging: ADX rendah + EMA rapat + CHOP tinggi",
-        "Reversal di Bollinger bawah",
-        "RSI oversold/reclaim + volume terkendali",
-        "Skor range-reversion 6/6"
-      ],
-      "score": 6,
-      "validationStatus": "research",
-      "reason": "Range mean reversion: buy limit dekat Bollinger bawah, target middle band."
-    }
-  ],
+  "candidates": [],
   "errors": []
 }
