@@ -1,9 +1,7 @@
 {
-  "timestamp": "2026-09-01T03:30:42.228Z",
+  "timestamp": "2026-09-01T03:45:40.514Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
   "candidates": [],
-  "errors": [
-    "TypeError: fetch failed"
-  ]
+  "errors": []
 }
