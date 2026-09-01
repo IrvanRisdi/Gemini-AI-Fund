@@ -1,7 +1,29 @@
 {
-  "timestamp": "2026-09-01T14:00:48.001Z",
+  "timestamp": "2026-09-01T14:15:40.631Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [],
+  "candidates": [
+    {
+      "id": "breakout-specialist-hypeidr-1788272140455",
+      "pair": "hypeidr",
+      "agent": "breakout-specialist",
+      "side": "long",
+      "type": "stop",
+      "timeframe": "15m",
+      "entryLow": 1490505.8805,
+      "entryHigh": 1490505.8805,
+      "stopPrice": 1483740.732142857,
+      "targetPrice": 1505410.939305,
+      "expiresAt": "2026-09-01T20:15:40.455Z",
+      "confirmations": [
+        "Trend 4H + BTC kuat",
+        "Skor breakout 3/5",
+        "Continuation di atas high 15m"
+      ],
+      "score": 3,
+      "validationStatus": "validated",
+      "reason": "Breakout 15m tervalidasi; buy-stop hanya terisi bila momentum berlanjut."
+    }
+  ],
   "errors": []
 }
