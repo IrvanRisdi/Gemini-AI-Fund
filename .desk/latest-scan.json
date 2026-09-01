@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-09-01T06:45:36.094Z",
+  "timestamp": "2026-09-01T07:00:46.639Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
   "candidates": [
     {
-      "id": "breakout-specialist-hypeidr-1788245136013",
+      "id": "breakout-specialist-hypeidr-1788246046112",
       "pair": "hypeidr",
       "agent": "breakout-specialist",
       "side": "long",
@@ -12,9 +12,9 @@
       "timeframe": "15m",
       "entryLow": 1490505.8805,
       "entryHigh": 1490505.8805,
-      "stopPrice": 1489682.732142857,
+      "stopPrice": 1489692.4642857143,
       "targetPrice": 1505410.939305,
-      "expiresAt": "2026-09-01T12:45:36.013Z",
+      "expiresAt": "2026-09-01T13:00:46.112Z",
       "confirmations": [
         "Trend 4H + BTC kuat",
         "Skor breakout 3/5",
