@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-01T21:15:40.905Z",
+  "last_cycle": "2026-09-01T21:30:41.559Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -351,6 +351,33 @@
           "notionalReservedIdr": 11990849.548165042,
           "createdAt": "2026-09-01T09:15:41.836Z",
           "status": "expired"
+        },
+        {
+          "id": "mean-reversion-trader-xrpidr-1788298239534",
+          "pair": "xrpidr",
+          "agent": "mean-reversion-trader",
+          "side": "long",
+          "type": "limit",
+          "timeframe": "15m",
+          "entryLow": 23702.362714159008,
+          "entryHigh": 23740.59128558758,
+          "stopPrice": 23654.14285714286,
+          "targetPrice": 24001.65,
+          "expiresAt": "2026-09-02T05:30:39.534Z",
+          "confirmations": [
+            "Regime ranging: ADX rendah + EMA rapat + CHOP tinggi",
+            "Reversal di Bollinger bawah",
+            "RSI oversold/reclaim + volume terkendali",
+            "Skor range-reversion 6/6"
+          ],
+          "score": 6,
+          "validationStatus": "research",
+          "reason": "Range mean reversion: buy limit dekat Bollinger bawah, target middle band.",
+          "campaignId": "mean-reversion-trader-xrpidr-1788298241560",
+          "riskReservedIdr": 43532.59857064187,
+          "notionalReservedIdr": 11990849.548165042,
+          "createdAt": "2026-09-01T21:30:41.559Z",
+          "status": "pending"
         }
       ],
       "trades": [
