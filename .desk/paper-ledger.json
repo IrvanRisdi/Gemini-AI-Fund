@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-01T06:00:50.211Z",
+  "last_cycle": "2026-09-01T06:15:39.412Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -527,9 +527,22 @@
     },
     "wyckoff-trader": {
       "balance": {
-        "IDR": 50000000
+        "IDR": 37462500
       },
-      "positions": {},
+      "positions": {
+        "ethidr": {
+          "side": "long",
+          "size": 0.2848937915944936,
+          "entryPrice": 43876000,
+          "stopPrice": 43800214.28571428,
+          "targetPrice": 44314760,
+          "opened": "2026-09-01T06:15:39.412Z",
+          "campaignId": "wyckoff-trader-ethidr-1788242450898",
+          "leg": 1,
+          "initialRiskPerUnit": 75785.71428571641,
+          "sizingNote": "Spot-only | Maks. 25% ekuitas per koin | Risiko maks. 5% | Kas cadangan 10% | Fee masuk Rp37.500"
+        }
+      },
       "pendingOrders": [
         {
           "id": "wyckoff-trader-hypeidr-1788100241929",
@@ -806,10 +819,27 @@
           "riskReservedIdr": 21590.879491554726,
           "notionalReservedIdr": 12537499.999999998,
           "createdAt": "2026-09-01T06:00:50.211Z",
-          "status": "pending"
+          "status": "filled"
         }
       ],
-      "trades": []
+      "trades": [
+        {
+          "timestamp": "2026-09-01T06:15:39.412Z",
+          "instrument": "ethidr",
+          "side": "long",
+          "type": "open",
+          "size": 0.2848937915944936,
+          "price": 43876000,
+          "reason": "Wyckoff SoS: buy limit pada zona retest range high.",
+          "campaignId": "wyckoff-trader-ethidr-1788242450898",
+          "confirmations": [
+            "Wyckoff phase D / SoS",
+            "Skor 3/5",
+            "Retest range high dalam zona 0,3 ATR"
+          ],
+          "feeIdr": 37500
+        }
+      ]
     },
     "aggressive-breakout-trader": {
       "balance": {
