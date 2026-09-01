@@ -1,29 +1,7 @@
 {
-  "timestamp": "2026-09-01T02:04:43.773Z",
+  "timestamp": "2026-09-01T02:15:35.316Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [
-    {
-      "id": "smc-trader-hypeidr-1788228283568",
-      "pair": "hypeidr",
-      "agent": "smc-trader",
-      "side": "long",
-      "type": "limit",
-      "timeframe": "15m",
-      "entryLow": 1484409.3285714285,
-      "entryHigh": 1485785,
-      "stopPrice": 1476862.1642857143,
-      "targetPrice": 1500642.85,
-      "expiresAt": "2026-09-01T10:04:43.568Z",
-      "confirmations": [
-        "Sweep + reclaim high 15m",
-        "Demand zone + volume normal",
-        "Skor konteks 4/4"
-      ],
-      "score": 4,
-      "validationStatus": "research",
-      "reason": "SMC tervalidasi: buy limit demand zone dengan target 1,8R."
-    }
-  ],
+  "candidates": [],
   "errors": []
 }
