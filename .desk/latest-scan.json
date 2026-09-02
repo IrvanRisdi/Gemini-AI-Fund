@@ -1,50 +1,7 @@
 {
-  "timestamp": "2026-09-02T07:45:39.926Z",
+  "timestamp": "2026-09-02T08:00:47.847Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [
-    {
-      "id": "breakout-specialist-shibidr-1788335139863",
-      "pair": "shibidr",
-      "agent": "breakout-specialist",
-      "side": "long",
-      "type": "stop",
-      "timeframe": "15m",
-      "entryLow": 0.09204199799999999,
-      "entryHigh": 0.09204199799999999,
-      "stopPrice": 0.09200775,
-      "targetPrice": 0.09296241797999999,
-      "expiresAt": "2026-09-02T13:45:39.863Z",
-      "confirmations": [
-        "Trend 4H + BTC kuat",
-        "Skor breakout 3/5",
-        "Continuation di atas high 15m"
-      ],
-      "score": 3,
-      "validationStatus": "validated",
-      "reason": "Breakout 15m tervalidasi; buy-stop hanya terisi bila momentum berlanjut."
-    },
-    {
-      "id": "aggressive-breakout-trader-shibidr-1788335139863",
-      "pair": "shibidr",
-      "agent": "aggressive-breakout-trader",
-      "side": "long",
-      "type": "stop",
-      "timeframe": "15m",
-      "entryLow": 0.0920235988,
-      "entryHigh": 0.0920235988,
-      "stopPrice": 0.09200775,
-      "targetPrice": 0.092943834788,
-      "expiresAt": "2026-09-02T11:45:39.863Z",
-      "confirmations": [
-        "Trend 4H",
-        "Skor momentum 3/5",
-        "Buy-stop di atas high 15m"
-      ],
-      "score": 3,
-      "validationStatus": "validated",
-      "reason": "Momentum 15m berkualitas tinggi; buy-stop membatalkan entry bila harga tidak melanjutkan breakout."
-    }
-  ],
+  "candidates": [],
   "errors": []
 }

@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-02T07:45:40.928Z",
+  "last_cycle": "2026-09-02T08:00:48.680Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -218,7 +218,7 @@
           "riskReservedIdr": 4651.137625237495,
           "notionalReservedIdr": 12537499.999999998,
           "createdAt": "2026-09-02T07:45:40.928Z",
-          "status": "pending"
+          "status": "cancelled"
         }
       ],
       "trades": []
@@ -766,22 +766,9 @@
     },
     "wyckoff-trader": {
       "balance": {
-        "IDR": 37121488.767414585
+        "IDR": 49374627.53154308
       },
-      "positions": {
-        "shibidr": {
-          "side": "long",
-          "size": 134555264.9554402,
-          "entryPrice": 0.092053,
-          "stopPrice": 0.0914634,
-          "targetPrice": 0.09297353,
-          "opened": "2026-09-02T06:30:41.811Z",
-          "campaignId": "wyckoff-trader-shibidr-1788327038985",
-          "leg": 1,
-          "initialRiskPerUnit": 0.0005895999999999957,
-          "sizingNote": "Spot-only | Maks. 25% ekuitas per koin | Risiko maks. 5% | Kas cadangan 10% | Fee masuk Rp37.159"
-        }
-      },
+      "positions": {},
       "pendingOrders": [
         {
           "id": "wyckoff-trader-hypeidr-1788100241929",
@@ -1319,6 +1306,18 @@
             "Retest range high dalam zona 0,3 ATR"
           ],
           "feeIdr": 37158.64741482941
+        },
+        {
+          "timestamp": "2026-09-02T08:00:48.680Z",
+          "instrument": "shibidr",
+          "side": "long",
+          "type": "close",
+          "size": 134555264.9554402,
+          "price": 0.091338,
+          "realizedPnlIdr": -133077.04081463884,
+          "reason": "Stop loss struktur",
+          "campaignId": "wyckoff-trader-shibidr-1788327038985",
+          "feeIdr": 36870.02637149999
         }
       ]
     },
@@ -1481,7 +1480,7 @@
           "riskReservedIdr": 2142.1744405417016,
           "notionalReservedIdr": 12475518.214622311,
           "createdAt": "2026-09-02T07:45:40.928Z",
-          "status": "pending"
+          "status": "cancelled"
         }
       ],
       "trades": [
