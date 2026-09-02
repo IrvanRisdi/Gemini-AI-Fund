@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-02T04:30:44.816Z",
+  "last_cycle": "2026-09-02T04:45:36.644Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -141,6 +141,32 @@
           "notionalReservedIdr": 12537499.999999996,
           "createdAt": "2026-09-02T04:00:41.116Z",
           "status": "cancelled"
+        },
+        {
+          "id": "breakout-specialist-uniidr-1788324334677",
+          "pair": "uniidr",
+          "agent": "breakout-specialist",
+          "side": "long",
+          "type": "stop",
+          "timeframe": "15m",
+          "entryLow": 112056,
+          "entryHigh": 112056,
+          "stopPrice": 110758.97142857143,
+          "targetPrice": 114001.54285714286,
+          "expiresAt": "2026-09-02T10:45:34.677Z",
+          "confirmations": [
+            "Trend 4H + BTC kuat",
+            "Skor breakout 4/5",
+            "Continuation di atas high 15m"
+          ],
+          "score": 4,
+          "validationStatus": "validated",
+          "reason": "Breakout 15m tervalidasi; buy-stop hanya terisi bila momentum berlanjut.",
+          "campaignId": "breakout-specialist-uniidr-1788324336645",
+          "riskReservedIdr": 144685.31040602142,
+          "notionalReservedIdr": 12537499.999999998,
+          "createdAt": "2026-09-02T04:45:36.644Z",
+          "status": "pending"
         }
       ],
       "trades": []
