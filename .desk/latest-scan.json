@@ -1,30 +1,7 @@
 {
-  "timestamp": "2026-09-02T11:00:45.805Z",
+  "timestamp": "2026-09-02T11:15:37.136Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [
-    {
-      "id": "mean-reversion-trader-shibidr-1788346845788",
-      "pair": "shibidr",
-      "agent": "mean-reversion-trader",
-      "side": "long",
-      "type": "limit",
-      "timeframe": "15m",
-      "entryLow": 0.0896496323590951,
-      "entryHigh": 0.08986477521623795,
-      "stopPrice": 0.08939863235909509,
-      "targetPrice": 0.09115119999999997,
-      "expiresAt": "2026-09-02T19:00:45.788Z",
-      "confirmations": [
-        "Regime ranging: ADX rendah + EMA rapat + CHOP tinggi",
-        "Reversal di Bollinger bawah",
-        "RSI oversold/reclaim + volume terkendali",
-        "Skor range-reversion 5/6"
-      ],
-      "score": 5,
-      "validationStatus": "research",
-      "reason": "Range mean reversion: buy limit dekat Bollinger bawah, target middle band."
-    }
-  ],
+  "candidates": [],
   "errors": []
 }
