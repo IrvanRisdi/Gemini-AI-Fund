@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-02T05:45:41.468Z",
+  "last_cycle": "2026-09-02T06:00:46.976Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -167,6 +167,32 @@
           "notionalReservedIdr": 12537499.999999998,
           "createdAt": "2026-09-02T04:45:36.644Z",
           "status": "cancelled"
+        },
+        {
+          "id": "breakout-specialist-hypeidr-1788328844661",
+          "pair": "hypeidr",
+          "agent": "breakout-specialist",
+          "side": "long",
+          "type": "stop",
+          "timeframe": "15m",
+          "entryLow": 1484640.9494999999,
+          "entryHigh": 1484640.9494999999,
+          "stopPrice": 1480277.8352142856,
+          "targetPrice": 1499487.358995,
+          "expiresAt": "2026-09-02T12:00:44.661Z",
+          "confirmations": [
+            "Trend 4H + BTC kuat",
+            "Skor breakout 4/5",
+            "Continuation di atas high 15m"
+          ],
+          "score": 4,
+          "validationStatus": "validated",
+          "reason": "Breakout 15m tervalidasi; buy-stop hanya terisi bila momentum berlanjut.",
+          "campaignId": "breakout-specialist-hypeidr-1788328847721",
+          "riskReservedIdr": 36735.43329772464,
+          "notionalReservedIdr": 12537499.999999998,
+          "createdAt": "2026-09-02T06:00:46.976Z",
+          "status": "pending"
         }
       ],
       "trades": []
@@ -1098,6 +1124,32 @@
           "notionalReservedIdr": 12450436.32297557,
           "createdAt": "2026-09-02T05:30:38.985Z",
           "status": "pending"
+        },
+        {
+          "id": "wyckoff-trader-hypeidr-1788328844661",
+          "pair": "hypeidr",
+          "agent": "wyckoff-trader",
+          "side": "long",
+          "type": "limit",
+          "timeframe": "15m",
+          "entryLow": 1478909.2214285715,
+          "entryHigh": 1480000,
+          "stopPrice": 1476000.4785714287,
+          "targetPrice": 1494800,
+          "expiresAt": "2026-09-02T14:00:44.661Z",
+          "confirmations": [
+            "Wyckoff phase D / SoS",
+            "Skor 3/5",
+            "Retest range high dalam zona 0,3 ATR"
+          ],
+          "score": 3,
+          "validationStatus": "research",
+          "reason": "Wyckoff SoS: buy limit pada zona retest range high.",
+          "campaignId": "wyckoff-trader-hypeidr-1788328847721",
+          "riskReservedIdr": 33545.16643906352,
+          "notionalReservedIdr": 12450436.32297557,
+          "createdAt": "2026-09-02T06:00:46.976Z",
+          "status": "pending"
         }
       ],
       "trades": [
@@ -1189,9 +1241,22 @@
     },
     "aggressive-breakout-trader": {
       "balance": {
-        "IDR": 49910451.78680531
+        "IDR": 37395406.00126387
       },
-      "positions": {},
+      "positions": {
+        "hypeidr": {
+          "side": "long",
+          "size": 8.428513173972618,
+          "entryPrice": 1480404.9882999999,
+          "stopPrice": 1489287.4182298,
+          "targetPrice": 1495209.038183,
+          "opened": "2026-09-02T06:00:46.976Z",
+          "campaignId": "aggressive-breakout-trader-hypeidr-1788327038985",
+          "leg": 1,
+          "initialRiskPerUnit": 1927.3632999998517,
+          "sizingNote": "Spot-only | Maks. 25% ekuitas per koin | Risiko maks. 5% | Kas cadangan 10% | Fee masuk Rp37.433"
+        }
+      },
       "pendingOrders": [
         {
           "id": "aggressive-breakout-trader-hypeidr-1787744247028",
@@ -1294,7 +1359,7 @@
           "riskReservedIdr": 16244.80696508009,
           "notionalReservedIdr": 12515045.785541432,
           "createdAt": "2026-09-02T05:30:38.985Z",
-          "status": "pending"
+          "status": "filled"
         },
         {
           "id": "aggressive-breakout-trader-uniidr-1788327036895",
@@ -1351,6 +1416,22 @@
           "reason": "Stop loss struktur",
           "campaignId": "aggressive-breakout-trader-hypeidr-1788212740106",
           "feeIdr": 37456.22403251346
+        },
+        {
+          "timestamp": "2026-09-02T06:00:46.976Z",
+          "instrument": "hypeidr",
+          "side": "long",
+          "type": "open",
+          "size": 8.428513173972618,
+          "price": 1480404.9882999999,
+          "reason": "Momentum 15m berkualitas tinggi; buy-stop membatalkan entry bila harga tidak melanjutkan breakout.",
+          "campaignId": "aggressive-breakout-trader-hypeidr-1788327038985",
+          "confirmations": [
+            "Trend 4H",
+            "Skor momentum 4/5",
+            "Buy-stop di atas high 15m"
+          ],
+          "feeIdr": 37432.83884010399
         }
       ]
     }
