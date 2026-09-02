@@ -1,26 +1,26 @@
 {
-  "timestamp": "2026-09-02T03:15:38.791Z",
+  "timestamp": "2026-09-02T03:30:58.643Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
   "candidates": [
     {
-      "id": "wyckoff-trader-hypeidr-1788318938133",
+      "id": "wyckoff-trader-hypeidr-1788319857845",
       "pair": "hypeidr",
       "agent": "wyckoff-trader",
       "side": "long",
       "type": "limit",
       "timeframe": "15m",
-      "entryLow": 1472508.857142857,
-      "entryHigh": 1473730,
-      "stopPrice": 1467503.142857143,
-      "targetPrice": 1488467.3,
-      "expiresAt": "2026-09-02T11:15:38.133Z",
+      "entryLow": 1472588.8714285714,
+      "entryHigh": 1474386,
+      "stopPrice": 1467796.5285714285,
+      "targetPrice": 1489129.86,
+      "expiresAt": "2026-09-02T11:30:57.846Z",
       "confirmations": [
         "Wyckoff phase D / SoS",
-        "Skor 3/5",
+        "Skor 4/5",
         "Retest range high dalam zona 0,3 ATR"
       ],
-      "score": 3,
+      "score": 4,
       "validationStatus": "research",
       "reason": "Wyckoff SoS: buy limit pada zona retest range high."
     }
