@@ -1,7 +1,113 @@
 {
-  "timestamp": "2026-09-02T05:15:35.234Z",
+  "timestamp": "2026-09-02T05:30:36.956Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [],
+  "candidates": [
+    {
+      "id": "aggressive-breakout-trader-hypeidr-1788327036956",
+      "pair": "hypeidr",
+      "agent": "aggressive-breakout-trader",
+      "side": "long",
+      "type": "stop",
+      "timeframe": "15m",
+      "entryLow": 1480404.9882999999,
+      "entryHigh": 1480404.9882999999,
+      "stopPrice": 1478477.625,
+      "targetPrice": 1495209.038183,
+      "expiresAt": "2026-09-02T09:30:36.956Z",
+      "confirmations": [
+        "Trend 4H",
+        "Skor momentum 4/5",
+        "Buy-stop di atas high 15m"
+      ],
+      "score": 4,
+      "validationStatus": "validated",
+      "reason": "Momentum 15m berkualitas tinggi; buy-stop membatalkan entry bila harga tidak melanjutkan breakout."
+    },
+    {
+      "id": "breakout-specialist-shibidr-1788327036925",
+      "pair": "shibidr",
+      "agent": "breakout-specialist",
+      "side": "long",
+      "type": "stop",
+      "timeframe": "15m",
+      "entryLow": 0.09215905649999999,
+      "entryHigh": 0.09215905649999999,
+      "stopPrice": 0.091919,
+      "targetPrice": 0.093080647065,
+      "expiresAt": "2026-09-02T11:30:36.925Z",
+      "confirmations": [
+        "Trend 4H + BTC kuat",
+        "Skor breakout 5/5",
+        "Continuation di atas high 15m"
+      ],
+      "score": 5,
+      "validationStatus": "validated",
+      "reason": "Breakout 15m tervalidasi; buy-stop hanya terisi bila momentum berlanjut."
+    },
+    {
+      "id": "wyckoff-trader-shibidr-1788327036925",
+      "pair": "shibidr",
+      "agent": "wyckoff-trader",
+      "side": "long",
+      "type": "limit",
+      "timeframe": "15m",
+      "entryLow": 0.0918922,
+      "entryHigh": 0.092053,
+      "stopPrice": 0.0914634,
+      "targetPrice": 0.09297353,
+      "expiresAt": "2026-09-02T13:30:36.925Z",
+      "confirmations": [
+        "Wyckoff phase D / SoS",
+        "Skor 5/5",
+        "Retest range high dalam zona 0,3 ATR"
+      ],
+      "score": 5,
+      "validationStatus": "research",
+      "reason": "Wyckoff SoS: buy limit pada zona retest range high."
+    },
+    {
+      "id": "breakout-specialist-uniidr-1788327036895",
+      "pair": "uniidr",
+      "agent": "breakout-specialist",
+      "side": "long",
+      "type": "stop",
+      "timeframe": "15m",
+      "entryLow": 114054.999,
+      "entryHigh": 114054.999,
+      "stopPrice": 112219.68471428572,
+      "targetPrice": 116807.97042857143,
+      "expiresAt": "2026-09-02T11:30:36.895Z",
+      "confirmations": [
+        "Trend 4H + BTC kuat",
+        "Skor breakout 3/5",
+        "Continuation di atas high 15m"
+      ],
+      "score": 3,
+      "validationStatus": "validated",
+      "reason": "Breakout 15m tervalidasi; buy-stop hanya terisi bila momentum berlanjut."
+    },
+    {
+      "id": "aggressive-breakout-trader-uniidr-1788327036895",
+      "pair": "uniidr",
+      "agent": "aggressive-breakout-trader",
+      "side": "long",
+      "type": "stop",
+      "timeframe": "15m",
+      "entryLow": 114032.1994,
+      "entryHigh": 114032.1994,
+      "stopPrice": 112273.35654285715,
+      "targetPrice": 116670.46368571428,
+      "expiresAt": "2026-09-02T09:30:36.895Z",
+      "confirmations": [
+        "Trend 4H",
+        "Skor momentum 3/5",
+        "Buy-stop di atas high 15m"
+      ],
+      "score": 3,
+      "validationStatus": "validated",
+      "reason": "Momentum 15m berkualitas tinggi; buy-stop membatalkan entry bila harga tidak melanjutkan breakout."
+    }
+  ],
   "errors": []
 }
