@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-02T06:15:37.126Z",
+  "last_cycle": "2026-09-02T06:30:41.811Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -740,9 +740,22 @@
     },
     "wyckoff-trader": {
       "balance": {
-        "IDR": 49544863.21977255
+        "IDR": 37121488.767414585
       },
-      "positions": {},
+      "positions": {
+        "shibidr": {
+          "side": "long",
+          "size": 134555264.9554402,
+          "entryPrice": 0.092053,
+          "stopPrice": 0.0914634,
+          "targetPrice": 0.09297353,
+          "opened": "2026-09-02T06:30:41.811Z",
+          "campaignId": "wyckoff-trader-shibidr-1788327038985",
+          "leg": 1,
+          "initialRiskPerUnit": 0.0005895999999999957,
+          "sizingNote": "Spot-only | Maks. 25% ekuitas per koin | Risiko maks. 5% | Kas cadangan 10% | Fee masuk Rp37.159"
+        }
+      },
       "pendingOrders": [
         {
           "id": "wyckoff-trader-hypeidr-1788100241929",
@@ -1123,7 +1136,7 @@
           "riskReservedIdr": 79506.59721731402,
           "notionalReservedIdr": 12450436.32297557,
           "createdAt": "2026-09-02T05:30:38.985Z",
-          "status": "pending"
+          "status": "filled"
         },
         {
           "id": "wyckoff-trader-hypeidr-1788328844661",
@@ -1264,6 +1277,22 @@
           "reason": "Stop loss struktur pada candle entry",
           "campaignId": "wyckoff-trader-hypeidr-1788328847721",
           "feeIdr": 37138.95469901453
+        },
+        {
+          "timestamp": "2026-09-02T06:30:41.811Z",
+          "instrument": "shibidr",
+          "side": "long",
+          "type": "open",
+          "size": 134555264.9554402,
+          "price": 0.092053,
+          "reason": "Wyckoff SoS: buy limit pada zona retest range high.",
+          "campaignId": "wyckoff-trader-shibidr-1788327038985",
+          "confirmations": [
+            "Wyckoff phase D / SoS",
+            "Skor 5/5",
+            "Retest range high dalam zona 0,3 ATR"
+          ],
+          "feeIdr": 37158.64741482941
         }
       ]
     },
