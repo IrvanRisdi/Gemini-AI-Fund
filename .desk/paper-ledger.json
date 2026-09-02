@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-02T10:45:37.162Z",
+  "last_cycle": "2026-09-02T11:00:47.861Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -482,6 +482,33 @@
           "notionalReservedIdr": 11990849.548165042,
           "createdAt": "2026-09-01T21:30:41.559Z",
           "status": "filled"
+        },
+        {
+          "id": "mean-reversion-trader-shibidr-1788346845788",
+          "pair": "shibidr",
+          "agent": "mean-reversion-trader",
+          "side": "long",
+          "type": "limit",
+          "timeframe": "15m",
+          "entryLow": 0.0896496323590951,
+          "entryHigh": 0.08986477521623795,
+          "stopPrice": 0.08939863235909509,
+          "targetPrice": 0.09115119999999997,
+          "expiresAt": "2026-09-02T19:00:45.788Z",
+          "confirmations": [
+            "Regime ranging: ADX rendah + EMA rapat + CHOP tinggi",
+            "Reversal di Bollinger bawah",
+            "RSI oversold/reclaim + volume terkendali",
+            "Skor range-reversion 5/6"
+          ],
+          "score": 5,
+          "validationStatus": "research",
+          "reason": "Range mean reversion: buy limit dekat Bollinger bawah, target middle band.",
+          "campaignId": "mean-reversion-trader-shibidr-1788346847861",
+          "riskReservedIdr": 61854.54453533254,
+          "notionalReservedIdr": 11960325.658887237,
+          "createdAt": "2026-09-02T11:00:47.861Z",
+          "status": "pending"
         }
       ],
       "trades": [
