@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-02T06:00:46.976Z",
+  "last_cycle": "2026-09-02T06:15:37.126Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -192,7 +192,7 @@
           "riskReservedIdr": 36735.43329772464,
           "notionalReservedIdr": 12537499.999999998,
           "createdAt": "2026-09-02T06:00:46.976Z",
-          "status": "pending"
+          "status": "cancelled"
         }
       ],
       "trades": []
@@ -740,7 +740,7 @@
     },
     "wyckoff-trader": {
       "balance": {
-        "IDR": 49652786.93110896
+        "IDR": 49544863.21977255
       },
       "positions": {},
       "pendingOrders": [
@@ -1149,7 +1149,7 @@
           "riskReservedIdr": 33545.16643906352,
           "notionalReservedIdr": 12450436.32297557,
           "createdAt": "2026-09-02T06:00:46.976Z",
-          "status": "pending"
+          "status": "filled"
         }
       ],
       "trades": [
@@ -1236,27 +1236,42 @@
           "reason": "Stop loss struktur",
           "campaignId": "wyckoff-trader-hypeidr-1788318940920",
           "feeIdr": 37173.277711312665
+        },
+        {
+          "timestamp": "2026-09-02T06:15:37.126Z",
+          "instrument": "hypeidr",
+          "side": "long",
+          "type": "open",
+          "size": 8.387295089714351,
+          "price": 1480000,
+          "reason": "Wyckoff SoS: buy limit pada zona retest range high.",
+          "campaignId": "wyckoff-trader-hypeidr-1788328847721",
+          "confirmations": [
+            "Wyckoff phase D / SoS",
+            "Skor 3/5",
+            "Retest range high dalam zona 0,3 ATR"
+          ],
+          "feeIdr": 37239.59019833172
+        },
+        {
+          "timestamp": "2026-09-02T06:15:37.126Z",
+          "instrument": "hypeidr",
+          "side": "long",
+          "type": "close",
+          "size": 8.387295089714351,
+          "price": 1476000.4785714287,
+          "realizedPnlIdr": -70684.12113807804,
+          "reason": "Stop loss struktur pada candle entry",
+          "campaignId": "wyckoff-trader-hypeidr-1788328847721",
+          "feeIdr": 37138.95469901453
         }
       ]
     },
     "aggressive-breakout-trader": {
       "balance": {
-        "IDR": 37395406.00126387
+        "IDR": 49752814.41524352
       },
-      "positions": {
-        "hypeidr": {
-          "side": "long",
-          "size": 8.428513173972618,
-          "entryPrice": 1480404.9882999999,
-          "stopPrice": 1489287.4182298,
-          "targetPrice": 1495209.038183,
-          "opened": "2026-09-02T06:00:46.976Z",
-          "campaignId": "aggressive-breakout-trader-hypeidr-1788327038985",
-          "leg": 1,
-          "initialRiskPerUnit": 1927.3632999998517,
-          "sizingNote": "Spot-only | Maks. 25% ekuitas per koin | Risiko maks. 5% | Kas cadangan 10% | Fee masuk Rp37.433"
-        }
-      },
+      "positions": {},
       "pendingOrders": [
         {
           "id": "aggressive-breakout-trader-hypeidr-1787744247028",
@@ -1432,6 +1447,18 @@
             "Buy-stop di atas high 15m"
           ],
           "feeIdr": 37432.83884010399
+        },
+        {
+          "timestamp": "2026-09-02T06:15:37.126Z",
+          "instrument": "hypeidr",
+          "side": "long",
+          "type": "close",
+          "size": 8.428513173972618,
+          "price": 1470555,
+          "realizedPnlIdr": -120204.53272167881,
+          "reason": "Stop loss struktur",
+          "campaignId": "aggressive-breakout-trader-hypeidr-1788327038985",
+          "feeIdr": 37183.776571653914
         }
       ]
     }
