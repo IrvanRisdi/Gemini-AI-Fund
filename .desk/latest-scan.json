@@ -1,7 +1,30 @@
 {
-  "timestamp": "2026-09-02T11:45:42.924Z",
+  "timestamp": "2026-09-02T12:00:47.898Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [],
+  "candidates": [
+    {
+      "id": "mean-reversion-trader-pepeidr-1788350447883",
+      "pair": "pepeidr",
+      "agent": "mean-reversion-trader",
+      "side": "long",
+      "type": "limit",
+      "timeframe": "15m",
+      "entryLow": 0.05994932435973451,
+      "entryHigh": 0.06005196721687737,
+      "stopPrice": 0.05982957435973451,
+      "targetPrice": 0.06075925000000002,
+      "expiresAt": "2026-09-02T20:00:47.883Z",
+      "confirmations": [
+        "Regime ranging: ADX rendah + EMA rapat + CHOP tinggi",
+        "Reversal di Bollinger bawah",
+        "RSI oversold/reclaim + volume terkendali",
+        "Skor range-reversion 6/6"
+      ],
+      "score": 6,
+      "validationStatus": "research",
+      "reason": "Range mean reversion: buy limit dekat Bollinger bawah, target middle band."
+    }
+  ],
   "errors": []
 }
