@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-02T03:45:39.254Z",
+  "last_cycle": "2026-09-02T04:00:41.116Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -115,6 +115,32 @@
           "notionalReservedIdr": 12537499.999999998,
           "createdAt": "2026-09-01T14:15:43.104Z",
           "status": "cancelled"
+        },
+        {
+          "id": "breakout-specialist-shibidr-1788321639173",
+          "pair": "shibidr",
+          "agent": "breakout-specialist",
+          "side": "long",
+          "type": "stop",
+          "timeframe": "15m",
+          "entryLow": 0.091941948,
+          "entryHigh": 0.091941948,
+          "stopPrice": 0.09172844642857142,
+          "targetPrice": 0.09286136748,
+          "expiresAt": "2026-09-02T10:00:39.173Z",
+          "confirmations": [
+            "Trend 4H + BTC kuat",
+            "Skor breakout 3/5",
+            "Continuation di atas high 15m"
+          ],
+          "score": 3,
+          "validationStatus": "validated",
+          "reason": "Breakout 15m tervalidasi; buy-stop hanya terisi bila momentum berlanjut.",
+          "campaignId": "breakout-specialist-shibidr-1788321641116",
+          "riskReservedIdr": 29026.681519269085,
+          "notionalReservedIdr": 12537499.999999996,
+          "createdAt": "2026-09-02T04:00:41.116Z",
+          "status": "pending"
         }
       ],
       "trades": []
