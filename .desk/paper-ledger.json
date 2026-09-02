@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-02T14:00:49.960Z",
+  "last_cycle": "2026-09-02T14:15:41.629Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -225,22 +225,9 @@
     },
     "mean-reversion-trader": {
       "balance": {
-        "IDR": 35737882.35262717
+        "IDR": 47691206.98618846
       },
-      "positions": {
-        "pepeidr": {
-          "side": "long",
-          "size": 198570547.40293762,
-          "entryPrice": 0.06005196721687737,
-          "stopPrice": 0.060412279020178636,
-          "targetPrice": 0.06075925000000002,
-          "opened": "2026-09-02T13:15:43.388Z",
-          "campaignId": "mean-reversion-trader-pepeidr-1788350450167",
-          "leg": 1,
-          "initialRiskPerUnit": 0.0002223928571428585,
-          "sizingNote": "Spot-only | Maks. 25% ekuitas per koin | Risiko maks. 5% | Kas cadangan 10% | Fee masuk Rp35.774"
-        }
-      },
+      "positions": {},
       "pendingOrders": [
         {
           "id": "mean-reversion-trader-ethidr-1787744247033",
@@ -653,6 +640,18 @@
             "Skor range-reversion 6/6"
           ],
           "feeIdr": 35773.65600863581
+        },
+        {
+          "timestamp": "2026-09-02T14:15:41.629Z",
+          "instrument": "pepeidr",
+          "side": "long",
+          "type": "close",
+          "size": 198570547.40293762,
+          "price": 0.060378,
+          "realizedPnlIdr": 28772.6306826808,
+          "reason": "Stop loss struktur",
+          "campaignId": "mean-reversion-trader-pepeidr-1788350450167",
+          "feeIdr": 35967.8775332837
         }
       ]
     },
