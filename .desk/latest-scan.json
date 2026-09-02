@@ -1,7 +1,24 @@
 {
-  "timestamp": "2026-09-02T01:00:41.074Z",
+  "timestamp": "2026-09-02T01:16:06.463Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
   "candidates": [],
-  "errors": []
+  "errors": [
+    "Error: indodax history btcidr 504",
+    "Error: indodax history ethidr 504",
+    "Error: indodax history solidr 504",
+    "Error: indodax history xrpidr 504",
+    "Error: indodax history dogeidr 504",
+    "Error: indodax history pepeidr 504",
+    "Error: indodax history suiidr 504",
+    "Error: indodax history trxidr 504",
+    "Error: indodax history hypeidr 504",
+    "Error: indodax history linkidr 504",
+    "Error: indodax history adaidr 504",
+    "Error: indodax history tonidr 504",
+    "Error: indodax history ltcidr 504",
+    "Error: indodax history avaxidr 504",
+    "Error: indodax history shibidr 504",
+    "Error: indodax history uniidr 504"
+  ]
 }

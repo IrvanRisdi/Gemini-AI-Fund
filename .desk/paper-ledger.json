@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-02T01:00:41.636Z",
+  "last_cycle": "2026-09-02T01:16:08.547Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -121,9 +121,22 @@
     },
     "mean-reversion-trader": {
       "balance": {
-        "IDR": 47819938.37752759
+        "IDR": 35829088.82936254
       },
-      "positions": {},
+      "positions": {
+        "xrpidr": {
+          "side": "long",
+          "size": 503.56726378755025,
+          "entryPrice": 23740.59128558758,
+          "stopPrice": 23654.14285714286,
+          "targetPrice": 24001.65,
+          "opened": "2026-09-02T01:16:08.547Z",
+          "campaignId": "mean-reversion-trader-xrpidr-1788298241560",
+          "leg": 1,
+          "initialRiskPerUnit": 86.44842844472078,
+          "sizingNote": "Spot-only | Maks. 25% ekuitas per koin | Risiko maks. 5% | Kas cadangan 10% | Fee masuk Rp35.865"
+        }
+      },
       "pendingOrders": [
         {
           "id": "mean-reversion-trader-ethidr-1787744247033",
@@ -377,7 +390,7 @@
           "riskReservedIdr": 43532.59857064187,
           "notionalReservedIdr": 11990849.548165042,
           "createdAt": "2026-09-01T21:30:41.559Z",
-          "status": "pending"
+          "status": "filled"
         }
       ],
       "trades": [
@@ -436,6 +449,23 @@
           "reason": "Stop loss struktur",
           "campaignId": "mean-reversion-trader-uniidr-1788127250165",
           "feeIdr": 143891.48960138694
+        },
+        {
+          "timestamp": "2026-09-02T01:16:08.547Z",
+          "instrument": "xrpidr",
+          "side": "long",
+          "type": "open",
+          "size": 503.56726378755025,
+          "price": 23740.59128558758,
+          "reason": "Range mean reversion: buy limit dekat Bollinger bawah, target middle band.",
+          "campaignId": "mean-reversion-trader-xrpidr-1788298241560",
+          "confirmations": [
+            "Regime ranging: ADX rendah + EMA rapat + CHOP tinggi",
+            "Reversal di Bollinger bawah",
+            "RSI oversold/reclaim + volume terkendali",
+            "Skor range-reversion 6/6"
+          ],
+          "feeIdr": 35864.95378314569
         }
       ]
     },
