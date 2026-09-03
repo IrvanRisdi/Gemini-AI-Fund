@@ -1,7 +1,29 @@
 {
-  "timestamp": "2026-09-03T11:45:37.251Z",
+  "timestamp": "2026-09-03T12:00:50.203Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [],
+  "candidates": [
+    {
+      "id": "wyckoff-trader-bnbidr-1788436850145",
+      "pair": "bnbidr",
+      "agent": "wyckoff-trader",
+      "side": "long",
+      "type": "limit",
+      "timeframe": "15m",
+      "entryLow": 12531185.514285713,
+      "entryHigh": 12548846,
+      "stopPrice": 12484090.885714285,
+      "targetPrice": 12674334.46,
+      "expiresAt": "2026-09-03T20:00:50.145Z",
+      "confirmations": [
+        "Wyckoff phase D / SoS",
+        "Skor 4/5",
+        "Retest range high dalam zona 0,3 ATR"
+      ],
+      "score": 4,
+      "validationStatus": "research",
+      "reason": "Wyckoff SoS: buy limit pada zona retest range high."
+    }
+  ],
   "errors": []
 }
