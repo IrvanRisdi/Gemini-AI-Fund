@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-03T12:30:50.185Z",
+  "last_cycle": "2026-09-03T12:45:43.753Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -244,6 +244,32 @@
           "riskReservedIdr": 45059.766139490865,
           "notionalReservedIdr": 12537499.999999998,
           "createdAt": "2026-09-03T12:30:50.185Z",
+          "status": "pending"
+        },
+        {
+          "id": "breakout-specialist-hbaridr-1788439542012",
+          "pair": "hbaridr",
+          "agent": "breakout-specialist",
+          "side": "long",
+          "type": "stop",
+          "timeframe": "15m",
+          "entryLow": 1361.6805,
+          "entryHigh": 1361.6805,
+          "stopPrice": 1358.3376428571428,
+          "targetPrice": 1375.297305,
+          "expiresAt": "2026-09-03T18:45:42.012Z",
+          "confirmations": [
+            "Trend 4H + BTC kuat",
+            "Skor breakout 5/5",
+            "Continuation di atas high 15m"
+          ],
+          "score": 5,
+          "validationStatus": "validated",
+          "reason": "Breakout 15m tervalidasi; buy-stop hanya terisi bila momentum berlanjut.",
+          "campaignId": "breakout-specialist-hbaridr-1788439544360",
+          "riskReservedIdr": 30686.871322394974,
+          "notionalReservedIdr": 12537499.999999998,
+          "createdAt": "2026-09-03T12:45:43.753Z",
           "status": "pending"
         }
       ],
