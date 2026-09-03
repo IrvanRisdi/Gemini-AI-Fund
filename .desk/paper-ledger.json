@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-03T15:15:41.633Z",
+  "last_cycle": "2026-09-03T15:30:45.913Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -348,7 +348,7 @@
           "riskReservedIdr": 58673.36398905607,
           "notionalReservedIdr": 12489444.28519551,
           "createdAt": "2026-09-03T15:15:41.633Z",
-          "status": "pending"
+          "status": "cancelled"
         }
       ],
       "trades": [
@@ -2090,7 +2090,7 @@
           "riskReservedIdr": 55896.37483267696,
           "notionalReservedIdr": 12413159.912554374,
           "createdAt": "2026-09-03T15:15:41.633Z",
-          "status": "pending"
+          "status": "cancelled"
         }
       ],
       "trades": [

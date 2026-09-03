@@ -1,71 +1,7 @@
 {
-  "timestamp": "2026-09-03T15:15:39.547Z",
+  "timestamp": "2026-09-03T15:30:44.101Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [
-    {
-      "id": "aggressive-breakout-trader-adaidr-1788448539479",
-      "pair": "adaidr",
-      "agent": "aggressive-breakout-trader",
-      "side": "long",
-      "type": "stop",
-      "timeframe": "15m",
-      "entryLow": 3851.1549999999997,
-      "entryHigh": 3851.1549999999997,
-      "stopPrice": 3830.1264285714283,
-      "targetPrice": 3889.66655,
-      "expiresAt": "2026-09-03T19:15:39.479Z",
-      "confirmations": [
-        "Trend 4H",
-        "Skor momentum 4/5",
-        "Buy-stop di atas high 15m"
-      ],
-      "score": 4,
-      "validationStatus": "validated",
-      "reason": "Momentum 15m berkualitas tinggi; buy-stop membatalkan entry bila harga tidak melanjutkan breakout."
-    },
-    {
-      "id": "breakout-specialist-hbaridr-1788448539486",
-      "pair": "hbaridr",
-      "agent": "breakout-specialist",
-      "side": "long",
-      "type": "stop",
-      "timeframe": "15m",
-      "entryLow": 1400.6999999999998,
-      "entryHigh": 1400.6999999999998,
-      "stopPrice": 1394.1,
-      "targetPrice": 1414.7069999999999,
-      "expiresAt": "2026-09-03T21:15:39.486Z",
-      "confirmations": [
-        "Trend 4H + BTC kuat",
-        "Skor breakout 3/5",
-        "Continuation di atas high 15m"
-      ],
-      "score": 3,
-      "validationStatus": "validated",
-      "reason": "Breakout 15m tervalidasi; buy-stop hanya terisi bila momentum berlanjut."
-    },
-    {
-      "id": "aggressive-breakout-trader-hbaridr-1788448539486",
-      "pair": "hbaridr",
-      "agent": "aggressive-breakout-trader",
-      "side": "long",
-      "type": "stop",
-      "timeframe": "15m",
-      "entryLow": 1400.4199999999998,
-      "entryHigh": 1400.4199999999998,
-      "stopPrice": 1394.0949999999998,
-      "targetPrice": 1414.4242,
-      "expiresAt": "2026-09-03T19:15:39.486Z",
-      "confirmations": [
-        "Trend 4H",
-        "Skor momentum 3/5",
-        "Buy-stop di atas high 15m"
-      ],
-      "score": 3,
-      "validationStatus": "validated",
-      "reason": "Momentum 15m berkualitas tinggi; buy-stop membatalkan entry bila harga tidak melanjutkan breakout."
-    }
-  ],
+  "candidates": [],
   "errors": []
 }
