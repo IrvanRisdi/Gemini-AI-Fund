@@ -449,10 +449,17 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
 
     cycles.sort((a, b) => (b.closedAt ?? b.openedAt).localeCompare(a.closedAt ?? a.openedAt));
 
+    // Jumlahkan hanya trade yang benar-benar closed. `cash - startingBalance`
+    // SALAH di sini: cash juga turun saat posisi dibuka (notional terpotong),
+    // itu modal yang berpindah jadi aset yang dipegang, bukan rugi realized.
+    const realizedPnlIdr = cycles
+      .filter((cycle) => cycle.status === 'closed')
+      .reduce((sum, cycle) => sum + (cycle.realizedPnlIdr ?? 0), 0);
+
     return {
       cash: book?.balance?.IDR ?? DEFAULT_STARTING_BALANCE,
       openPositionValue,
-      realizedPnlIdr: book && ledger ? book.balance.IDR - ledger.starting_balance_per_agent : 0,
+      realizedPnlIdr,
       unrealizedPnlIdr,
       cycles,
       pendingOrders: (book?.pendingOrders ?? []).filter((order) => order.status === 'pending').sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
