@@ -1,28 +1,28 @@
 {
-  "timestamp": "2026-09-03T12:15:35.962Z",
+  "timestamp": "2026-09-03T12:30:48.309Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
   "candidates": [
     {
-      "id": "wyckoff-trader-bnbidr-1788437735853",
-      "pair": "bnbidr",
-      "agent": "wyckoff-trader",
+      "id": "breakout-specialist-uniidr-1788438648282",
+      "pair": "uniidr",
+      "agent": "breakout-specialist",
       "side": "long",
-      "type": "limit",
+      "type": "stop",
       "timeframe": "15m",
-      "entryLow": 12557459.371428572,
-      "entryHigh": 12539880,
-      "stopPrice": 12509119.028571429,
-      "targetPrice": 12665278.8,
-      "expiresAt": "2026-09-03T20:15:35.853Z",
+      "entryLow": 110230.0875,
+      "entryHigh": 110230.0875,
+      "stopPrice": 109832.73214285714,
+      "targetPrice": 111332.388375,
+      "expiresAt": "2026-09-03T18:30:48.282Z",
       "confirmations": [
-        "Wyckoff phase D / SoS",
-        "Skor 3/5",
-        "Retest range high dalam zona 0,3 ATR"
+        "Trend 4H + BTC kuat",
+        "Skor breakout 3/5",
+        "Continuation di atas high 15m"
       ],
       "score": 3,
-      "validationStatus": "research",
-      "reason": "Wyckoff SoS: buy limit pada zona retest range high."
+      "validationStatus": "validated",
+      "reason": "Breakout 15m tervalidasi; buy-stop hanya terisi bila momentum berlanjut."
     }
   ],
   "errors": []
