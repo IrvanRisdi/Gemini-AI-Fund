@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-03T12:00:52.231Z",
+  "last_cycle": "2026-09-03T12:15:38.078Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -875,9 +875,22 @@
     },
     "wyckoff-trader": {
       "balance": {
-        "IDR": 49374627.53154308
+        "IDR": 36993939.67800865
       },
-      "positions": {},
+      "positions": {
+        "bnbidr": {
+          "side": "long",
+          "size": 0.9836487660208573,
+          "entryPrice": 12548846,
+          "stopPrice": 12484090.885714285,
+          "targetPrice": 12674334.46,
+          "opened": "2026-09-03T12:15:38.078Z",
+          "campaignId": "wyckoff-trader-bnbidr-1788436853044",
+          "leg": 1,
+          "initialRiskPerUnit": 64755.114285714924,
+          "sizingNote": "Spot-only | Maks. 25% ekuitas per koin | Risiko maks. 5% | Kas cadangan 10% | Fee masuk Rp37.031"
+        }
+      },
       "pendingOrders": [
         {
           "id": "wyckoff-trader-hypeidr-1788100241929",
@@ -1336,7 +1349,7 @@
           "riskReservedIdr": 63696.28826068307,
           "notionalReservedIdr": 12380687.853534427,
           "createdAt": "2026-09-03T12:00:52.231Z",
-          "status": "pending"
+          "status": "filled"
         }
       ],
       "trades": [
@@ -1479,6 +1492,22 @@
           "reason": "Stop loss struktur",
           "campaignId": "wyckoff-trader-shibidr-1788327038985",
           "feeIdr": 36870.02637149999
+        },
+        {
+          "timestamp": "2026-09-03T12:15:38.078Z",
+          "instrument": "bnbidr",
+          "side": "long",
+          "type": "open",
+          "size": 0.9836487660208573,
+          "price": 12548846,
+          "reason": "Wyckoff SoS: buy limit pada zona retest range high.",
+          "campaignId": "wyckoff-trader-bnbidr-1788436853044",
+          "confirmations": [
+            "Wyckoff phase D / SoS",
+            "Skor 4/5",
+            "Retest range high dalam zona 0,3 ATR"
+          ],
+          "feeIdr": 37030.97064865731
         }
       ]
     },
