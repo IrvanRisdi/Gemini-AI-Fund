@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-03T13:45:41.698Z",
+  "last_cycle": "2026-09-03T14:00:45.986Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -982,22 +982,9 @@
     },
     "wyckoff-trader": {
       "balance": {
-        "IDR": 36993939.67800865
+        "IDR": 49225566.72448247
       },
-      "positions": {
-        "bnbidr": {
-          "side": "long",
-          "size": 0.9836487660208573,
-          "entryPrice": 12548846,
-          "stopPrice": 12484090.885714285,
-          "targetPrice": 12674334.46,
-          "opened": "2026-09-03T12:15:38.078Z",
-          "campaignId": "wyckoff-trader-bnbidr-1788436853044",
-          "leg": 1,
-          "initialRiskPerUnit": 64755.114285714924,
-          "sizingNote": "Spot-only | Maks. 25% ekuitas per koin | Risiko maks. 5% | Kas cadangan 10% | Fee masuk Rp37.031"
-        }
-      },
+      "positions": {},
       "pendingOrders": [
         {
           "id": "wyckoff-trader-hypeidr-1788100241929",
@@ -1641,27 +1628,26 @@
             "Retest range high dalam zona 0,3 ATR"
           ],
           "feeIdr": 37030.97064865731
+        },
+        {
+          "timestamp": "2026-09-03T14:00:45.986Z",
+          "instrument": "bnbidr",
+          "side": "long",
+          "type": "close",
+          "size": 0.9836487660208573,
+          "price": 12472371,
+          "realizedPnlIdr": -112029.83641195804,
+          "reason": "Stop loss struktur",
+          "campaignId": "wyckoff-trader-bnbidr-1788436853044",
+          "feeIdr": 36805.29703051298
         }
       ]
     },
     "aggressive-breakout-trader": {
       "balance": {
-        "IDR": 37277296.20062121
+        "IDR": 49731688.92817301
       },
-      "positions": {
-        "adaidr": {
-          "side": "long",
-          "size": 3376.1806304187703,
-          "entryPrice": 3684.1049,
-          "stopPrice": 3706.2095293999996,
-          "targetPrice": 3720.945949,
-          "opened": "2026-09-03T13:45:41.698Z",
-          "campaignId": "aggressive-breakout-trader-adaidr-1788442246016",
-          "leg": 1,
-          "initialRiskPerUnit": 2.7656142857140367,
-          "sizingNote": "Spot-only | Maks. 25% ekuitas per koin | Risiko maks. 5% | Kas cadangan 10% | Fee masuk Rp37.315"
-        }
-      },
+      "positions": {},
       "pendingOrders": [
         {
           "id": "aggressive-breakout-trader-hypeidr-1787744247028",
@@ -1969,6 +1955,18 @@
             "Buy-stop di atas high 15m"
           ],
           "feeIdr": 37314.61081143264
+        },
+        {
+          "timestamp": "2026-09-03T14:00:45.986Z",
+          "instrument": "adaidr",
+          "side": "long",
+          "type": "close",
+          "size": 3376.1806304187703,
+          "price": 3700,
+          "realizedPnlIdr": 16189.123740921663,
+          "reason": "Stop loss struktur",
+          "campaignId": "aggressive-breakout-trader-adaidr-1788442246016",
+          "feeIdr": 37475.604997648355
         }
       ]
     }
