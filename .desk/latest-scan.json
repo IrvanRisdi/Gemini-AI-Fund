@@ -1,49 +1,91 @@
 {
-  "timestamp": "2026-09-03T14:00:45.215Z",
+  "timestamp": "2026-09-03T14:15:41.106Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
   "candidates": [
     {
-      "id": "breakout-specialist-adaidr-1788444045100",
-      "pair": "adaidr",
-      "agent": "breakout-specialist",
+      "id": "wyckoff-trader-suiidr-1788444941106",
+      "pair": "suiidr",
+      "agent": "wyckoff-trader",
       "side": "long",
-      "type": "stop",
+      "type": "limit",
       "timeframe": "15m",
-      "entryLow": 3701.85,
-      "entryHigh": 3701.85,
-      "stopPrice": 3697.4285714285716,
-      "targetPrice": 3738.8685,
-      "expiresAt": "2026-09-03T20:00:45.100Z",
+      "entryLow": 13705.171428571428,
+      "entryHigh": 13637,
+      "stopPrice": 13633.628571428571,
+      "targetPrice": 13773.37,
+      "expiresAt": "2026-09-03T22:15:41.106Z",
       "confirmations": [
-        "Trend 4H + BTC kuat",
-        "Skor breakout 3/5",
-        "Continuation di atas high 15m"
+        "Wyckoff phase D / SoS",
+        "Skor 3/5",
+        "Retest range high dalam zona 0,3 ATR"
       ],
       "score": 3,
-      "validationStatus": "validated",
-      "reason": "Breakout 15m tervalidasi; buy-stop hanya terisi bila momentum berlanjut."
+      "validationStatus": "research",
+      "reason": "Wyckoff SoS: buy limit pada zona retest range high."
     },
     {
-      "id": "aggressive-breakout-trader-adaidr-1788444045100",
+      "id": "aggressive-breakout-trader-adaidr-1788444941055",
       "pair": "adaidr",
       "agent": "aggressive-breakout-trader",
       "side": "long",
       "type": "stop",
       "timeframe": "15m",
-      "entryLow": 3701.1099999999997,
-      "entryHigh": 3701.1099999999997,
-      "stopPrice": 3697.4285714285716,
-      "targetPrice": 3738.1211,
-      "expiresAt": "2026-09-03T18:00:45.100Z",
+      "entryLow": 3709.1124,
+      "entryHigh": 3709.1124,
+      "stopPrice": 3697.6124,
+      "targetPrice": 3746.203524,
+      "expiresAt": "2026-09-03T18:15:41.055Z",
       "confirmations": [
         "Trend 4H",
-        "Skor momentum 3/5",
+        "Skor momentum 4/5",
         "Buy-stop di atas high 15m"
       ],
-      "score": 3,
+      "score": 4,
       "validationStatus": "validated",
       "reason": "Momentum 15m berkualitas tinggi; buy-stop membatalkan entry bila harga tidak melanjutkan breakout."
+    },
+    {
+      "id": "wyckoff-trader-adaidr-1788444941055",
+      "pair": "adaidr",
+      "agent": "wyckoff-trader",
+      "side": "long",
+      "type": "limit",
+      "timeframe": "15m",
+      "entryLow": 3697,
+      "entryHigh": 3700,
+      "stopPrice": 3689,
+      "targetPrice": 3737,
+      "expiresAt": "2026-09-03T22:15:41.055Z",
+      "confirmations": [
+        "Wyckoff phase D / SoS",
+        "Skor 4/5",
+        "Retest range high dalam zona 0,3 ATR"
+      ],
+      "score": 4,
+      "validationStatus": "research",
+      "reason": "Wyckoff SoS: buy limit pada zona retest range high."
+    },
+    {
+      "id": "wyckoff-trader-hbaridr-1788444941088",
+      "pair": "hbaridr",
+      "agent": "wyckoff-trader",
+      "side": "long",
+      "type": "limit",
+      "timeframe": "15m",
+      "entryLow": 1364.9285714285713,
+      "entryHigh": 1366,
+      "stopPrice": 1362.0714285714287,
+      "targetPrice": 1379.66,
+      "expiresAt": "2026-09-03T22:15:41.088Z",
+      "confirmations": [
+        "Wyckoff phase D / SoS",
+        "Skor 3/5",
+        "Retest range high dalam zona 0,3 ATR"
+      ],
+      "score": 3,
+      "validationStatus": "research",
+      "reason": "Wyckoff SoS: buy limit pada zona retest range high."
     }
   ],
   "errors": []

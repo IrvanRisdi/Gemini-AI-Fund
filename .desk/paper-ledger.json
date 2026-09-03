@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-03T14:00:45.986Z",
+  "last_cycle": "2026-09-03T14:15:42.720Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -1469,6 +1469,58 @@
           "riskReservedIdr": 25391.251240264115,
           "notionalReservedIdr": 12371402.337644275,
           "createdAt": "2026-09-03T13:15:40.688Z",
+          "status": "pending"
+        },
+        {
+          "id": "wyckoff-trader-suiidr-1788444941106",
+          "pair": "suiidr",
+          "agent": "wyckoff-trader",
+          "side": "long",
+          "type": "limit",
+          "timeframe": "15m",
+          "entryLow": 13705.171428571428,
+          "entryHigh": 13637,
+          "stopPrice": 13633.628571428571,
+          "targetPrice": 13773.37,
+          "expiresAt": "2026-09-03T22:15:41.106Z",
+          "confirmations": [
+            "Wyckoff phase D / SoS",
+            "Skor 3/5",
+            "Retest range high dalam zona 0,3 ATR"
+          ],
+          "score": 3,
+          "validationStatus": "research",
+          "reason": "Wyckoff SoS: buy limit pada zona retest range high.",
+          "campaignId": "wyckoff-trader-suiidr-1788444943328",
+          "riskReservedIdr": 3042.466856707603,
+          "notionalReservedIdr": 12343310.856163979,
+          "createdAt": "2026-09-03T14:15:42.720Z",
+          "status": "pending"
+        },
+        {
+          "id": "wyckoff-trader-hbaridr-1788444941088",
+          "pair": "hbaridr",
+          "agent": "wyckoff-trader",
+          "side": "long",
+          "type": "limit",
+          "timeframe": "15m",
+          "entryLow": 1364.9285714285713,
+          "entryHigh": 1366,
+          "stopPrice": 1362.0714285714287,
+          "targetPrice": 1379.66,
+          "expiresAt": "2026-09-03T22:15:41.088Z",
+          "confirmations": [
+            "Wyckoff phase D / SoS",
+            "Skor 3/5",
+            "Retest range high dalam zona 0,3 ATR"
+          ],
+          "score": 3,
+          "validationStatus": "research",
+          "reason": "Wyckoff SoS: buy limit pada zona retest range high.",
+          "campaignId": "wyckoff-trader-hbaridr-1788444943328",
+          "riskReservedIdr": 35392.78092771476,
+          "notionalReservedIdr": 12343310.856163979,
+          "createdAt": "2026-09-03T14:15:42.720Z",
           "status": "pending"
         }
       ],
