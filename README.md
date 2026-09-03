@@ -82,16 +82,25 @@ Kedua desk memakai ledger terpisah karena pasar kripto berjalan 24/7 sementara
 engine saham mengikuti sesi dan kalender libur IDX. Keduanya sekarang tampil
 pada website Next.js yang sama: Coin di `/` dan saham di `/saham`.
 
-Engine saham dijalankan oleh `.github/workflows/stock-trading-loop.yml` setiap
-lima menit selama jendela sesi. Hasilnya disimpan sebagai snapshot ringkas di
+Engine saham dijalankan manual (`workflow_dispatch`) oleh
+`.github/workflows/stock-trading-loop.yml`. Layanan cron eksternal memanggil
+`/api/cron/stock-trading-loop` setiap lima menit; endpoint Vercel memeriksa sesi
+WIB dan kalender libur IDX sebelum men-dispatch workflow. Hasilnya disimpan sebagai snapshot ringkas di
 `stocks-engine/.stock-desk/`, sehingga Vercel hanya membaca hasil dan tidak
 menjalankan daemon Python. Tambahkan `ARJUM_API_KEY` pada GitHub Actions Secrets;
 jangan menaruh API key pada file repository atau environment browser.
 
-Setelah penutupan IDX, `stock-daily-maintenance.yml` menjalankan breadth scan
+Setelah penutupan IDX, cron eksternal memanggil
+`/api/cron/stock-daily-maintenance` pukul 16:30 WIB. Workflow manual
+`stock-daily-maintenance.yml` menjalankan breadth scan
 seluruh universe, memperbarui Arjum analysis/broker flow serta fundamental, dan
 menerbitkan Daily Report. Raw candle dan payload laporan keuangan tidak dipush;
 hanya read-model dan state trading yang ringkas yang disimpan.
+
+Kedua endpoint menerima `Authorization: Bearer <CRON_SECRET>`, header
+`x-cron-secret`, atau query `?secret=...` untuk layanan cron yang tidak mendukung
+custom header. Vercel membutuhkan `CRON_SECRET` dan `GH_DISPATCH_TOKEN`; token
+GitHub harus memiliki izin Actions untuk repository ini.
 
 ## Batasan penting
 

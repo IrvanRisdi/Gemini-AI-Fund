@@ -1,9 +1,6 @@
 name: IDX Daily Breadth and Arjum Maintenance
 
 on:
-  schedule:
-    # 09:30 UTC = 16:30 WIB, Monday-Friday after the regular IDX session.
-    - cron: '30 9 * * 1-5'
   workflow_dispatch:
 
 permissions:

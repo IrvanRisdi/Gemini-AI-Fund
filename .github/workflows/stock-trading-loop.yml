@@ -1,16 +1,6 @@
 name: IDX Paper Trading Loop
 
 on:
-  schedule:
-    # UTC; offset by two minutes. Engine remains the final session/holiday gate.
-    - cron: '2-57/5 2-4 * * 1-4'
-    - cron: '32-57/5 6 * * 1-4'
-    - cron: '2-57/5 7 * * 1-4'
-    - cron: '2-47/5 8 * * 1-4'
-    - cron: '2-57/5 2-3 * * 5'
-    - cron: '2-27/5 4 * * 5'
-    - cron: '2-57/5 7 * * 5'
-    - cron: '2-47/5 8 * * 5'
   workflow_dispatch:
 
 permissions:
