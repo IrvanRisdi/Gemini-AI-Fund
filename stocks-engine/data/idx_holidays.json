@@ -1,0 +1,32 @@
+{
+  "year": 2026,
+  "status": "VALIDATED",
+  "source": "KSEI PENG-0002/DIR/KSEI/0126, referring to IDX announcement PENG-00171/BEI.POP/09-2025",
+  "source_url": "https://web.ksei.co.id/files/1767843003_Penyesuaian_Pengumuman_Hari_Libur_dan_Cuti_Bersama_PT_KSEI_Ta....pdf",
+  "validated_at": "2026-08-27",
+  "review_required_on_idx_amendment": true,
+  "holidays": [
+    "2026-01-01",
+    "2026-01-16",
+    "2026-02-16",
+    "2026-02-17",
+    "2026-03-18",
+    "2026-03-19",
+    "2026-03-20",
+    "2026-03-23",
+    "2026-03-24",
+    "2026-04-03",
+    "2026-05-01",
+    "2026-05-14",
+    "2026-05-15",
+    "2026-05-27",
+    "2026-05-28",
+    "2026-06-01",
+    "2026-06-16",
+    "2026-08-17",
+    "2026-08-25",
+    "2026-12-24",
+    "2026-12-25",
+    "2026-12-31"
+  ]
+}

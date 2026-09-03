@@ -1,0 +1,74 @@
+name: IDX Paper Trading Loop
+
+on:
+  schedule:
+    # UTC; offset by two minutes. Engine remains the final session/holiday gate.
+    - cron: '2-57/5 2-4 * * 1-4'
+    - cron: '32-57/5 6 * * 1-4'
+    - cron: '2-57/5 7 * * 1-4'
+    - cron: '2-47/5 8 * * 1-4'
+    - cron: '2-57/5 2-3 * * 5'
+    - cron: '2-27/5 4 * * 5'
+    - cron: '2-57/5 7 * * 5'
+    - cron: '2-47/5 8 * * 5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: paper-trading-state-writers
+  cancel-in-progress: false
+
+jobs:
+  scan-and-trade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TZ: Asia/Jakarta
+      NQ_ENV: production
+      NQ_DATA_DIR: ${{ github.workspace }}/.runtime/stocks
+      NQ_DEMO_MODE: 'false'
+      NQ_PAPER_ONLY: 'true'
+      NQ_YAHOO_ENABLED: 'true'
+      NQ_ALLOW_DELAYED_PAPER: 'true'
+      NQ_INTRADAY_UNIVERSE_LIMIT: '50'
+      NQ_ARJUM_ENABLED: 'true'
+      ARJUM_DAILY_LIMIT: '21000'
+      ARJUM_API_KEY: ${{ secrets.ARJUM_API_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run one guarded IDX cycle
+        run: python stocks-engine/scripts/run_github_cycle.py
+
+      - name: Commit compact paper state
+        run: |
+          git config user.name "NusaQuant Paper Bot"
+          git config user.email "nusaquant-bot@users.noreply.github.com"
+          git add stocks-engine/.stock-desk/
+          if git diff --cached --quiet; then
+            echo "No stock state change"
+            exit 0
+          fi
+          git commit -m "chore(stock-bot): update IDX paper state [skip ci]"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Upload diagnostic snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: idx-cycle-${{ github.run_id }}
+          path: stocks-engine/.stock-desk/dashboard.json
+          if-no-files-found: warn
+          retention-days: 7

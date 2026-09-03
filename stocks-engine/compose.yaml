@@ -1,0 +1,20 @@
+services:
+  dashboard:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "4173:4173"
+    volumes:
+      - ./runtime-data:/data
+  engine:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    command: ["python", "engine.py", "daemon", "--interval", "60"]
+    volumes:
+      - ./runtime-data:/data
+    depends_on:
+      - dashboard

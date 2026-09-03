@@ -1,10 +1,12 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { PAIRS } from '@/lib/pairs';
 
 export function NavBar() {
-  const stockDashboardUrl =
-    process.env.NEXT_PUBLIC_STOCK_DASHBOARD_URL?.trim() ||
-    'http://127.0.0.1:4173/';
+  const pathname = usePathname();
+  const isStock = pathname === '/saham' || pathname.startsWith('/saham/');
 
   return (
     <nav className="sticky top-0 z-40 border-b border-border bg-bg/95 backdrop-blur">
@@ -22,19 +24,39 @@ export function NavBar() {
         <div className="flex shrink-0 items-center rounded-lg border border-border bg-bg p-1" aria-label="Pilih kelas aset">
           <Link
             href="/"
-            aria-current="page"
-            className="rounded-md bg-blue-500/15 px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-wide text-blue-300 ring-1 ring-inset ring-blue-500/25"
+            aria-current={isStock ? undefined : 'page'}
+            className={`rounded-md px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-wide transition-colors ${
+              isStock
+                ? 'text-ink-muted hover:bg-surface hover:text-ink'
+                : 'bg-blue-500/15 text-blue-300 ring-1 ring-inset ring-blue-500/25'
+            }`}
           >
             Coin
           </Link>
-          <a
-            href={stockDashboardUrl}
-            className="rounded-md px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-wide text-ink-muted transition-colors hover:bg-surface hover:text-ink"
+          <Link
+            href="/saham"
+            aria-current={isStock ? 'page' : undefined}
+            className={`rounded-md px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-wide transition-colors ${
+              isStock
+                ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-inset ring-emerald-500/25'
+                : 'text-ink-muted hover:bg-surface hover:text-ink'
+            }`}
           >
             Saham
-          </a>
+          </Link>
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          {isStock ? (
+            <>
+              <Link href="/saham" className="rounded-md px-2.5 py-1 font-mono text-xs text-ink-muted hover:bg-surface hover:text-ink">
+                Overview & Screener
+              </Link>
+              <span className="rounded-md px-2.5 py-1 font-mono text-xs text-ink-faint">
+                IDX · delayed paper
+              </span>
+            </>
+          ) : (
+            <>
           <Link href="/" className="rounded-md px-2.5 py-1 font-mono text-xs text-ink-muted hover:bg-surface hover:text-ink">
             Desk
           </Link>
@@ -51,6 +73,8 @@ export function NavBar() {
               {p.symbol.toUpperCase()}
             </Link>
           ))}
+            </>
+          )}
         </div>
       </div>
     </nav>

@@ -1,0 +1,13 @@
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/**/*.db
+data/**/*.db-shm
+data/**/*.db-wal
+.env
+__pycache__/
+*.py[cod]
+logs/
+output/
+tmp/
+.runtime/

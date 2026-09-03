@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: paper-trading-state-writers
+  cancel-in-progress: false
+
 jobs:
   run-trading-loop:
     runs-on: ubuntu-latest
@@ -16,7 +20,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -35,7 +39,13 @@ jobs:
 
       - name: 3. Commit and Push Updated Ledger State
         run: |
-          git config --global user.name "Gemini AI-Fund Bot"
-          git config --global user.email "bot@gemini-ai-fund.local"
+          git config user.name "Gemini AI-Fund Bot"
+          git config user.email "bot@gemini-ai-fund.local"
           git add .desk/
-          git diff-index --quiet HEAD || (git commit -m "chore(bot): update paper trading ledger [skip ci]" && git push)
+          if git diff --cached --quiet; then
+            echo "No coin state change"
+            exit 0
+          fi
+          git commit -m "chore(bot): update paper trading ledger [skip ci]"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

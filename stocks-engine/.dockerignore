@@ -1,0 +1,8 @@
+.git
+.env
+__pycache__
+*.pyc
+data/*.db*
+runtime-data
+scratch*
+tests

@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "report_id": "idx-evaluation-2026-08-26",
+  "evaluation_date": "2026-08-26",
+  "generated_at": "2026-08-26T16:22:00+07:00",
+  "status": "READY",
+  "source_mode": "stored_evaluation",
+  "rescan_on_read": false,
+  "universe": {
+    "type": "ALL_ACTIVE_IDX",
+    "index_filter": null,
+    "eligible_count": null,
+    "evaluated_count": null,
+    "failed_count": 0
+  },
+  "data_quality": {
+    "score_pct": 98.7,
+    "market_data_as_of": "2026-08-26T16:15:00+07:00",
+    "arjum_as_of": "2026-08-26T16:20:00+07:00",
+    "stale_symbols": [],
+    "errors": []
+  },
+  "market_regime": {
+    "label": "SELECTIVE_RISK_ON",
+    "confidence": 74,
+    "new_position_cap": 8
+  },
+  "funnel": {
+    "technical_matches": 47,
+    "hard_rejects": 5,
+    "shortlisted": 6,
+    "actionable": 3,
+    "silent_accumulation": 27
+  },
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "BRIS",
+      "owner_agent": "breakout_retest",
+      "status": "ACTIONABLE",
+      "score": 86,
+      "last_price": 2810,
+      "entry_low": 2780,
+      "entry_high": 2810,
+      "stop_price": 2690,
+      "target_price": 3050,
+      "stop_distance_pct": 4.27,
+      "agent_equity_risk_pct": 3.0,
+      "risk_reward": 2.7,
+      "evaluation_ref": "eval-BRIS-20260826"
+    }
+  ],
+  "agent_evaluations": [
+    {
+      "agent_id": "breakout_retest",
+      "equity": 102420000,
+      "decision_count": 9,
+      "actionable_count": 1,
+      "open_risk_pct": 3.0
+    }
+  ]
+}

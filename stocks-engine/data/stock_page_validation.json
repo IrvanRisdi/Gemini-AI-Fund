@@ -1,0 +1,11 @@
+{
+  "validated_at": "2026-08-27",
+  "base_url": "http://127.0.0.1:4175",
+  "total": 962,
+  "passed": 962,
+  "failed": 0,
+  "arjum_status": {
+    "CACHED": 962
+  },
+  "failures": []
+}

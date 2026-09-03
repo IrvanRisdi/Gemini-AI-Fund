@@ -78,19 +78,20 @@ npx vercel --prod
 
 Dashboard Coin memiliki pemilih kelas aset pada navigation bar. Tombol `Coin`
 tetap membuka desk ini, sedangkan tombol `Saham` membuka dashboard NusaQuant IDX.
-Kedua aplikasi sengaja memakai backend dan ledger terpisah karena pasar kripto
-berjalan 24/7 sementara engine saham mengikuti jam bursa IDX.
+Kedua desk memakai ledger terpisah karena pasar kripto berjalan 24/7 sementara
+engine saham mengikuti sesi dan kalender libur IDX. Keduanya sekarang tampil
+pada website Next.js yang sama: Coin di `/` dan saham di `/saham`.
 
-Untuk development lokal, tombol Saham memakai `http://127.0.0.1:4173/`.
-Sebelum deploy Vercel, isi URL publik dashboard saham pada project environment:
+Engine saham dijalankan oleh `.github/workflows/stock-trading-loop.yml` setiap
+lima menit selama jendela sesi. Hasilnya disimpan sebagai snapshot ringkas di
+`stocks-engine/.stock-desk/`, sehingga Vercel hanya membaca hasil dan tidak
+menjalankan daemon Python. Tambahkan `ARJUM_API_KEY` pada GitHub Actions Secrets;
+jangan menaruh API key pada file repository atau environment browser.
 
-```bash
-NEXT_PUBLIC_STOCK_DASHBOARD_URL=https://saham.example.com/
-```
-
-Setelah environment variable disimpan, lakukan redeploy agar link produksi
-mengarah ke dashboard saham online. Jangan menaruh credential atau API key di
-URL tersebut.
+Setelah penutupan IDX, `stock-daily-maintenance.yml` menjalankan breadth scan
+seluruh universe, memperbarui Arjum analysis/broker flow serta fundamental, dan
+menerbitkan Daily Report. Raw candle dan payload laporan keuangan tidak dipush;
+hanya read-model dan state trading yang ringkas yang disimpan.
 
 ## Batasan penting
 

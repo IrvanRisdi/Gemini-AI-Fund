@@ -1,0 +1,67 @@
+name: IDX Daily Breadth and Arjum Maintenance
+
+on:
+  schedule:
+    # 09:30 UTC = 16:30 WIB, Monday-Friday after the regular IDX session.
+    - cron: '30 9 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: paper-trading-state-writers
+  cancel-in-progress: false
+
+jobs:
+  daily-maintenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      TZ: Asia/Jakarta
+      NQ_ENV: production
+      NQ_DATA_DIR: ${{ github.workspace }}/.runtime/stocks
+      NQ_DEMO_MODE: 'false'
+      NQ_PAPER_ONLY: 'true'
+      NQ_YAHOO_ENABLED: 'true'
+      NQ_ALLOW_DELAYED_PAPER: 'true'
+      NQ_ARJUM_ENABLED: 'true'
+      ARJUM_DAILY_LIMIT: '21000'
+      NQ_ARJUM_CANDIDATE_LIMIT: '20'
+      ARJUM_API_KEY: ${{ secrets.ARJUM_API_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run daily breadth and enrichment
+        run: python stocks-engine/scripts/run_github_maintenance.py
+
+      - name: Commit compact daily state
+        run: |
+          git config user.name "NusaQuant Daily Bot"
+          git config user.email "nusaquant-daily@users.noreply.github.com"
+          git add stocks-engine/.stock-desk/
+          if git diff --cached --quiet; then
+            echo "No daily stock state change"
+            exit 0
+          fi
+          git commit -m "chore(stock-bot): publish IDX daily report [skip ci]"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Upload daily diagnostic snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: idx-daily-${{ github.run_id }}
+          path: stocks-engine/.stock-desk/dashboard.json
+          if-no-files-found: warn
+          retention-days: 14

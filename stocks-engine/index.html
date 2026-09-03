@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="NusaQuant — dashboard multi-agent paper trading saham Indonesia." />
+  <title>NusaQuant · Multi-Agent IDX Fund</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navigasi utama">
+      <a class="brand" href="#overview" aria-label="NusaQuant beranda">
+        <span class="brand-mark">NQ</span>
+        <span><strong>NusaQuant</strong><small>IDX agent fund</small></span>
+      </a>
+
+      <div class="asset-switcher" aria-label="Pilih kelas aset">
+        <a class="active" href="/" aria-current="page"><small>MARKET</small><strong>Saham</strong></a>
+        <a href="https://gemini-ai-fund-dashboard.vercel.app/"><small>24 / 7</small><strong>Coin</strong></a>
+      </div>
+
+      <nav class="main-nav">
+        <a class="nav-link active" href="#overview" data-view="overview"><span>⌁</span> Command center</a>
+        <a class="nav-link" href="#agents" data-view="agents"><span>◫</span> Agent fund</a>
+        <a class="nav-link" href="#screener" data-view="screener"><span>⌕</span> IDX screener</a>
+        <a class="nav-link" href="#daily-report" data-view="daily-report"><span>▤</span> Daily report</a>
+        <a class="nav-link" href="#positions" data-view="positions"><span>◇</span> Positions</a>
+        <a class="nav-link" href="#activity" data-view="activity"><span>≋</span> Decision log</a>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+      <div class="provider-card">
+        <div class="provider-head"><span class="live-dot"></span><strong>Data pipeline</strong></div>
+        <div class="provider-row"><span>Arjum</span><b id="arjumUsage">— / — · hari ini</b></div>
+        <div class="quota-track"><span style="width:31.2%"></span></div>
+        <div class="provider-row muted"><span>Yahoo 5m</span><b id="yahooFreshness">No run</b></div>
+        <small id="pipelineMode">Delayed paper · scheduler managed</small>
+      </div>
+      <button class="profile-button" type="button"><span class="avatar">PL</span><span><strong>Paper Fund</strong><small>Simulation mode</small></span><span>•••</span></button>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" type="button" aria-label="Buka menu">☰</button>
+        <div class="market-status"><span class="live-dot"></span><strong id="marketPhase">Checking engine</strong><span id="engineRunStatus">No run</span></div>
+        <div class="top-actions">
+          <label class="global-search"><span>⌕</span><input id="globalSearch" type="search" placeholder="Cari emiten…" aria-label="Cari emiten" /><kbd>/</kbd></label>
+          <button class="icon-button" id="readinessShortcut" type="button" aria-label="Status kesiapan sistem">♢<i id="readinessCount">—</i></button>
+          <button class="primary-button" id="runAgents" type="button">⌁ Engine status</button>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="hero" id="overview">
+          <div>
+            <p class="eyebrow">MULTI-STRATEGY PAPER FUND</p>
+            <h1 id="heroGreeting">Memuat command center…</h1>
+            <p>Lima agen independen memantau IDX dengan equity, keputusan, dan risk budget masing-masing.</p>
+          </div>
+          <div class="hero-controls">
+            <button class="secondary-button" type="button" disabled title="Kurva saat ini memakai seluruh snapshot tersedia">Semua snapshot</button>
+            <button class="secondary-button" id="exportReport" type="button">↓ Export report</button>
+          </div>
+        </section>
+
+        <section class="readiness-banner loading" id="readinessBanner" aria-live="polite">
+          <div class="readiness-icon">•••</div>
+          <div><strong>Memeriksa kesiapan sistem</strong><p>Dashboard sedang membaca cache, engine, universe, dan kalender bursa.</p></div>
+          <button class="text-button" id="readinessDetails" type="button">Detail</button>
+        </section>
+
+        <section class="metrics-grid" aria-label="Ringkasan fund">
+          <article class="metric-card featured">
+            <div class="metric-label">TOTAL FUND EQUITY <span>↗</span></div>
+            <div class="metric-value" id="totalFundEquity">—</div>
+            <div class="metric-foot positive" id="totalFundPnl">Menunggu ledger</div>
+            <svg class="sparkline" viewBox="0 0 240 58" role="img" aria-label="Equity meningkat"><path d="M2 47 C22 45,29 32,48 36 S78 43,96 27 S124 35,140 20 S166 28,184 15 S216 18,238 5" /><path class="area" d="M2 47 C22 45,29 32,48 36 S78 43,96 27 S124 35,140 20 S166 28,184 15 S216 18,238 5 L238 58 L2 58Z" /></svg>
+          </article>
+          <article class="metric-card">
+            <div class="metric-label">TODAY'S P&amp;L <span>◎</span></div>
+            <div class="metric-value" id="todayPnl">—</div>
+            <div class="metric-foot positive" id="todayPnlFoot">Menunggu mark-to-market</div>
+            <div class="micro-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-label">OPEN POSITIONS <span>◇</span></div>
+            <div class="metric-value"><span id="openPositionCount">—</span> <small>/ 25 max</small></div>
+            <div class="metric-foot" id="positionMarketValue">Menunggu posisi</div>
+            <div class="split-track"><span style="width:67%"></span><i></i></div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-label">SYSTEM RISK <span>⌁</span></div>
+            <div class="metric-value"><span id="systemRisk">—</span> <small>open risk</small></div>
+            <div class="metric-foot"><span class="status-pill safe">● Healthy</span><span>Limit 12%</span></div>
+            <div class="risk-track"><span style="width:40%"></span></div>
+          </article>
+        </section>
+
+        <section class="section-block" id="agents">
+          <div class="section-heading">
+            <div><p class="eyebrow">AGENT FUND</p><h2>Strategy desks</h2></div>
+            <div class="legend" id="agentLegend"><span><i class="legend-dot active-dot"></i>Memuat status agen</span></div>
+          </div>
+          <div class="agent-grid" id="agentGrid"></div>
+        </section>
+
+        <section class="two-column">
+          <div class="panel" id="screener">
+            <div class="panel-head">
+              <div><p class="eyebrow">IDX EDGE SCREENER</p><h2>High-conviction setups</h2></div>
+              <button class="text-button" type="button" onclick="location.href='/reports'">View report →</button>
+            </div>
+            <div class="filter-row" role="group" aria-label="Filter screener">
+              <button class="filter-button active" data-filter="all" type="button">All setups <b>—</b></button>
+              <button class="filter-button" data-filter="intraday" type="button">Intraday 50 <b>—</b></button>
+              <button class="filter-button" data-filter="swing" type="button">Swing <b>—</b></button>
+              <button class="filter-button" data-filter="breakout-retest" type="button">Breakout <b>—</b></button>
+              <button class="filter-button" data-filter="open-low" type="button">Open=Low <b>—</b></button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Symbol</th><th>Price</th><th>Signal</th><th>Score</th><th>Flow</th><th>Agent</th></tr></thead>
+                <tbody id="screenerRows"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel decision-panel">
+            <div class="panel-head">
+              <div><p class="eyebrow">LATEST DECISION</p><h2>Agent reasoning</h2></div>
+              <span class="status-pill" id="latestDecisionStatus">Stored snapshot</span>
+            </div>
+            <div class="decision-top" id="latestDecision" role="link" tabindex="0" aria-label="Buka detail keputusan terbaru">
+              <div class="ticker-logo" id="latestDecisionLogo">—</div>
+              <div><h3 id="latestDecisionTicker">Belum ada keputusan</h3><p id="latestDecisionMeta">Menunggu snapshot evaluasi</p></div>
+              <span class="signal-badge watch" id="latestDecisionSignal">—</span>
+            </div>
+            <div class="confidence-row"><span>Agent confidence</span><b id="latestDecisionConfidence">— / 100</b></div>
+            <div class="confidence-track"><span id="latestDecisionConfidenceBar" style="width:0"></span></div>
+            <div class="reason-list" id="latestDecisionReason"><p class="empty-note">Belum ada reasoning tersimpan.</p></div>
+            <div class="trade-plan">
+              <div><small>ENTRY ZONE</small><strong id="latestEntry">—</strong></div>
+              <div><small>STOP LOSS</small><strong class="negative" id="latestStop">—</strong></div>
+              <div><small>TARGET</small><strong class="positive" id="latestTarget">—</strong></div>
+              <div><small>RISK / REWARD</small><strong id="latestRR">—</strong></div>
+            </div>
+            <button class="outline-button" id="openPlan" type="button">Open full trading plan</button>
+          </div>
+        </section>
+
+        <section class="panel" id="positions">
+          <div class="panel-head">
+            <div><p class="eyebrow">PORTFOLIO</p><h2>Open positions</h2></div>
+            <div class="panel-summary"><span>Market value <b id="positionsMarketValue">—</b></span><span>Unrealized <b id="positionsUnrealized">—</b></span></div>
+          </div>
+          <div class="table-wrap">
+            <table class="positions-table">
+              <thead><tr><th>Asset</th><th>Owner agent</th><th>Entry</th><th>Last</th><th>Lots</th><th>P&amp;L</th><th>Stop / Target</th><th>Status</th></tr></thead>
+              <tbody id="positionRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel daily-report-panel" id="daily-report">
+          <div class="report-cover">
+            <div>
+              <p class="eyebrow">PULSE · DAILY SCAN</p>
+              <h2>IDX Closing Intelligence</h2>
+              <p>Ringkasan hasil proses scanner dan keputusan agen. Tidak ada request market-data baru saat laporan dibuka.</p>
+            </div>
+            <div class="report-actions">
+              <select id="reportDate" aria-label="Tanggal laporan"><option>Memuat laporan…</option></select>
+              <button class="secondary-button" id="copyReport" type="button">Copy summary</button>
+              <button class="secondary-button" id="downloadReportPdf" type="button">Download PDF</button>
+            </div>
+          </div>
+          <div class="report-meta">
+            <span><small>SNAPSHOT</small><strong id="reportSnapshot">—</strong></span>
+            <span><small>UNIVERSE</small><strong id="reportUniverse">—</strong></span>
+            <span><small>SOURCE</small><strong id="reportSource">—</strong></span>
+            <span><small>DATA QUALITY</small><strong id="reportQuality">—</strong></span>
+          </div>
+          <div class="report-layout">
+            <article class="report-brief">
+              <p class="report-kicker">EXECUTIVE BRIEF</p>
+              <h3 id="reportHeadline">Menunggu laporan evaluasi tersimpan.</h3>
+              <p id="reportBrief">Halaman ini tidak pernah memicu scan atau request market-data baru.</p>
+              <ul class="report-insights" id="reportInsights"><li>Menunggu interpretasi kondisi pasar.</li></ul>
+              <div class="market-regime"><span>MARKET REGIME</span><b id="reportRegime">—</b><i id="reportRegimeConfidence">—</i></div>
+            </article>
+            <article class="report-list">
+              <div class="report-list-head"><span>TOP SETUPS</span><small>Ranked from stored score</small></div>
+              <div id="dailyTopSetups"></div>
+            </article>
+          </div>
+          <div class="report-bottom">
+            <article>
+              <p class="report-kicker">AGENT DISPATCH</p>
+              <div class="dispatch-grid" id="agentDispatch"></div>
+            </article>
+            <article>
+              <p class="report-kicker">RISK &amp; WATCH ITEMS</p>
+              <ul class="watch-list" id="reportWatchItems"><li><b>Memuat audit data</b><span>Menunggu status readiness dan quota provider.</span></li></ul>
+            </article>
+          </div>
+          <footer class="report-footer"><span id="reportFooterSource">Stored evaluation · no rescan</span><span>Paper research only · Not financial advice</span></footer>
+        </section>
+
+        <section class="control-grid">
+          <div class="panel risk-policy-panel">
+            <div class="panel-head">
+              <div><p class="eyebrow">HARD GUARDRAILS</p><h2>Risk policy</h2></div>
+              <span class="status-pill live">● Enforced</span>
+            </div>
+            <div class="policy-grid">
+              <div><small>BOOK STRUCTURE</small><strong>5 isolated ledgers</strong><p>Setiap agen memiliki equity, cash, posisi, dan jurnal terpisah.</p></div>
+              <div><small>RISK / CAMPAIGN</small><strong>Target 3% · max 5%</strong><p>Position sizing mengikuti stop struktural dan fraksi harga IDX.</p></div>
+              <div><small>REWARD GATE</small><strong>Minimum 1 : 1,5</strong><p>Setup dengan potensi lebih rendah otomatis ditolak.</p></div>
+              <div><small>PAIR CONCENTRATION</small><strong>1 campaign / agent</strong><p>Master risk mengawasi eksposur gabungan lintas agen.</p></div>
+              <div><small>EXECUTION MODE</small><strong>Paper · spot only</strong><p>Tidak ada short, leverage, atau order broker live.</p></div>
+              <div><small>CIRCUIT BREAKER</small><strong>20% agent drawdown</strong><p>Agen dipause otomatis dan membutuhkan review.</p></div>
+            </div>
+          </div>
+
+          <div class="panel console-panel">
+            <div class="panel-head">
+              <div><p class="eyebrow">SNAPSHOT ASSISTANT</p><h2>Fund query</h2></div>
+              <span class="model-label">Local · read only</span>
+            </div>
+            <div class="console-transcript" id="consoleTranscript" aria-live="polite">
+              <div class="console-message system"><span>NQ</span><p>Query ini merangkum snapshot lokal. Model AI eksternal belum diaktifkan.</p></div>
+              <div class="quick-prompts">
+                <button type="button">Bandingkan lima agen</button>
+                <button type="button">Audit risiko BRIS</button>
+                <button type="button">Mengapa Scalping rugi?</button>
+              </div>
+            </div>
+            <form class="console-form" id="consoleForm">
+              <input id="consoleInput" type="text" placeholder="Tanya berdasarkan snapshot fund…" aria-label="Pertanyaan untuk AI console" />
+              <button class="primary-button" type="submit">Send ↗</button>
+            </form>
+            <p class="console-disclaimer">Read-only · tidak memanggil market API · tidak dapat mengirim order atau mengubah ledger.</p>
+          </div>
+        </section>
+
+        <section class="activity-section" id="activity">
+          <div class="section-heading"><div><p class="eyebrow">AUDIT TRAIL</p><h2>Agent activity</h2></div><button class="text-button" type="button" onclick="location.href='/reports'">Full evaluation →</button></div>
+          <div class="activity-feed" id="activityFeed"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="planDialog">
+    <div class="modal-head"><div><p class="eyebrow" id="modalPlanRef">TRADING PLAN</p><h2 id="modalPlanTitle">Stored trading plan</h2></div><button id="closePlan" class="icon-button" type="button" aria-label="Tutup">×</button></div>
+    <div class="modal-grid">
+      <div><small>Agent</small><strong id="modalAgent">—</strong></div><div><small>Equity risk</small><strong id="modalRisk">—</strong></div><div><small>Entry zone</small><strong id="modalEntry">—</strong></div><div><small>Validasi</small><strong id="modalStatus">—</strong></div>
+    </div>
+    <h3>Stored rationale</h3>
+    <p id="modalRationale" class="modal-copy">Belum ada rationale tersimpan.</p>
+    <div class="modal-note">Paper trade only · keputusan ini belum mengirim order ke broker live.</div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js?v=20260903e"></script>
+</body>
+</html>
