@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-03T14:30:48.963Z",
+  "last_cycle": "2026-09-03T14:45:39.709Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -1521,6 +1521,32 @@
           "riskReservedIdr": 35392.78092771476,
           "notionalReservedIdr": 12343310.856163979,
           "createdAt": "2026-09-03T14:15:42.720Z",
+          "status": "pending"
+        },
+        {
+          "id": "wyckoff-trader-bnbidr-1788446737748",
+          "pair": "bnbidr",
+          "agent": "wyckoff-trader",
+          "side": "long",
+          "type": "limit",
+          "timeframe": "15m",
+          "entryLow": 12584505.57857143,
+          "entryHigh": 12600000,
+          "stopPrice": 12543187.121428572,
+          "targetPrice": 12726000,
+          "expiresAt": "2026-09-03T22:45:37.748Z",
+          "confirmations": [
+            "Wyckoff phase D / SoS",
+            "Skor 3/5",
+            "Retest range high dalam zona 0,3 ATR"
+          ],
+          "score": 3,
+          "validationStatus": "research",
+          "reason": "Wyckoff SoS: buy limit pada zona retest range high.",
+          "campaignId": "wyckoff-trader-bnbidr-1788446740481",
+          "riskReservedIdr": 55489.01081205886,
+          "notionalReservedIdr": 12343310.856163979,
+          "createdAt": "2026-09-03T14:45:39.709Z",
           "status": "pending"
         }
       ],
