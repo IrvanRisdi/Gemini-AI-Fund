@@ -1,4 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" \"$VERCEL_GIT_COMMIT_SHA\" -- ."
+  "ignoreCommand": "git log -1 --pretty=%B | grep -Fq \"[skip ci]\"",
+  "git": {
+    "deploymentEnabled": {
+      "paper-data": false
+    }
+  }
 }
