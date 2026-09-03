@@ -11,6 +11,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: paper-trading-state-writers
+  cancel-in-progress: false
+
 jobs:
   evaluate-session:
     runs-on: ubuntu-latest
@@ -19,6 +23,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Ambil riwayat lengkap agar rebase berjalan lancar
+
+      - name: Restore Latest Paper State
+        run: |
+          git fetch origin paper-data || true
+          if git rev-parse --verify origin/paper-data >/dev/null 2>&1; then
+            git checkout origin/paper-data -- .desk stocks-engine/.stock-desk
+            git reset
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -38,9 +50,9 @@ jobs:
         run: |
           git config --global user.name "Gemini Evaluator"
           git config --global user.email "evaluator@gemini-ai-fund.local"
-          git add .desk/
+          git add .desk/ stocks-engine/.stock-desk/
           if ! git diff-index --quiet HEAD; then
             git commit -m "chore(gemini): update session review [skip ci]"
-            git pull --rebase origin main
-            git push origin main
+            git push --force-with-lease origin HEAD:paper-data
           fi
+
