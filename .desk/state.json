@@ -9,7 +9,7 @@
       "status": "active",
       "hired": "2026-08-25",
       "role": "primary",
-      "last_action": "1 posisi spot terbuka · 1 pending order",
+      "last_action": "0 posisi spot terbuka · 0 pending order",
       "assets_covered": [
         "BTC/IDR",
         "ETH/IDR",
@@ -117,7 +117,7 @@
       "status": "active",
       "hired": "2026-08-25",
       "role": "primary",
-      "last_action": "0 posisi spot terbuka · 0 pending order",
+      "last_action": "0 posisi spot terbuka · 1 pending order",
       "assets_covered": [
         "BTC/IDR",
         "ETH/IDR",
