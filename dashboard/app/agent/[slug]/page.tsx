@@ -24,7 +24,8 @@ export default async function AgentPage({ params }: { params: Promise<{ slug: st
   if (!slugs.includes(slug)) notFound();
 
   const [meta, briefing, book] = await Promise.all([getAgentMeta(slug), getFullBriefing(slug), getAgentBookBreakdown(slug)]);
-  const totalEquity = book.cash + book.unrealizedPnlIdr;
+    // Kas + NILAI PENUH posisi terbuka, bukan cuma floating P&L-nya -- lihat fix yang sama di desk-data.ts untuk alasan lengkapnya.
+  const totalEquity = book.cash + book.openPositionValue;
   const startingBalance = meta.startingBalance ?? 0;
   const realizedPct = startingBalance ? (book.realizedPnlIdr / startingBalance) * 100 : 0;
   const unrealizedPct = startingBalance ? (book.unrealizedPnlIdr / startingBalance) * 100 : 0;
