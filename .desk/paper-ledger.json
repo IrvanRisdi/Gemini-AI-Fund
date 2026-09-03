@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-03T15:00:51.726Z",
+  "last_cycle": "2026-09-03T15:15:41.633Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -10,7 +10,7 @@
   "agents": {
     "breakout-specialist": {
       "balance": {
-        "IDR": 49900668.283398576
+        "IDR": 49808352.08452846
       },
       "positions": {},
       "pendingOrders": [
@@ -322,6 +322,32 @@
           "riskReservedIdr": 124200.23812442107,
           "notionalReservedIdr": 12512592.572062192,
           "createdAt": "2026-09-03T15:00:51.726Z",
+          "status": "filled"
+        },
+        {
+          "id": "breakout-specialist-hbaridr-1788448539486",
+          "pair": "hbaridr",
+          "agent": "breakout-specialist",
+          "side": "long",
+          "type": "stop",
+          "timeframe": "15m",
+          "entryLow": 1400.6999999999998,
+          "entryHigh": 1400.6999999999998,
+          "stopPrice": 1394.1,
+          "targetPrice": 1414.7069999999999,
+          "expiresAt": "2026-09-03T21:15:39.486Z",
+          "confirmations": [
+            "Trend 4H + BTC kuat",
+            "Skor breakout 3/5",
+            "Continuation di atas high 15m"
+          ],
+          "score": 3,
+          "validationStatus": "validated",
+          "reason": "Breakout 15m tervalidasi; buy-stop hanya terisi bila momentum berlanjut.",
+          "campaignId": "breakout-specialist-hbaridr-1788448542541",
+          "riskReservedIdr": 58673.36398905607,
+          "notionalReservedIdr": 12489444.28519551,
+          "createdAt": "2026-09-03T15:15:41.633Z",
           "status": "pending"
         }
       ],
@@ -353,6 +379,34 @@
           "reason": "Stop loss struktur",
           "campaignId": "breakout-specialist-uniidr-1788438650916",
           "feeIdr": 14791.378987157204
+        },
+        {
+          "timestamp": "2026-09-03T15:15:41.633Z",
+          "instrument": "suiidr",
+          "side": "long",
+          "type": "open",
+          "size": 357.5577490729765,
+          "price": 13955.974499999998,
+          "reason": "Breakout 15m tervalidasi; buy-stop hanya terisi bila momentum berlanjut.",
+          "campaignId": "breakout-specialist-suiidr-1788447652357",
+          "confirmations": [
+            "Trend 4H + BTC kuat",
+            "Skor breakout 5/5",
+            "Continuation di atas high 15m"
+          ],
+          "feeIdr": 14970.200485019574
+        },
+        {
+          "timestamp": "2026-09-03T15:15:41.633Z",
+          "instrument": "suiidr",
+          "side": "long",
+          "type": "close",
+          "size": 357.5577490729765,
+          "price": 13781,
+          "realizedPnlIdr": -77345.99838509303,
+          "reason": "Stop loss struktur",
+          "campaignId": "breakout-specialist-suiidr-1788447652357",
+          "feeIdr": 14782.510019924068
         }
       ]
     },
@@ -1749,7 +1803,7 @@
     },
     "aggressive-breakout-trader": {
       "balance": {
-        "IDR": 49731688.92817301
+        "IDR": 49504127.26841226
       },
       "positions": {},
       "pendingOrders": [
@@ -2010,6 +2064,32 @@
           "riskReservedIdr": 118645.88866871661,
           "notionalReservedIdr": 12470220.998739382,
           "createdAt": "2026-09-03T15:00:51.726Z",
+          "status": "filled"
+        },
+        {
+          "id": "aggressive-breakout-trader-hbaridr-1788448539486",
+          "pair": "hbaridr",
+          "agent": "aggressive-breakout-trader",
+          "side": "long",
+          "type": "stop",
+          "timeframe": "15m",
+          "entryLow": 1400.4199999999998,
+          "entryHigh": 1400.4199999999998,
+          "stopPrice": 1394.0949999999998,
+          "targetPrice": 1414.4242,
+          "expiresAt": "2026-09-03T19:15:39.486Z",
+          "confirmations": [
+            "Trend 4H",
+            "Skor momentum 3/5",
+            "Buy-stop di atas high 15m"
+          ],
+          "score": 3,
+          "validationStatus": "validated",
+          "reason": "Momentum 15m berkualitas tinggi; buy-stop membatalkan entry bila harga tidak melanjutkan breakout.",
+          "campaignId": "aggressive-breakout-trader-hbaridr-1788448542541",
+          "riskReservedIdr": 55896.37483267696,
+          "notionalReservedIdr": 12413159.912554374,
+          "createdAt": "2026-09-03T15:15:41.633Z",
           "status": "pending"
         }
       ],
@@ -2097,6 +2177,34 @@
           "reason": "Stop loss struktur",
           "campaignId": "aggressive-breakout-trader-adaidr-1788442246016",
           "feeIdr": 37475.604997648355
+        },
+        {
+          "timestamp": "2026-09-03T15:15:41.633Z",
+          "instrument": "suiidr",
+          "side": "long",
+          "type": "open",
+          "size": 891.0454852678366,
+          "price": 13953.1847,
+          "reason": "Momentum 15m berkualitas tinggi; buy-stop membatalkan entry bila harga tidak melanjutkan breakout.",
+          "campaignId": "aggressive-breakout-trader-suiidr-1788447652357",
+          "confirmations": [
+            "Trend 4H",
+            "Skor momentum 5/5",
+            "Buy-stop di atas high 15m"
+          ],
+          "feeIdr": 37298.76669612976
+        },
+        {
+          "timestamp": "2026-09-03T15:15:41.633Z",
+          "instrument": "suiidr",
+          "side": "long",
+          "type": "close",
+          "size": 891.0454852678366,
+          "price": 13781,
+          "realizedPnlIdr": -190262.89306462486,
+          "reason": "Stop loss struktur",
+          "campaignId": "aggressive-breakout-trader-suiidr-1788447652357",
+          "feeIdr": 36838.49349742817
         }
       ]
     }
