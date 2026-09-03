@@ -235,9 +235,9 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     const stateAgent = state.agents?.[slug];
     const startingBal = ledger.starting_balance_per_agent || defaultStartingBalance;
     const cash = book?.balance?.IDR ?? startingBal;
-    
     // Hitung Floating PnL secara Real-Time berdasarkan harga Indodax saat ini
     let unrealizedPnl = 0;
+    let openPositionValue = 0;
     const rawPositions = book?.positions ?? {};
     const positionsList: LedgerPosition[] = [];
 
@@ -249,10 +249,13 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
         ? (currentPrice - pos.entryPrice) * pos.size
         : (pos.entryPrice - currentPrice) * pos.size;
       unrealizedPnl += posPnl;
+      openPositionValue += pos.size * currentPrice;
     }
 
-    // Ekuitas = Kas + Laba/Rugi Posisi Terbuka
-    const equity = cash + unrealizedPnl;
+    // Ekuitas = Kas + NILAI PENUH posisi terbuka (bukan cuma floating P&L-nya
+    // saja -- cash sudah dipotong sebesar notional saat posisi dibuka, jadi
+    // yang perlu ditambahkan balik adalah nilai pasar penuh posisi itu).
+    const equity = cash + openPositionValue;
     const pnlIdr = equity - startingBal;
     const pnlPct = startingBal > 0 ? (pnlIdr / startingBal) * 100 : 0;
 
