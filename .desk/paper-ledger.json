@@ -1,7 +1,7 @@
 {
   "mode": "spot-only-paper-v2",
   "created": "2026-08-25T00:00:00.000Z",
-  "last_cycle": "2026-09-03T08:00:49.141Z",
+  "last_cycle": "2026-09-03T08:15:36.249Z",
   "base_currency": "IDR",
   "starting_balance_per_agent": 50000000,
   "total_starting_capital": 250000000,
@@ -786,6 +786,32 @@
           "notionalReservedIdr": 12229839.052497057,
           "createdAt": "2026-09-01T00:15:37.118Z",
           "status": "expired"
+        },
+        {
+          "id": "smc-trader-adaidr-1788423334113",
+          "pair": "adaidr",
+          "agent": "smc-trader",
+          "side": "long",
+          "type": "limit",
+          "timeframe": "15m",
+          "entryLow": 3565.2642857142855,
+          "entryHigh": 3570.6,
+          "stopPrice": 3525.332142857143,
+          "targetPrice": 3638.5017857142852,
+          "expiresAt": "2026-09-03T16:15:34.113Z",
+          "confirmations": [
+            "Sweep + reclaim high 15m",
+            "Demand zone + volume normal",
+            "Skor konteks 4/4"
+          ],
+          "score": 4,
+          "validationStatus": "research",
+          "reason": "SMC tervalidasi: buy limit demand zone dengan target 1,8R.",
+          "campaignId": "smc-trader-adaidr-1788423336249",
+          "riskReservedIdr": 154585.42512510892,
+          "notionalReservedIdr": 12229839.052497057,
+          "createdAt": "2026-09-03T08:15:36.249Z",
+          "status": "pending"
         }
       ],
       "trades": [

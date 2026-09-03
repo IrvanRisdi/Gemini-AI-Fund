@@ -1,7 +1,29 @@
 {
-  "timestamp": "2026-09-03T08:00:47.232Z",
+  "timestamp": "2026-09-03T08:15:34.180Z",
   "mode": "spot-only-v2",
   "pairsScanned": 19,
-  "candidates": [],
+  "candidates": [
+    {
+      "id": "smc-trader-adaidr-1788423334113",
+      "pair": "adaidr",
+      "agent": "smc-trader",
+      "side": "long",
+      "type": "limit",
+      "timeframe": "15m",
+      "entryLow": 3565.2642857142855,
+      "entryHigh": 3570.6,
+      "stopPrice": 3525.332142857143,
+      "targetPrice": 3638.5017857142852,
+      "expiresAt": "2026-09-03T16:15:34.113Z",
+      "confirmations": [
+        "Sweep + reclaim high 15m",
+        "Demand zone + volume normal",
+        "Skor konteks 4/4"
+      ],
+      "score": 4,
+      "validationStatus": "research",
+      "reason": "SMC tervalidasi: buy limit demand zone dengan target 1,8R."
+    }
+  ],
   "errors": []
 }
