@@ -10,13 +10,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Gemini AI-Fund — Trading Desk',
-  description: 'Live paper trading desk for the Gemini AI-Fund multi-agent roster.',
+  title: 'AI Fund Hub - Coin Trading Desk',
+  description: 'Dashboard Coin dalam portal paper-trading multi-aset Coin dan saham IDX.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="id" className={inter.variable}>
       <body className="min-h-screen bg-bg pb-14 text-ink antialiased">
         <NavBar />
         {children}

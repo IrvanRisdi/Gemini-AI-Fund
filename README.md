@@ -74,6 +74,24 @@ Vercel diatur dengan root directory `dashboard`. Deploy dari root repository aga
 npx vercel --prod
 ```
 
+## Navigasi terpadu Coin dan saham IDX
+
+Dashboard Coin memiliki pemilih kelas aset pada navigation bar. Tombol `Coin`
+tetap membuka desk ini, sedangkan tombol `Saham` membuka dashboard NusaQuant IDX.
+Kedua aplikasi sengaja memakai backend dan ledger terpisah karena pasar kripto
+berjalan 24/7 sementara engine saham mengikuti jam bursa IDX.
+
+Untuk development lokal, tombol Saham memakai `http://127.0.0.1:4173/`.
+Sebelum deploy Vercel, isi URL publik dashboard saham pada project environment:
+
+```bash
+NEXT_PUBLIC_STOCK_DASHBOARD_URL=https://saham.example.com/
+```
+
+Setelah environment variable disimpan, lakukan redeploy agar link produksi
+mengarah ke dashboard saham online. Jangan menaruh credential atau API key di
+URL tersebut.
+
 ## Batasan penting
 
 - Tidak ada eksekusi order live dalam alur dashboard ini.
