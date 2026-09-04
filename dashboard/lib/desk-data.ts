@@ -146,7 +146,7 @@ export const DEFAULT_AGENTS = [
 ];
 
 const DEFAULT_STARTING_BALANCE = 50000000;
-const GITHUB_DESK_BASE = 'https://raw.githubusercontent.com/IrvanRisdi/Gemini-AI-Fund/main/.desk';
+const GITHUB_DESK_BASE = 'https://raw.githubusercontent.com/IrvanRisdi/Gemini-AI-Fund/paper-data/.desk';
 
 async function readJson<T>(file: string): Promise<T | null> {
   try {

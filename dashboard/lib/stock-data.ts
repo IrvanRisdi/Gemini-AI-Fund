@@ -61,7 +61,7 @@ export type StockDashboard = {
 };
 
 const STOCK_SNAPSHOT_URL =
-  'https://raw.githubusercontent.com/IrvanRisdi/Gemini-AI-Fund/main/stocks-engine/.stock-desk/dashboard.json';
+  'https://raw.githubusercontent.com/IrvanRisdi/Gemini-AI-Fund/paper-data/stocks-engine/.stock-desk/dashboard.json';
 
 async function readLocalSnapshot(): Promise<StockDashboard> {
   const candidates = [
