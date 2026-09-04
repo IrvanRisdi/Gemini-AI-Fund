@@ -451,12 +451,24 @@ def provider_usage_today(db: sqlite3.Connection, moment: datetime | None = None)
 
 
 def intraday_symbol_ranks(db: sqlite3.Connection, limit: int | None = None) -> dict[str, int]:
-    """Return the exact persisted ranking used to select the intraday universe."""
+    """Return the ranking used by both the collector and the dashboard.
+
+    Open positions and pending orders must stay inside the limited intraday
+    universe.  Otherwise a position can stop receiving new candles as soon as
+    its daily score falls below the top-N cut, which prevents mark-to-market
+    and automated exits from running.
+    """
     ceiling = settings.intraday_universe_limit if limit is None else max(0, int(limit))
-    rows = db.execute("""SELECT symbol FROM instruments WHERE status='ACTIVE'
-      ORDER BY CASE WHEN evaluation_status='ACTIONABLE' THEN 0
-                    WHEN evaluation_status='WATCH' THEN 1 ELSE 2 END,
-               COALESCE(evaluation_score,0) DESC, symbol
+    rows = db.execute("""SELECT i.symbol FROM instruments i WHERE i.status='ACTIVE'
+      ORDER BY CASE
+                 WHEN EXISTS (SELECT 1 FROM positions p
+                              WHERE p.symbol=i.symbol AND p.status='OPEN') THEN 0
+                 WHEN EXISTS (SELECT 1 FROM paper_orders po
+                              WHERE po.symbol=i.symbol AND po.status='PENDING') THEN 1
+                 WHEN i.evaluation_status='ACTIONABLE' THEN 2
+                 WHEN i.evaluation_status='WATCH' THEN 3 ELSE 4
+               END,
+               COALESCE(i.evaluation_score,0) DESC, i.symbol
       LIMIT ?""", (ceiling,)).fetchall()
     return {row["symbol"]: index for index, row in enumerate(rows, 1)}
 

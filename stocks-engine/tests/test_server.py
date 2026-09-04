@@ -153,6 +153,33 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(len(ranks), min(active, server.settings.intraday_universe_limit))
         self.assertEqual(list(ranks.values()), list(range(1, len(ranks) + 1)))
 
+    def test_intraday_ranking_reserves_slots_for_open_positions_and_pending_orders(self):
+        db = sqlite3.connect(":memory:")
+        db.row_factory = sqlite3.Row
+        db.executescript("""
+          CREATE TABLE instruments(
+            symbol TEXT PRIMARY KEY, status TEXT, evaluation_status TEXT,
+            evaluation_score INTEGER
+          );
+          CREATE TABLE positions(symbol TEXT, status TEXT);
+          CREATE TABLE paper_orders(symbol TEXT, status TEXT);
+        """)
+        db.executemany(
+            "INSERT INTO instruments VALUES(?,?,?,?)",
+            [(f"TOP{i:02}", "ACTIVE", "ACTIONABLE", 100 - i) for i in range(55)]
+            + [("BKSW", "ACTIVE", "INCOMPLETE", 1), ("WAIT", "ACTIVE", "WATCH", 2)],
+        )
+        db.execute("INSERT INTO positions VALUES('BKSW','OPEN')")
+        db.execute("INSERT INTO paper_orders VALUES('WAIT','PENDING')")
+
+        ranks = server.intraday_symbol_ranks(db, 50)
+        db.close()
+
+        self.assertEqual(len(ranks), 50)
+        self.assertEqual(ranks["BKSW"], 1)
+        self.assertEqual(ranks["WAIT"], 2)
+        self.assertNotIn("TOP49", ranks)
+
 
 if __name__ == "__main__":
     unittest.main()
