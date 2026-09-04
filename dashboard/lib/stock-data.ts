@@ -7,6 +7,8 @@ export type StockPosition = { id: number; agent_id: string; agent_name: string; 
 export type StockScreenerRow = { symbol: string; name: string; sector?: string | null; subsector?: string | null; last_price?: number | null; change_pct?: number | null; evaluation_score?: number | null; evaluation_status?: string | null; market_data_as_of?: string | null; intraday_rank?: number | null; is_intraday: boolean };
 export type StockDashboard = { schema_version: number; generated_at: string; source_mode: string; paper_only: boolean; market_phase: string; latest_run: { status: string; started_at: string; completed_at?: string | null; symbols_ok: number; symbols_failed: number } | null; provider_usage: { requests_used: number; request_limit: number }; agents: StockAgent[]; positions: StockPosition[]; intraday_symbols: string[]; screener: StockScreenerRow[]; latest_report?: Row | null };
 export type RuntimeState = { schema_version: number; exported_at: string; paper_only: boolean; tables: Record<string, Row[]> };
+export type CompactCandle = [timestamp: number, open: number, high: number, low: number, close: number, volume: number];
+export type StockChartSnapshot = { schema_version: number; symbol: string; generated_at: string; timeframes: Partial<Record<'5m' | '1d', { as_of: string; source: string; data_status: string; candles: CompactCandle[] }>> };
 
 const RAW_BASE = 'https://raw.githubusercontent.com/IrvanRisdi/Gemini-AI-Fund/paper-data/stocks-engine/.stock-desk';
 const STRATEGIES: Record<string, { objective: string; timeframes: string; entry_rules: string[]; exit_rules: string[]; no_trade: string[] }> = {
@@ -64,6 +66,8 @@ export async function getStockWorkspace(symbolInput: string) {
   const state = await getStockRuntime();
   const instrument = table(state, 'instruments').find((row) => s(row.symbol) === symbol);
   if (!instrument) return null;
+  let chart: StockChartSnapshot | null = null;
+  try { chart = await readSnapshot<StockChartSnapshot>(`charts/${symbol}.json`); } catch { /* chart collector has not published this symbol yet */ }
   const agents = table(state, 'agents');
   const proposals = table(state, 'agent_proposals').filter((row) => s(row.symbol) === symbol).sort(byDateDesc('created_at'));
   const decisions = table(state, 'decisions').filter((row) => s(row.symbol) === symbol).sort(byDateDesc('evaluated_at'));
@@ -77,7 +81,7 @@ export async function getStockWorkspace(symbolInput: string) {
   const reports: Row[] = table(state, 'reports').sort(byDateDesc('report_date')).flatMap((row): Row[] => { try { const payload = JSON.parse(s(row.snapshot_json)) as Row; const setups = Array.isArray(payload.setups) ? payload.setups as Row[] : []; const setup = setups.find((item) => s(item.symbol) === symbol); return setup ? [{ report_date: row.report_date, ...setup } as Row] : []; } catch { return []; } });
   let fundamental: Row | null = null;
   if (fundamentalRow?.metrics_json) { try { fundamental = JSON.parse(s(fundamentalRow.metrics_json)) as Row; } catch { fundamental = null; } }
-  return { instrument, views, positions: namedPositions(state, undefined, symbol), decisions, flow, fundamental, reports, generated_at: state.exported_at };
+  return { instrument, views, positions: namedPositions(state, undefined, symbol), decisions, flow, fundamental, reports, chart, generated_at: state.exported_at };
 }
 
 export async function getStockReports(): Promise<Array<Row & { snapshot: Row | null }>> {

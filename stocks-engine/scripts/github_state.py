@@ -1,9 +1,10 @@
 """Portable state and read-model publisher for ephemeral GitHub runners.
 
-Market candles and raw provider payloads are deliberately excluded.  They are
-re-fetched or enriched by scheduled collectors.  The compact JSON state keeps
-the paper ledger, positions, orders, rankings, journal and audit evidence alive
-between otherwise stateless GitHub Actions jobs.
+Raw provider payloads and the full candle database are deliberately excluded.
+Scheduled collectors publish bounded per-symbol chart snapshots separately so
+the website can render candles without calling Yahoo when a page is opened.
+The compact JSON state keeps the paper ledger, positions, orders, rankings,
+journal and audit evidence alive between otherwise stateless Actions jobs.
 """
 from __future__ import annotations
 
@@ -27,6 +28,7 @@ from config import settings
 STATE_DIR = ROOT / ".stock-desk"
 STATE_PATH = STATE_DIR / "runtime-state.json"
 DASHBOARD_PATH = STATE_DIR / "dashboard.json"
+CHARTS_DIR = STATE_DIR / "charts"
 JAKARTA = ZoneInfo("Asia/Jakarta")
 
 # Parent tables must precede their children during restore.
@@ -115,6 +117,66 @@ def materialize_fundamentals(db: sqlite3.Connection) -> int:
         stored += 1
     db.commit()
     return stored
+
+
+def _candle_timestamp(value: str) -> int:
+    moment = datetime.fromisoformat(value)
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=JAKARTA)
+    return int(moment.timestamp() * 1000)
+
+
+def publish_charts(db: sqlite3.Connection, target_dir: Path = CHARTS_DIR) -> dict:
+    """Publish bounded OHLCV snapshots and preserve the other base timeframe.
+
+    Intraday runners only own 5m candles while daily maintenance owns 1d
+    candles. Existing files are merged so either job can refresh its timeframe
+    without erasing the other one. Derived 15m, 1H and Weekly bars are built in
+    the dashboard from these two canonical sources.
+    """
+    target_dir.mkdir(parents=True, exist_ok=True)
+    symbols = [row[0] for row in db.execute("""SELECT DISTINCT c.symbol
+      FROM market_candles c JOIN instruments i ON i.symbol=c.symbol
+      WHERE i.status='ACTIVE' AND c.timeframe IN ('5m','1d') ORDER BY c.symbol""")]
+    written = 0
+    candle_count = 0
+    for symbol in symbols:
+        target = target_dir / f"{symbol}.json"
+        payload = {"schema_version": 1, "symbol": symbol, "timeframes": {}}
+        if target.exists():
+            try:
+                existing = json.loads(target.read_text(encoding="utf-8"))
+                if existing.get("schema_version") == 1 and existing.get("symbol") == symbol:
+                    payload = existing
+            except (OSError, json.JSONDecodeError):
+                pass
+        changed = False
+        for timeframe, limit in (("5m", 240), ("1d", 120)):
+            candle_rows = rows(db, """SELECT candle_at,open,high,low,close,volume,
+              source,data_status FROM market_candles WHERE symbol=? AND timeframe=?
+              ORDER BY candle_at DESC LIMIT ?""", (symbol, timeframe, limit))
+            if not candle_rows:
+                continue
+            candle_rows.reverse()
+            latest = candle_rows[-1]
+            payload["timeframes"][timeframe] = {
+                "as_of": latest["candle_at"],
+                "source": latest["source"],
+                "data_status": latest["data_status"],
+                "candles": [[
+                    _candle_timestamp(row["candle_at"]),
+                    row["open"], row["high"], row["low"], row["close"],
+                    int(row["volume"] or 0),
+                ] for row in candle_rows],
+            }
+            candle_count += len(candle_rows)
+            changed = True
+        if not changed:
+            continue
+        payload["generated_at"] = datetime.now(JAKARTA).isoformat(timespec="seconds")
+        target.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        written += 1
+    return {"path": str(target_dir), "symbols": written, "candles": candle_count}
 
 
 def import_state(db: sqlite3.Connection, source: Path = STATE_PATH) -> dict:
@@ -217,6 +279,7 @@ def finalize() -> dict:
             "compact_fundamentals": compact_fundamentals,
             "state": export_state(db),
             "dashboard": publish_dashboard(db),
+            "charts": publish_charts(db),
         }
     finally:
         db.close()
