@@ -49,11 +49,11 @@ export function NavBar() {
           {isStock ? (
             <>
               <Link href="/saham" className="rounded-md px-2.5 py-1 font-mono text-xs text-ink-muted hover:bg-surface hover:text-ink">
-                Overview & Screener
+                Overview
               </Link>
-              <span className="rounded-md px-2.5 py-1 font-mono text-xs text-ink-faint">
-                IDX · delayed paper
-              </span>
+              <Link href="/saham#agents" className="rounded-md px-2.5 py-1 font-mono text-xs text-ink-muted hover:bg-surface hover:text-ink">Agents</Link>
+              <Link href="/saham#screener" className="rounded-md px-2.5 py-1 font-mono text-xs text-ink-muted hover:bg-surface hover:text-ink">Screener</Link>
+              <Link href="/saham/reports" className="rounded-md px-2.5 py-1 font-mono text-xs text-ink-muted hover:bg-surface hover:text-ink">Daily Report</Link>
             </>
           ) : (
             <>

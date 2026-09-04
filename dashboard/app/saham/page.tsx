@@ -1,4 +1,6 @@
 import { getStockDashboard } from '@/lib/stock-data';
+import Link from 'next/link';
+import { StockScreener } from '@/components/StockScreener';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,9 +22,7 @@ export default async function StockDeskPage() {
   const totalEquity = snapshot.agents.reduce((sum, agent) => sum + Number(agent.equity || 0), 0);
   const startingEquity = snapshot.agents.reduce((sum, agent) => sum + Number(agent.starting_equity || 0), 0);
   const totalPnlPct = startingEquity ? ((totalEquity - startingEquity) / startingEquity) * 100 : 0;
-  const watchlist = snapshot.screener
-    .filter((row) => row.is_intraday)
-    .sort((left, right) => (left.intraday_rank ?? 999) - (right.intraday_rank ?? 999));
+  const allStocks = [...snapshot.screener].sort((left, right) => (right.evaluation_score ?? -1) - (left.evaluation_score ?? -1));
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
@@ -43,16 +43,19 @@ export default async function StockDeskPage() {
         </div>
       </header>
 
-      <section className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5" aria-label="Equity setiap agen saham">
+      <div className="mb-6 flex flex-wrap gap-2"><Link href="/saham/reports" className="rounded-lg border border-border bg-surface px-4 py-2 font-mono text-xs text-ink hover:border-emerald-500/50">Buka Daily Report</Link><a href="#screener" className="rounded-lg border border-border bg-surface px-4 py-2 font-mono text-xs text-ink hover:border-emerald-500/50">Cari saham</a><span className="rounded-lg border border-border px-4 py-2 font-mono text-xs text-ink-muted">Arjum {snapshot.provider_usage.requests_used}/{snapshot.provider_usage.request_limit} request hari ini</span></div>
+
+      <section id="agents" className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5" aria-label="Equity setiap agen saham">
         {snapshot.agents.map((agent) => (
-          <article key={agent.id} className="rounded-xl border border-border bg-surface p-4">
+          <Link href={`/saham/agents/${agent.id}`} key={agent.id} className="rounded-xl border border-border bg-surface p-4 transition hover:-translate-y-0.5 hover:border-emerald-500/50">
             <p className="font-mono text-[10px] uppercase tracking-wide text-ink-faint">{agent.name}</p>
             <p className="mt-2 font-mono text-sm font-semibold text-ink">{idr.format(agent.equity)}</p>
             <div className="mt-1 flex items-center justify-between font-mono text-[11px]">
               <span className={tone(agent.pnl_pct)}>{agent.pnl_pct >= 0 ? '+' : ''}{number.format(agent.pnl_pct)}%</span>
               <span className="text-ink-muted">WR {agent.display_win_rate == null ? '—' : `${number.format(agent.display_win_rate)}%`}</span>
             </div>
-          </article>
+            <p className="mt-3 font-mono text-[10px] text-accent">Buka desk agen →</p>
+          </Link>
         ))}
       </section>
 
@@ -72,7 +75,7 @@ export default async function StockDeskPage() {
             <tbody>
               {snapshot.positions.map((position) => (
                 <tr key={position.id} className="border-b border-border/60 text-ink-muted last:border-0">
-                  <td className="py-3 text-ink">{position.agent_name}</td><td className="font-semibold text-accent">{position.symbol}</td><td>{number.format(position.lots)}</td><td>{idr.format(position.entry_price)}</td><td>{idr.format(position.last_price)}</td><td>{idr.format(position.market_value)}</td><td className={tone(position.pnl_pct)}>{position.pnl_pct >= 0 ? '+' : ''}{number.format(position.pnl_pct)}% · {idr.format(position.unrealized_pnl)}</td>
+                  <td className="py-3"><Link className="text-ink hover:underline" href={`/saham/agents/${position.agent_id}`}>{position.agent_name}</Link></td><td><Link className="font-semibold text-accent hover:underline" href={`/saham/stocks/${position.symbol}`}>{position.symbol}</Link></td><td>{number.format(position.lots)}</td><td>{idr.format(position.entry_price)}</td><td>{idr.format(position.last_price)}</td><td>{idr.format(position.market_value)}</td><td className={tone(position.pnl_pct)}>{position.pnl_pct >= 0 ? '+' : ''}{number.format(position.pnl_pct)}% · {idr.format(position.unrealized_pnl)}</td>
                 </tr>
               ))}
               {snapshot.positions.length === 0 ? <tr><td colSpan={7} className="py-8 text-center text-ink-faint">Belum ada posisi terbuka.</td></tr> : null}
@@ -81,29 +84,7 @@ export default async function StockDeskPage() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-border bg-surface p-4 sm:p-5">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-          <div>
-            <h2 className="text-lg font-semibold text-ink">Intraday Universe</h2>
-            <p className="font-mono text-[11px] text-ink-faint">50 ticker yang dipindai Yahoo 5-menit oleh GitHub Actions.</p>
-          </div>
-          <p className="font-mono text-[10px] text-ink-faint">Run: {snapshot.latest_run?.status ?? 'NOT_READY'} · OK {snapshot.latest_run?.symbols_ok ?? 0} · gagal {snapshot.latest_run?.symbols_failed ?? 0}</p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left font-mono text-xs">
-            <thead className="border-b border-border text-[10px] uppercase tracking-wide text-ink-faint">
-              <tr><th className="py-2">Rank</th><th>Ticker</th><th>Perusahaan</th><th>Harga</th><th>Change</th><th>Score</th><th>Status</th></tr>
-            </thead>
-            <tbody>
-              {watchlist.map((row) => (
-                <tr key={row.symbol} className="border-b border-border/60 text-ink-muted last:border-0">
-                  <td className="py-3">{row.intraday_rank}</td><td className="font-semibold text-accent">{row.symbol}</td><td className="max-w-xs truncate text-ink">{row.name}</td><td>{row.last_price == null ? '—' : idr.format(row.last_price)}</td><td className={tone(row.change_pct)}>{row.change_pct == null ? '—' : `${row.change_pct >= 0 ? '+' : ''}${number.format(row.change_pct)}%`}</td><td>{row.evaluation_score ?? '—'}</td><td>{row.evaluation_status ?? 'INCOMPLETE'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <StockScreener rows={allStocks} />
     </main>
   );
 }
