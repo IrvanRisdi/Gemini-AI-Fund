@@ -10,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'AI Fund Hub - Coin Trading Desk',
-  description: 'Dashboard Coin dalam portal paper-trading multi-aset Coin dan saham IDX.',
+  title: 'AI Fund Hub - Coin & IDX Paper Trading',
+  description: 'Portal paper-trading multi-aset untuk strategi Coin dan saham IDX.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
