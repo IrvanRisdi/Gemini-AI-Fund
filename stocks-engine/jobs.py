@@ -317,6 +317,19 @@ def collect_arjum_fundamentals(limit: int | None = None, refresh: bool = False) 
         print(json.dumps({"event":"arjum_fundamentals_started","selected":len(symbols),"report_types":len(report_types)},ensure_ascii=False),flush=True)
         stop = False
         for index, symbol in enumerate(symbols, 1):
+            compact = db.execute("""SELECT published_at FROM fundamental_snapshots
+              WHERE symbol=? AND data_status='CACHED' ORDER BY published_at DESC LIMIT 1""", (symbol,)).fetchone()
+            if compact and compact[0] and not refresh:
+                try:
+                    cached_at = datetime.fromisoformat(compact[0])
+                    now = datetime.now(cached_at.tzinfo) if cached_at.tzinfo else datetime.now()
+                    if now - cached_at < timedelta(days=max(1, settings.fundamental_cache_days)):
+                        summary["reports_skipped"] += len(report_types)
+                        if index % 10 == 0 or index == len(symbols):
+                            print(json.dumps({"event":"arjum_fundamentals_progress","completed":index,**summary},ensure_ascii=False),flush=True)
+                        continue
+                except (TypeError, ValueError):
+                    pass
             for report_type in report_types:
                 cached = db.execute("""SELECT fetched_at FROM financial_statements WHERE symbol=? AND report_type=? AND period='quarterly'
                   ORDER BY fetched_at DESC LIMIT 1""",(symbol,report_type)).fetchone()

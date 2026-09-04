@@ -58,6 +58,7 @@ class Settings:
     arjum_enabled: bool = flag("NQ_ARJUM_ENABLED", True)
     arjum_candidate_limit: int = int(os.getenv("NQ_ARJUM_CANDIDATE_LIMIT", "20"))
     arjum_cache_hours: int = int(os.getenv("NQ_ARJUM_CACHE_HOURS", "24"))
+    fundamental_cache_days: int = int(os.getenv("NQ_FUNDAMENTAL_CACHE_DAYS", "7"))
     liquidity_min_adv: int = int(os.getenv("NQ_LIQUIDITY_MIN_ADV", "250000000"))
     liquid_universe_limit: int = int(os.getenv("NQ_LIQUID_UNIVERSE_LIMIT", "100"))
     technical_candidate_limit: int = int(os.getenv("NQ_TECHNICAL_CANDIDATE_LIMIT", "50"))
