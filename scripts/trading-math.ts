@@ -4,6 +4,12 @@ export function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(maximum, Math.max(minimum, value));
 }
 
+export function orderedLimitBand(entry: number, atrValue: number, floor: number, ceiling: number) {
+  const high = Math.min(ceiling, entry);
+  const low = Math.min(high, Math.max(floor, high - atrValue * 0.3));
+  return { low, high };
+}
+
 /**
  * Keep the stop far enough from 15-minute noise while bounding the maximum
  * loss per unit. The structural/ATR stop is retained when it already lies

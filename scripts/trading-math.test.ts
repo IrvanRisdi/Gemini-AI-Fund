@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { netRewardRisk, stopForRiskBand, targetForNetReward, validNetPlan } from './trading-math.ts';
+import { netRewardRisk, orderedLimitBand, stopForRiskBand, targetForNetReward, validNetPlan } from './trading-math.ts';
+
+test('limit band is always ordered even when the structural floor is above market', () => {
+  assert.deepEqual(orderedLimitBand(4_000, 200, 3_900, 3_850), { low: 3_850, high: 3_850 });
+});
 
 test('stop risk is kept inside the configured 3-5 percent band', () => {
   assert.equal(stopForRiskBand(100, 99, 1), 97);

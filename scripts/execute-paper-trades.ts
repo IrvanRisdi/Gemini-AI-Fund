@@ -160,6 +160,10 @@ async function main() {
   for (const [agent, book] of Object.entries(ledger.agents)) {
     book.positions ??= {}; book.pendingOrders ??= []; book.trades ??= [];
     for (const order of book.pendingOrders.filter((item) => item.status === 'pending')) {
+      if (order.entryLow > order.entryHigh || !validNetPlan(order.entryHigh, order.stopPrice, order.targetPrice, order.rewardMultiple ?? 1.5)) {
+        order.status = 'rejected';
+        continue;
+      }
       const price = priceFor(order.pair, prices);
       if (timestamp >= order.expiresAt) { order.status = 'expired'; continue; }
       const created = Date.parse(order.createdAt); const bars = (touches.get(order.pair) ?? []).filter((bar) => bar.timestamp >= created);

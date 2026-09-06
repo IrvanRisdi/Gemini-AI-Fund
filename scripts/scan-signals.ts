@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { adx, atr, bollingerBands, ema, rsi, type OHLCV } from '../lib/indicators.js';
 import { fetchOhlcv } from '../dashboard/lib/indodax.js';
-import { stopForRiskBand, targetForNetReward, validNetPlan } from './trading-math.js';
+import { orderedLimitBand, stopForRiskBand, targetForNetReward, validNetPlan } from './trading-math.js';
 
 const PAIRS = ['btcidr', 'ethidr', 'solidr', 'xrpidr', 'dogeidr', 'pepeidr', 'suiidr', 'bnbidr', 'trxidr', 'hypeidr', 'linkidr', 'adaidr', 'bchidr', 'tonidr', 'ltcidr', 'hbaridr', 'avaxidr', 'shibidr', 'uniidr'];
 type Owner = 'breakout-specialist' | 'aggressive-breakout-trader' | 'mean-reversion-trader' | 'smc-trader' | 'wyckoff-trader';
@@ -33,11 +33,6 @@ function metric(candles: OHLCV[]) {
   return { last, closes, chop: choppiness(closed), adx: adx(closed, 14).at(-1)!, ema9: ema(closes, 9).at(-1)!, ema21: ema(closes, 21).at(-1)!, rsi: rsi(closes, 14).at(-1)!, previousRsi: rsi(closes.slice(0, -1), 14).at(-1)!, atr: atr(closed, 14).at(-1)!, upper: bands.upper.at(-1)!, lower: bands.lower.at(-1)!, mid: bands.middle.at(-1)!, resistance: Math.max(...prior.map((c) => c.high)), support: Math.min(...prior.map((c) => c.low)), vol: av > 0 ? last.volume / av : 0, closed };
 }
 function expiry(hours: number) { return new Date(Date.now() + hours * 3_600_000).toISOString(); }
-function limitBand(entry: number, atrValue: number, floor: number, ceiling: number) {
-  // Keep limit orders close enough to fill within their short validity window.
-  const high = Math.min(ceiling, entry);
-  return { low: Math.max(floor, high - atrValue * 0.3), high };
-}
 function demandZone(candles: OHLCV[], current: number) {
   const recent = candles.slice(-32, -1); const low = Math.min(...recent.map((c) => c.low)); const high = Math.max(...recent.map((c) => c.high));
   const zoneHigh = low + (high - low) * 0.3; return current >= low * 0.995 && current <= zoneHigh * 1.025 ? { low, high: zoneHigh } : null;
@@ -93,7 +88,7 @@ async function scanPair(pair: string): Promise<Candidate[]> {
   const meanScore = Number(range4h) + Number(range15m) + Number(nearLowerBand) + Number(rsiReclaim) + Number(one.last.close > one.last.open) + Number(containedVolume);
   if (liquid && range4h && range15m && nearLowerBand && rsiReclaim && containedVolume && meanScore >= 5) {
     const entry = Math.min(one.last.close, one.lower + one.atr * .15);
-    const band = limitBand(entry, one.atr, one.lower - one.atr * .20, entry);
+    const band = orderedLimitBand(entry, one.atr, one.lower - one.atr * .20, entry);
     const structuralStop = Math.min(one.support - one.atr * .25, band.low - one.atr * .35);
     const stop = stopForRiskBand(band.high, structuralStop, one.atr);
     // The mean/middle Bollinger band is the natural first exit in a range.
@@ -112,7 +107,7 @@ async function scanPair(pair: string): Promise<Candidate[]> {
     const ranging4h = four.adx >= 12 && four.adx < 30 && four.ema9 >= four.ema21 && Math.abs(four.ema9 - four.ema21) / four.ema21 < .03;
     const sosScore = Number(one.last.close > rangeHigh) + Number(one.vol >= 1.5) + Number(closeStrength >= .7) + Number(body >= one.atr * .5) + Number((rangeHigh - rangeLow) / one.atr <= 7);
     // A real retest band avoids the previous zero-width limit at rangeHigh.
-    const entry = rangeHigh; const band = limitBand(entry, one.atr, rangeHigh - one.atr * .3, one.last.close); const structuralStop = Math.min(rangeHigh - one.atr * 1.1, band.low - one.atr * .7); const stop = stopForRiskBand(band.high, structuralStop, one.atr); const target = targetForNetReward(band.high, stop, 1.5);
+    const entry = rangeHigh; const band = orderedLimitBand(entry, one.atr, rangeHigh - one.atr * .3, one.last.close); const structuralStop = Math.min(rangeHigh - one.atr * 1.1, band.low - one.atr * .7); const stop = stopForRiskBand(band.high, structuralStop, one.atr); const target = targetForNetReward(band.high, stop, 1.5);
     if (liquid && ranging4h && sosScore >= 3 && validNetPlan(band.high, stop, target, 1.5)) {
       candidates.push({ id: id('wyckoff-trader'), pair, agent: 'wyckoff-trader', side: 'long', type: 'limit', timeframe: '15m', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(12), confirmations: ['Wyckoff phase D / SoS', `Skor ${sosScore}/5`, 'Retest range high dalam zona 0,3 ATR'], score: sosScore, volumeRatio: one.vol, allocationPct: .5, rewardMultiple: 1.5, validationStatus: 'research', reason: 'Wyckoff SoS: buy limit pada zona retest range high dengan risk band 3-5%.' });
     }
@@ -121,7 +116,7 @@ async function scanPair(pair: string): Promise<Candidate[]> {
   const smcScore = Number(Boolean(zone)) + Number(fib || engulfing) + Number(body >= one.atr * .4) + Number(closeStrength >= .55);
   if (liquid && trendUp && zone && one.vol >= .9 && swept && choch && smcScore >= 3) {
     const entry = Math.min(zone.high, one.last.close); const floor = zone.low;
-    const band = limitBand(entry, one.atr, floor, one.last.close);
+    const band = orderedLimitBand(entry, one.atr, floor, one.last.close);
     const structuralStop = Math.min(floor - one.atr * .15, band.low - one.atr * .5);
     const stop = stopForRiskBand(band.high, structuralStop, one.atr);
     const target = targetForNetReward(band.high, stop, 1.8);
