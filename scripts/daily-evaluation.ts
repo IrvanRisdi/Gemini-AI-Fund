@@ -90,22 +90,23 @@ Kandidat scan belum otomatis menjadi transaksi. Executor menolak order non-long/
 
 | Strategi | Peran | Syarat tindakan |
 | --- | --- | --- |
-| Breakout | Momentum tren | Breakout 1H searah tren 4H dan volume valid; gunakan pending retest. |
+| Breakout | Trend-following bertahap | Trigger 15m searah tren 4H; mulai 25%, tambah pada +0,5R/+1R/+1,5R, target bersih 2,5R. |
 | Mean reversion | Pasar ranging | Hanya saat ADX 4H rendah dan reversal terkonfirmasi. |
 | SMC | Struktur tren | Sweep dan CHoCH di demand zone, lalu konfirmasi Fibonacci atau candle. |
 | Wyckoff | Akumulasi | Spring dan test valid di demand zone, lalu konfirmasi Fibonacci atau candle. |
-| Aggressive breakout | Peluang volatil | ADX dan volume tinggi; tetap tunduk risiko kampanye 5%. |
+| Aggressive breakout | Momentum terkonsentrasi | Entry langsung 60%/85%/hampir 100% sesuai skor dan relative volume; risiko bersih tetap maksimum 5%. |
 
 ## 6. Guardrail risiko
 
 - Spot dan long-only; tidak ada short atau leverage.
-- Satu kampanye aktif per agen/pair; breakout dapat pyramid setelah +1R sesuai aturan.
-- Risiko maksimum kampanye 5% equity agen, fee simulasi 0,3% per sisi.
+- Satu kampanye aktif per agen/pair; breakout dapat pyramid pada +0,5R, +1R, dan +1,5R.
+- Stop dirancang pada rentang 3–5% harga; risiko bersih maksimum kampanye 5% equity agen dan fee simulasi 0,3% per sisi.
+- Target minimum dihitung setelah fee: 1,5R bersih untuk strategi umum dan 2,5R untuk kampanye breakout bertahap.
 - Jika data scan error, tidak ada order baru sampai siklus bersih berikutnya.
 
 ## 7. Rencana sampai evaluasi berikutnya
 
-1. Scan 19 pair dan validasi struktur 4H sebelum trigger 1H.
+1. Scan 19 pair dan validasi struktur 4H sebelum trigger 15m.
 2. Simpan setup valid sebagai pending order lengkap dengan entry, stop, target, dan masa berlaku.
 3. Batalkan order bila struktur invalid atau data bermasalah.
 4. Review pada sesi berikutnya; laporan tidak mengubah parameter secara otomatis.

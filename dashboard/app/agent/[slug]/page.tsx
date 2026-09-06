@@ -75,7 +75,7 @@ export default async function AgentPage({ params }: { params: Promise<{ slug: st
             <span className="font-mono text-sm font-semibold text-ink">{fmtIdr(book.openPositionValue)}</span>
           </div>
           <div className="rounded-lg border border-border bg-surface px-3 py-2.5">
-            <span className="block font-mono text-[10px] tracking-wide text-ink-muted uppercase">P&amp;L Realized</span>
+            <span className="block font-mono text-[10px] tracking-wide text-ink-muted uppercase">P&amp;L Realized (Net Fee)</span>
             <span className={`font-mono text-sm font-semibold ${book.realizedPnlIdr >= 0 ? 'text-positive' : 'text-negative'}`}>
               {book.realizedPnlIdr >= 0 ? '+' : '-'}
               {fmtIdr(Math.abs(book.realizedPnlIdr))}
@@ -86,7 +86,7 @@ export default async function AgentPage({ params }: { params: Promise<{ slug: st
             </span>
           </div>
           <div className="rounded-lg border border-border bg-surface px-3 py-2.5">
-            <span className="block font-mono text-[10px] tracking-wide text-ink-muted uppercase">P&amp;L Unrealized</span>
+            <span className="block font-mono text-[10px] tracking-wide text-ink-muted uppercase">P&amp;L Unrealized (Net Est.)</span>
             <span className={`font-mono text-sm font-semibold ${book.unrealizedPnlIdr >= 0 ? 'text-positive' : 'text-negative'}`}>
               {book.unrealizedPnlIdr >= 0 ? '+' : '-'}
               {fmtIdr(Math.abs(book.unrealizedPnlIdr))}

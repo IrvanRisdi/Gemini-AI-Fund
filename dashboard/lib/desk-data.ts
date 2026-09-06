@@ -30,6 +30,8 @@ export interface LedgerTrade {
   size: number;
   price: number;
   realizedPnlIdr?: number;
+  feeIdr?: number;
+  campaignId?: string;
   reason: string;
 }
 
@@ -76,6 +78,7 @@ interface LedgerAgent {
 interface PaperLedger {
   last_cycle: string;
   starting_balance_per_agent: number;
+  fee_rate?: number;
   base_currency: string;
   agents: Record<string, LedgerAgent>;
 }
@@ -234,6 +237,7 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     const book = ledger.agents?.[slug];
     const stateAgent = state.agents?.[slug];
     const startingBal = ledger.starting_balance_per_agent || defaultStartingBalance;
+    const feeRate = ledger.fee_rate ?? 0.003;
     const cash = book?.balance?.IDR ?? startingBal;
     // Hitung Floating PnL secara Real-Time berdasarkan harga Indodax saat ini
     let unrealizedPnl = 0;
@@ -245,9 +249,11 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
       positionsList.push(pos);
       const tickerKey = normalizeIndodaxKey(pair);
       const currentPrice = prices[tickerKey] ?? pos.entryPrice;
-      const posPnl = pos.side === 'long'
+      const grossPnl = pos.side === 'long'
         ? (currentPrice - pos.entryPrice) * pos.size
         : (pos.entryPrice - currentPrice) * pos.size;
+      const entryAndEstimatedExitFee = (pos.entryPrice + currentPrice) * pos.size * feeRate;
+      const posPnl = grossPnl - entryAndEstimatedExitFee;
       unrealizedPnl += posPnl;
       openPositionValue += pos.size * currentPrice;
     }
@@ -261,9 +267,17 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
 
     const trades = book?.trades ?? [];
     const pendingOrders = (book?.pendingOrders ?? []).filter((order) => order.status === 'pending');
-    const latestTrade = trades.length
+    const latestTradeRaw = trades.length
       ? [...trades].sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0]
       : null;
+    const latestTrade = latestTradeRaw?.type === 'close'
+      ? {
+          ...latestTradeRaw,
+          realizedPnlIdr: (latestTradeRaw.realizedPnlIdr ?? 0) - trades
+            .filter((trade) => trade.campaignId === latestTradeRaw.campaignId && (trade.type === 'open' || trade.type === 'add'))
+            .reduce((sum, trade) => sum + (trade.feeIdr ?? 0), 0),
+        }
+      : latestTradeRaw;
 
     const agentCandidates = scan?.candidates?.filter((c) => c.agent === slug) ?? [];
     let lastAction = stateAgent?.last_action ?? 'Active';
@@ -372,6 +386,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
   try {
     const ledger = await readJson<PaperLedger>('paper-ledger.json');
     const book = ledger?.agents?.[slug];
+    const feeRate = ledger?.fee_rate ?? 0.003;
     const trades = book?.trades ?? [];
     const chronological = [...trades].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 
@@ -379,6 +394,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
       side: 'long' | 'short';
       openedAt: string;
       legs: { size: number; price: number }[];
+      entryFeesIdr: number;
     }
     const openByInstrument = new Map<string, Building>();
     const cycles: PositionCycle[] = [];
@@ -386,9 +402,11 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     for (const t of chronological) {
       const key = t.instrument;
       if (t.type === 'open') {
-        openByInstrument.set(key, { side: t.side, openedAt: t.timestamp, legs: [{ size: t.size, price: t.price }] });
+        openByInstrument.set(key, { side: t.side, openedAt: t.timestamp, legs: [{ size: t.size, price: t.price }], entryFeesIdr: t.feeIdr ?? 0 });
       } else if (t.type === 'add') {
-        openByInstrument.get(key)?.legs.push({ size: t.size, price: t.price });
+        const building = openByInstrument.get(key);
+        building?.legs.push({ size: t.size, price: t.price });
+        if (building) building.entryFeesIdr += t.feeIdr ?? 0;
       } else if (t.type === 'close') {
         const building = openByInstrument.get(key);
         if (!building) continue;
@@ -405,7 +423,11 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
           stopPrice: null,
           openedAt: building.openedAt,
           closedAt: t.timestamp,
-          realizedPnlIdr: t.realizedPnlIdr ?? null,
+          // The executor's historical close P&L already includes the exit fee,
+          // while entry/add fees were deducted directly from cash. Attribute
+          // those entry fees to the completed campaign so journal, win rate and
+          // total realized P&L all use a complete net result.
+          realizedPnlIdr: t.realizedPnlIdr != null ? t.realizedPnlIdr - building.entryFeesIdr : null,
           unrealizedPnlIdr: null,
         });
         openByInstrument.delete(key);
@@ -424,12 +446,15 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
       const tickerKey = normalizeIndodaxKey(instrument);
       const currentPrice = prices[tickerKey] ?? null;
       const positionValue = currentPrice != null ? totalSize * currentPrice : null;
-      const unrealized =
+      const grossUnrealized =
         currentPrice != null
           ? building.side === 'long'
             ? totalSize * (currentPrice - weightedEntry)
             : totalSize * (weightedEntry - currentPrice)
           : null;
+      const unrealized = currentPrice != null && grossUnrealized != null
+        ? grossUnrealized - building.entryFeesIdr - currentPrice * totalSize * feeRate
+        : null;
 
       if (positionValue != null) openPositionValue += positionValue;
       if (unrealized != null) unrealizedPnlIdr += unrealized;

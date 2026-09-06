@@ -40,7 +40,7 @@ function PositionTable({ cycles }: { cycles: PositionCycle[] }) {
             <th className="px-3 py-2.5 text-right font-medium tracking-wide uppercase">Entry</th>
             <th className="px-3 py-2.5 text-right font-medium tracking-wide uppercase">Sekarang / Exit</th>
             <th className="px-3 py-2.5 whitespace-nowrap font-medium tracking-wide uppercase">Aktivitas</th>
-            <th className="px-3 py-2.5 text-right font-medium tracking-wide uppercase">P&amp;L</th>
+            <th className="px-3 py-2.5 text-right font-medium tracking-wide uppercase">P&amp;L Net</th>
           </tr>
         </thead>
         <tbody>
