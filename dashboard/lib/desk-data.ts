@@ -1,7 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { fetchBulkIdrPrices } from './market-data';
+import { fetchBulkCoinPrices } from './coin-market';
 
 
 function normalizeIndodaxKey(rawPair: string): string {
@@ -107,6 +107,25 @@ export interface LatestScanCandidate {
 export interface LatestScan {
   timestamp: string;
   pairsScanned: number;
+  universe?: Array<{
+    pair: string;
+    source: 'indodax' | 'kraken';
+    selectedBecause: 'core' | 'external' | 'open-or-pending' | 'liquidity';
+    volumeIdr: number;
+  }>;
+  diagnostics?: Array<{
+    pair: string;
+    source: 'indodax' | 'kraken';
+    selectedBecause: 'core' | 'external' | 'open-or-pending' | 'liquidity';
+    volumeIdr24h: number;
+    status: 'uptrend' | 'downtrend' | 'sideways' | 'insufficient-data';
+    close: number | null;
+    ema9: number | null;
+    ema21: number | null;
+    adx: number | null;
+    relativeVolume: number | null;
+    candidates: number;
+  }>;
   candidates: LatestScanCandidate[];
   errors: string[];
 }
@@ -174,12 +193,16 @@ async function readJson<T>(file: string): Promise<T | null> {
   }
 }
 
+export async function getLatestCoinScan(): Promise<LatestScan | null> {
+  return readJson<LatestScan>('latest-scan.json');
+}
+
 export async function getDeskSnapshot(): Promise<DeskSnapshot> {
   const [ledger, state, scan, prices] = await Promise.all([
     readJson<PaperLedger>('paper-ledger.json'),
     readJson<DeskState>('state.json'),
     readJson<LatestScan>('latest-scan.json'),
-    fetchBulkIdrPrices().catch(() => ({} as Record<string, number>)),
+    fetchBulkCoinPrices().catch(() => ({} as Record<string, number>)),
   ]);
 
   const defaultStartingBalance = DEFAULT_STARTING_BALANCE;
@@ -435,7 +458,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     }
 
     const stillOpen = [...openByInstrument.entries()];
-    const prices = (stillOpen.length > 0 ? await fetchBulkIdrPrices().catch(() => ({})) : {}) as Record<string, number>;
+    const prices = (stillOpen.length > 0 ? await fetchBulkCoinPrices().catch(() => ({})) : {}) as Record<string, number>;
 
     let openPositionValue = 0;
     let unrealizedPnlIdr = 0;

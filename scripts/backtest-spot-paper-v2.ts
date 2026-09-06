@@ -7,10 +7,13 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { fetchOhlcv } from '../dashboard/lib/indodax.js';
+import { fetchCoinOhlcv } from '../dashboard/lib/coin-market.js';
 import { adx, type OHLCV } from '../lib/indicators.js';
+import { CORE_PAIR_IDS, EXTERNAL_PAIR_IDS } from './coin-universe.js';
 
-const PAIRS = ['btcidr', 'ethidr', 'solidr', 'xrpidr', 'dogeidr', 'pepeidr', 'suiidr', 'bnbidr', 'trxidr', 'hypeidr', 'linkidr', 'adaidr', 'bchidr', 'tonidr', 'ltcidr', 'hbaridr', 'avaxidr', 'shibidr', 'uniidr'];
+// Historical validation stays on the stable core plus explicitly configured
+// external markets; rotating liquidity additions would introduce survivorship bias.
+const PAIRS = [...CORE_PAIR_IDS, ...EXTERNAL_PAIR_IDS];
 const AGENTS = ['breakout-specialist', 'aggressive-breakout-trader', 'mean-reversion-trader', 'smc-trader', 'wyckoff-trader'] as const;
 type Agent = typeof AGENTS[number];
 type Setup = { agent: Agent; entryLow: number; entryHigh: number; stop: number; target: number; expiryBars: number };
@@ -156,10 +159,10 @@ async function mapLimit<T, R>(items: T[], concurrency: number, task: (item: T) =
 
 async function main() {
   const bars = Number(process.env.BACKTEST_BARS ?? 8760); console.log(`Downloading ${bars} 1H bars and 4H context for ${PAIRS.length} pairs...`);
-  const cachePath = path.resolve(process.cwd(), 'work', `backtest-market-cache-1h-${bars}.json`);
+  const cachePath = path.resolve(process.cwd(), 'work', `backtest-market-cache-1h-${bars}-${PAIRS.length}pairs.json`);
   const datasets: Array<{ pair: string; one: OHLCV[]; four: OHLCV[] }> = fs.existsSync(cachePath)
     ? JSON.parse(fs.readFileSync(cachePath, 'utf8'))
-    : await mapLimit(PAIRS, 3, async pair => ({ pair, one: await fetchOhlcv(pair, '1h', bars), four: await fetchOhlcv(pair, '4h', Math.ceil(bars / 4) + 80) }));
+    : await mapLimit(PAIRS, 3, async pair => ({ pair, one: await fetchCoinOhlcv(pair, '1h', bars), four: await fetchCoinOhlcv(pair, '4h', Math.ceil(bars / 4) + 80) }));
   if (!fs.existsSync(cachePath)) { fs.mkdirSync(path.dirname(cachePath), { recursive: true }); fs.writeFileSync(cachePath, JSON.stringify(datasets)); }
   const btcFour = datasets.find(data => data.pair === 'btcidr')?.four ?? [];
   const all = AGENTS.flatMap(agent => datasets.flatMap(data => simulate(agent, data.pair, data.one, data.four, btcFour)));

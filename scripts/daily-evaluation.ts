@@ -106,7 +106,7 @@ Kandidat scan belum otomatis menjadi transaksi. Executor menolak order non-long/
 
 ## 7. Rencana sampai evaluasi berikutnya
 
-1. Scan 19 pair dan validasi struktur 4H sebelum trigger 15m.
+1. Scan ${scan.pairsScanned ?? 0} pair universe dinamis dan validasi struktur 4H sebelum trigger 15m.
 2. Simpan setup valid sebagai pending order lengkap dengan entry, stop, target, dan masa berlaku.
 3. Batalkan order bila struktur invalid atau data bermasalah.
 4. Review pada sesi berikutnya; laporan tidak mengubah parameter secara otomatis.

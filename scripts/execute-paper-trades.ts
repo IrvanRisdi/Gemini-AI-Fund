@@ -4,8 +4,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { OHLCV } from '../lib/indicators.js';
-import { fetchBulkIdrPrices } from '../dashboard/lib/market-data.js';
-import { fetchOhlcv } from '../dashboard/lib/indodax.js';
+import { fetchBulkCoinPrices, fetchCoinOhlcv } from '../dashboard/lib/coin-market.js';
+import { displayPair, type UniversePair } from './coin-universe.js';
 import { netRewardRisk, validNetPlan } from './trading-math.js';
 
 const DESK = path.join(process.cwd(), '.desk');
@@ -67,7 +67,7 @@ function cashReservePct(order: AllocationContext) {
 async function pendingTouches(ledger: Ledger) {
   const pairs = [...new Set(Object.values(ledger.agents).flatMap((book) => book.pendingOrders.filter((order) => order.status === 'pending').map((order) => order.pair)))];
   const entries = await Promise.all(pairs.map(async (pair) => {
-    try { return [pair, await fetchOhlcv(pair, '1m', 30)] as const; }
+    try { return [pair, await fetchCoinOhlcv(pair, '1m', 30)] as const; }
     catch { return [pair, [] as OHLCV[]] as const; }
   }));
   return new Map(entries);
@@ -156,7 +156,7 @@ function close(book: Book, pair: string, position: Position, price: number, time
 }
 
 async function main() {
-  const ledger = read<Ledger>(LEDGER); const scan = read<{ candidates?: Candidate[] }>(SCAN); const state = read<{ agents?: Record<string, { status: string; last_action?: string }> }>(STATE); const prices = await fetchBulkIdrPrices(); const timestamp = now(); const touches = await pendingTouches(ledger);
+  const ledger = read<Ledger>(LEDGER); const scan = read<{ candidates?: Candidate[]; universe?: UniversePair[] }>(SCAN); const state = read<{ agents?: Record<string, { status: string; last_action?: string; assets_covered?: string[] }> }>(STATE); const prices = await fetchBulkCoinPrices(); const timestamp = now(); const touches = await pendingTouches(ledger);
   for (const [agent, book] of Object.entries(ledger.agents)) {
     book.positions ??= {}; book.pendingOrders ??= []; book.trades ??= [];
     for (const order of book.pendingOrders.filter((item) => item.status === 'pending')) {
@@ -200,7 +200,10 @@ async function main() {
     const candidates = (scan.candidates ?? []).filter((item) => item.agent === agent && OWNERS.has(agent));
     for (const candidate of candidates) { const order = reserveCandidate(book, candidate, timestamp); if (order) book.pendingOrders.push(order); }
     const open = Object.keys(book.positions).length; const pending = book.pendingOrders.filter((item) => item.status === 'pending').length;
-    if (state.agents?.[agent]) state.agents[agent].last_action = `${open} posisi spot terbuka · ${pending} pending order`;
+    if (state.agents?.[agent]) {
+      state.agents[agent].last_action = `${open} posisi spot terbuka · ${pending} pending order`;
+      if (OWNERS.has(agent) && scan.universe?.length) state.agents[agent].assets_covered = scan.universe.map((item) => displayPair(item.pair));
+    }
   }
   ledger.last_cycle = timestamp; write(LEDGER, ledger); write(STATE, state); console.log(`[Spot paper] cycle ${timestamp} complete`);
 }

@@ -4,16 +4,29 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { adx, atr, bollingerBands, ema, rsi, type OHLCV } from '../lib/indicators.js';
-import { fetchOhlcv } from '../dashboard/lib/indodax.js';
+import { fetchCoinOhlcv } from '../dashboard/lib/coin-market.js';
+import { discoverTradingUniverse, type UniversePair } from './coin-universe.js';
 import { orderedLimitBand, stopForRiskBand, targetForNetReward, validNetPlan } from './trading-math.js';
 
-const PAIRS = ['btcidr', 'ethidr', 'solidr', 'xrpidr', 'dogeidr', 'pepeidr', 'suiidr', 'bnbidr', 'trxidr', 'hypeidr', 'linkidr', 'adaidr', 'bchidr', 'tonidr', 'ltcidr', 'hbaridr', 'avaxidr', 'shibidr', 'uniidr'];
 type Owner = 'breakout-specialist' | 'aggressive-breakout-trader' | 'mean-reversion-trader' | 'smc-trader' | 'wyckoff-trader';
 export interface Candidate {
   id: string; pair: string; agent: Owner; side: 'long'; type: 'limit' | 'stop'; timeframe: '15m' | '4h';
   entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number; expiresAt: string;
   confirmations: string[]; reason: string; score: number; volumeRatio: number; allocationPct: number;
   rewardMultiple: number; validationStatus: 'validated' | 'research';
+}
+export interface PairDiagnostic {
+  pair: string;
+  source: UniversePair['source'];
+  selectedBecause: UniversePair['selectedBecause'];
+  volumeIdr24h: number;
+  status: 'uptrend' | 'downtrend' | 'sideways' | 'insufficient-data';
+  close: number | null;
+  ema9: number | null;
+  ema21: number | null;
+  adx: number | null;
+  relativeVolume: number | null;
+  candidates: number;
 }
 
 function choppiness(candles: OHLCV[], period = 14) {
@@ -48,9 +61,11 @@ function aggressiveAllocation(score: number, volumeRatio: number) {
   return 0.6;
 }
 
-async function scanPair(pair: string): Promise<Candidate[]> {
-  const [fifteenMinute, fourHour] = await Promise.all([fetchOhlcv(pair, '15m', 160), fetchOhlcv(pair, '4h', 140)]);
-  const one = metric(fifteenMinute); const four = metric(fourHour); if (!one || !four) return [];
+async function scanPair(universePair: UniversePair): Promise<{ candidates: Candidate[]; diagnostic: PairDiagnostic }> {
+  const pair = universePair.pair;
+  const [fifteenMinute, fourHour] = await Promise.all([fetchCoinOhlcv(pair, '15m', 160), fetchCoinOhlcv(pair, '4h', 140)]);
+  const one = metric(fifteenMinute); const four = metric(fourHour);
+  if (!one || !four) return { candidates: [], diagnostic: { pair, source: universePair.source, selectedBecause: universePair.selectedBecause, volumeIdr24h: universePair.volumeIdr, status: 'insufficient-data', close: null, ema9: null, ema21: null, adx: null, relativeVolume: null, candidates: 0 } };
   const candidates: Candidate[] = [];
   const trendUp = four.ema9 > four.ema21 && four.last.close >= four.ema9 && four.adx >= 14;
   // Each pair is evaluated on its own structure. BTC is not a global gate:
@@ -124,13 +139,64 @@ async function scanPair(pair: string): Promise<Candidate[]> {
       candidates.push({ id: id('smc-trader'), pair, agent: 'smc-trader', side: 'long', type: 'limit', timeframe: '15m', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(12), confirmations: ['Sweep + reclaim high 15m', 'Demand zone + volume normal', `Skor konteks ${smcScore}/4`], score: smcScore, volumeRatio: one.vol, allocationPct: .5, rewardMultiple: 1.8, validationStatus: 'research', reason: 'SMC tervalidasi: buy limit demand zone dengan target bersih 1,8R.' });
     }
   }
-  return candidates;
+  const status: PairDiagnostic['status'] = four.ema9 > four.ema21 && four.last.close >= four.ema9
+    ? 'uptrend'
+    : four.ema9 < four.ema21 && four.last.close <= four.ema9
+      ? 'downtrend'
+      : 'sideways';
+  return {
+    candidates,
+    diagnostic: {
+      pair,
+      source: universePair.source,
+      selectedBecause: universePair.selectedBecause,
+      volumeIdr24h: universePair.volumeIdr,
+      status,
+      close: four.last.close,
+      ema9: four.ema9,
+      ema21: four.ema21,
+      adx: four.adx,
+      relativeVolume: one.vol,
+      candidates: candidates.length,
+    },
+  };
+}
+
+async function mapLimit<T, R>(items: T[], concurrency: number, callback: (item: T) => Promise<R>): Promise<PromiseSettledResult<R>[]> {
+  const results = new Array<PromiseSettledResult<R>>(items.length);
+  let cursor = 0;
+  async function worker() {
+    while (cursor < items.length) {
+      const index = cursor++;
+      try { results[index] = { status: 'fulfilled', value: await callback(items[index]!) }; }
+      catch (reason) { results[index] = { status: 'rejected', reason }; }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, () => worker()));
+  return results;
+}
+
+function activeLedgerPairs(): string[] {
+  const ledgerPath = path.join(process.cwd(), '.desk', 'paper-ledger.json');
+  try {
+    const ledger = JSON.parse(fs.readFileSync(ledgerPath, 'utf8')) as { agents?: Record<string, { positions?: Record<string, unknown>; pendingOrders?: Array<{ pair?: string; status?: string }> }> };
+    return [...new Set(Object.values(ledger.agents ?? {}).flatMap((book) => [
+      ...Object.keys(book.positions ?? {}),
+      ...(book.pendingOrders ?? []).filter((order) => order.status === 'pending').map((order) => order.pair ?? ''),
+    ]).filter(Boolean))];
+  } catch {
+    return [];
+  }
 }
 
 async function main() {
-  const results = await Promise.allSettled(PAIRS.map((pair) => scanPair(pair))); const candidates: Candidate[] = []; const errors: string[] = [];
-  for (const result of results) result.status === 'fulfilled' ? candidates.push(...result.value) : errors.push(String(result.reason));
-  const output = { timestamp: new Date().toISOString(), mode: 'spot-only-v2', pairsScanned: PAIRS.length, candidates, errors };
+  const universe = await discoverTradingUniverse(activeLedgerPairs());
+  const results = await mapLimit(universe, 6, scanPair); const candidates: Candidate[] = []; const diagnostics: PairDiagnostic[] = []; const errors: string[] = [];
+  results.forEach((result, index) => {
+    if (result.status === 'fulfilled') { candidates.push(...result.value.candidates); diagnostics.push(result.value.diagnostic); }
+    else errors.push(`${universe[index]?.pair ?? 'unknown'}: ${String(result.reason)}`);
+  });
+  const output = { timestamp: new Date().toISOString(), mode: 'spot-only-v2-dynamic-universe', pairsScanned: universe.length, universe, diagnostics, candidates, errors };
   fs.writeFileSync(path.join(process.cwd(), '.desk', 'latest-scan.json'), JSON.stringify(output, null, 2) + '\n'); console.log(JSON.stringify(output, null, 2));
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });

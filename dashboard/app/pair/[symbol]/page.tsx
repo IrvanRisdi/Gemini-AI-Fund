@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getPair } from '@/lib/pairs';
 import { findPairBySymbol } from '@/lib/all-pairs';
-import { fetchOhlcv } from '@/lib/indodax';
+import { fetchCoinOhlcv } from '@/lib/coin-market';
 import { fetchCoinInfo } from '@/lib/coingecko';
 import { fetchCoinNews } from '@/lib/news';
 import { computeTechnicalSnapshot } from '@/lib/technical';
@@ -43,8 +43,7 @@ export default async function PairPage({
   const { tf } = await searchParams;
   const timeframe: Timeframe = tf === '1h' || tf === '4h' || tf === '1d' ? tf : '4h';
   const timeframeMeta = TIMEFRAMES[timeframe];
-  // Fast path: the 8 pairs the paper-trading desk actually holds books in.
-  // Fallback: the other ~470 active Indodax IDR pairs (research/browsing only).
+  // Fast path: featured desk pairs. Fallback: active Indodax IDR pairs.
   const pair = getPair(symbol) ?? (await findPairBySymbol(symbol));
   if (!pair) notFound();
 
@@ -52,9 +51,9 @@ export default async function PairPage({
   // Indodax failures (e.g. a 429 rate-limit) — either way, degrade to the
   // same empty-state message below instead of throwing an unhandled 500.
   const [candles, dailyCandles, coinInfo, news] = await Promise.all([
-    fetchOhlcv(pair.indodaxId, timeframe, timeframeMeta.candles).catch(() => []),
-    fetchOhlcv(pair.indodaxId, '1d', 2).catch(() => []),
-    fetchCoinInfo(pair.coingeckoId),
+    fetchCoinOhlcv(pair.indodaxId, timeframe, timeframeMeta.candles).catch(() => []),
+    fetchCoinOhlcv(pair.indodaxId, '1d', 2).catch(() => []),
+    pair.coingeckoId ? fetchCoinInfo(pair.coingeckoId) : Promise.resolve(null),
     fetchCoinNews(pair.name, pair.symbol),
   ]);
 
@@ -62,12 +61,12 @@ export default async function PairPage({
     return (
       <main className="mx-auto max-w-6xl px-6 py-10">
         <header className="mb-6">
-          <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">{pair.indodaxId.toUpperCase()}</p>
+          <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">{pair.indodaxId.toUpperCase()} · {pair.venue === 'kraken' ? 'Kraken USD → IDR sintetis' : 'Indodax IDR'}</p>
           <h1 className="mt-1 font-sans text-3xl font-semibold text-ink">{pair.name}</h1>
         </header>
         <div className="rounded-xl border border-border bg-surface p-5 text-sm text-ink-muted">
-          Couldn&apos;t load candle data for this pair right now — either Indodax has nothing for it (a handful of thin
-          pairs are listed as tradeable but have no chart feed), or the request was rate-limited. Try again shortly, or
+          Couldn&apos;t load candle data for this pair right now — either its market source has no usable chart history, or
+          the request was rate-limited. Try again shortly, or
           try another pair from{' '}
           <a href="/explore" className="text-accent hover:underline">
             Explore
@@ -98,7 +97,7 @@ export default async function PairPage({
     <main className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">{pair.indodaxId.toUpperCase()}</p>
+          <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">{pair.indodaxId.toUpperCase()} · {pair.venue === 'kraken' ? 'Kraken USD → IDR sintetis' : 'Indodax IDR'}</p>
           <h1 className="mt-1 font-sans text-3xl font-semibold text-ink">{pair.name}</h1>
         </div>
         <div className="text-right">
@@ -111,6 +110,12 @@ export default async function PairPage({
           </StatBadge>
         </div>
       </header>
+
+      {pair.venue === 'kraken' && (
+        <div className="mb-6 rounded-xl border border-warning/30 bg-warning/5 px-4 py-3 font-sans text-xs leading-relaxed text-ink-muted">
+          ZEC tidak tersedia pada feed pair aktif Indodax. Candle berasal dari Kraken ZEC/USD lalu dikonversi dengan kurs USDT/IDR Indodax. Harga ini hanya dipakai untuk simulasi paper trading, bukan acuan eksekusi live.
+        </div>
+      )}
 
       <section className="rounded-xl border border-border bg-surface p-5">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">

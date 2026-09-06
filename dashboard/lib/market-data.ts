@@ -17,6 +17,8 @@ interface CoinGeckoMarketEntry {
   market_cap_rank: number | null;
   market_cap: number | null;
   price_change_percentage_24h: number | null;
+  current_price: number | null;
+  total_volume: number | null;
 }
 
 interface IndodaxTicker {
@@ -85,7 +87,7 @@ async function fetchExploreTickerStats(): Promise<Record<string, IndodaxTickerSt
 /** Market cap rank + USD market cap for a batch of CoinGecko ids, chunked to stay under URL length limits. */
 async function fetchMarketData(coingeckoIds: string[]): Promise<Map<string, CoinGeckoMarketEntry>> {
   const map = new Map<string, CoinGeckoMarketEntry>();
-  const batches = chunk(coingeckoIds, 200);
+  const batches = chunk([...new Set(coingeckoIds.filter(Boolean))], 200);
 
   const results = await Promise.allSettled(
     batches.map(async (ids) => {
@@ -116,13 +118,16 @@ export async function fetchExplorePairs(pairs: PairMeta[]): Promise<ExplorePairR
   const rows: ExplorePairRow[] = pairs.map((p) => {
     const market = marketMap.get(p.coingeckoId);
     const ticker = tickerStats[`${p.symbol}_idr`];
+    const usdToIdr = tickerStats.usdt_idr?.priceIdr ?? null;
+    const externalPriceIdr = market?.current_price != null && usdToIdr != null ? market.current_price * usdToIdr : null;
+    const externalVolumeIdr = market?.total_volume != null && usdToIdr != null ? market.total_volume * usdToIdr : null;
     return {
       ...p,
       name: market?.name ?? p.name,
       rank: market?.market_cap_rank ?? null,
       marketCapUsd: market?.market_cap ?? null,
-      priceIdr: ticker?.priceIdr ?? null,
-      volumeIdr: ticker?.volumeIdr ?? null,
+      priceIdr: ticker?.priceIdr ?? (p.venue === 'kraken' ? externalPriceIdr : null),
+      volumeIdr: ticker?.volumeIdr ?? (p.venue === 'kraken' ? externalVolumeIdr : null),
       highIdr: ticker?.highIdr ?? null,
       lowIdr: ticker?.lowIdr ?? null,
       globalChangePct24h: market?.price_change_percentage_24h ?? null,
