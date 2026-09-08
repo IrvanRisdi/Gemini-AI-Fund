@@ -28,10 +28,10 @@ function fmtDate(iso: string): string {
 const SIDE_LABEL: Record<PositionCycle['side'], string> = { long: 'LONG', short: 'SHORT' };
 const SIDE_TONE: Record<PositionCycle['side'], BadgeTone> = { long: 'accent', short: 'warning' };
 
-function PositionTable({ cycles }: { cycles: PositionCycle[] }) {
+function PositionTable({ cycles, equity }: { cycles: PositionCycle[]; equity?: number }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-border bg-surface">
-      <table className="w-full min-w-[600px] table-auto border-collapse font-mono text-xs">
+      <table className="w-full min-w-[860px] table-auto border-collapse font-mono text-xs">
         <thead>
           <tr className="border-b border-border bg-bg/60 text-left text-ink-muted">
             <th className="px-3 py-2.5 font-medium tracking-wide uppercase">Status</th>
@@ -39,6 +39,8 @@ function PositionTable({ cycles }: { cycles: PositionCycle[] }) {
             <th className="px-3 py-2.5 font-medium tracking-wide uppercase">Sisi</th>
             <th className="px-3 py-2.5 text-right font-medium tracking-wide uppercase">Entry</th>
             <th className="px-3 py-2.5 text-right font-medium tracking-wide uppercase">Sekarang / Exit</th>
+            <th className="px-3 py-2.5 text-right font-medium tracking-wide uppercase">Jumlah</th>
+            <th className="px-3 py-2.5 text-right font-medium tracking-wide uppercase">Nilai Posisi</th>
             <th className="px-3 py-2.5 whitespace-nowrap font-medium tracking-wide uppercase">Aktivitas</th>
             <th className="px-3 py-2.5 text-right font-medium tracking-wide uppercase">P&amp;L Net</th>
           </tr>
@@ -50,6 +52,8 @@ function PositionTable({ cycles }: { cycles: PositionCycle[] }) {
             const entryNotional = cycle.entryPrice * cycle.size;
             const pnlPct = pnl != null && entryNotional !== 0 ? (pnl / entryNotional) * 100 : null;
             const exitOrCurrent = isOpen ? cycle.currentPrice : cycle.exitPrice;
+            const positionValue = exitOrCurrent != null ? cycle.size * exitOrCurrent : null;
+            const weightPct = isOpen && positionValue != null && equity ? (positionValue / equity) * 100 : null;
 
             return (
               <tr key={`${cycle.instrument}-${cycle.openedAt}-${index}`} className="border-b border-border/60 last:border-0 hover:bg-surface-hover">
@@ -58,6 +62,8 @@ function PositionTable({ cycles }: { cycles: PositionCycle[] }) {
                 <td className="px-3 py-2.5"><StatBadge tone={SIDE_TONE[cycle.side]}>{SIDE_LABEL[cycle.side]}</StatBadge></td>
                 <td className="px-3 py-2.5 text-right text-ink">{fmtPrice(cycle.entryPrice)}</td>
                 <td className="px-3 py-2.5 text-right text-ink">{exitOrCurrent != null ? fmtPrice(exitOrCurrent) : <span className="text-ink-faint">—</span>}</td>
+                <td className="px-3 py-2.5 text-right text-ink-muted">{cycle.size.toLocaleString('id-ID', { maximumFractionDigits: 8 })}</td>
+                <td className="px-3 py-2.5 text-right font-semibold text-ink">{positionValue != null ? <>{fmtIdr(positionValue)}{weightPct != null ? <span className="ml-1 font-normal text-ink-faint">({weightPct.toFixed(1)}%)</span> : null}</> : <span className="text-ink-faint">—</span>}</td>
                 <td className="px-3 py-2.5 whitespace-nowrap text-ink-muted">{fmtDate(cycle.closedAt ?? cycle.openedAt)}</td>
                 <td className="px-3 py-2.5 text-right">
                   {pnl != null ? (
@@ -91,7 +97,7 @@ function PendingTable({ orders }: { orders: PendingOrder[] }) {
   );
 }
 
-export function TradeJournal({ cycles, pendingOrders }: { cycles: PositionCycle[]; pendingOrders: PendingOrder[] }) {
+export function TradeJournal({ cycles, pendingOrders, equity }: { cycles: PositionCycle[]; pendingOrders: PendingOrder[]; equity?: number }) {
   const [page, setPage] = useState(1);
   const openCycles = cycles.filter((cycle) => cycle.status === 'open').sort((a, b) => b.openedAt.localeCompare(a.openedAt));
   const closedCycles = cycles.filter((cycle) => cycle.status === 'closed').sort((a, b) => (b.closedAt ?? b.openedAt).localeCompare(a.closedAt ?? a.openedAt));
@@ -110,7 +116,7 @@ export function TradeJournal({ cycles, pendingOrders }: { cycles: PositionCycle[
       {openCycles.length > 0 && (
         <section>
           <div className="mb-2 flex items-baseline justify-between"><h3 className="font-sans text-sm font-medium text-ink">Posisi Terbuka</h3><span className="font-mono text-[10px] text-ink-faint">{openCycles.length} posisi aktif</span></div>
-          <PositionTable cycles={openCycles} />
+          <PositionTable cycles={openCycles} equity={equity} />
         </section>
       )}
 

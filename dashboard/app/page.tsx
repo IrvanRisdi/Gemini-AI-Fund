@@ -35,6 +35,19 @@ function formatIdr(value: number): string {
   return `Rp${Math.round(value).toLocaleString('id-ID')}`;
 }
 
+function formatCoinPrice(value: number): string {
+  if (Math.abs(value) >= 1) return formatIdr(value);
+  return `Rp${value.toLocaleString('id-ID', { minimumFractionDigits: 6, maximumFractionDigits: 8 })}`;
+}
+
+function coinSymbol(pair: string): string {
+  return pair.replace('/', '').replace('_', '').replace(/idr$/i, '').toLowerCase();
+}
+
+function displayPair(pair: string): string {
+  return `${coinSymbol(pair).toUpperCase()}/IDR`;
+}
+
 function agentCard(agent: AgentSummary) {
   const hasPosition = agent.openPairs.length > 0;
 
@@ -142,6 +155,26 @@ export default async function DeskPage() {
     (deskPnl /
       (snapshot.startingTotal || 1)) *
     100;
+
+  const openPositionRows = snapshot.agents.flatMap((agent) =>
+    agent.openPositions.map((position, index) => {
+      const instrument = position.instrument ?? agent.openPairs[index] ?? '';
+      const currentPrice = position.currentPrice ?? position.entryPrice;
+      const marketValue = position.marketValue ?? position.size * currentPrice;
+      const pnl = position.unrealizedPnlIdr ?? 0;
+      const entryNotional = position.entryPrice * position.size;
+      return {
+        agent,
+        position,
+        instrument,
+        currentPrice,
+        marketValue,
+        pnl,
+        pnlPct: entryNotional > 0 ? (pnl / entryNotional) * 100 : 0,
+        weightPct: agent.equity > 0 ? (marketValue / agent.equity) * 100 : 0,
+      };
+    }),
+  );
 
   const bookHoldingSlugs = new Set(
     snapshot.agents.map(
@@ -275,6 +308,38 @@ export default async function DeskPage() {
       {/* Kartu Agen Trading Aktif */}
       <section className="grid grid-cols-1 gap-3.5 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {snapshot.agents.map(agentCard)}
+      </section>
+
+      <section className="mt-6 sm:mt-8 rounded-xl border border-border bg-surface p-4 sm:p-5" aria-labelledby="coin-open-positions">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 id="coin-open-positions" className="font-sans text-base sm:text-lg font-semibold text-ink">Open Positions</h2>
+            <p className="mt-0.5 font-mono text-[11px] text-ink-faint">Harga pasar, nilai posisi, bobot buku, dan floating P&amp;L net estimasi per agen.</p>
+          </div>
+          <span className="rounded-full border border-border px-2.5 py-1 font-mono text-[10px] text-ink-muted">{openPositionRows.length} posisi</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[940px] text-left font-mono text-xs">
+            <thead className="border-b border-border text-[10px] uppercase tracking-wide text-ink-faint">
+              <tr><th className="py-2 pr-3">Agen</th><th className="px-3">Pair</th><th className="px-3 text-right">Jumlah</th><th className="px-3 text-right">Entry</th><th className="px-3 text-right">Harga Saat Ini</th><th className="px-3 text-right">Nilai Posisi</th><th className="px-3 text-right">Bobot Buku</th><th className="py-2 pl-3 text-right">Floating P&amp;L</th></tr>
+            </thead>
+            <tbody>
+              {openPositionRows.map(({ agent, position, instrument, currentPrice, marketValue, pnl, pnlPct, weightPct }) => (
+                <tr key={`${agent.slug}-${instrument}-${position.opened}`} className="border-b border-border/60 text-ink-muted last:border-0 hover:bg-surface-hover">
+                  <td className="py-3 pr-3"><Link href={`/agent/${agent.slug}`} className="font-medium text-ink hover:text-accent">{agent.slug}</Link></td>
+                  <td className="px-3"><Link href={`/pair/${coinSymbol(instrument)}`} className="font-semibold text-accent hover:underline">{displayPair(instrument)}</Link></td>
+                  <td className="px-3 text-right">{position.size.toLocaleString('id-ID', { maximumFractionDigits: 8 })}</td>
+                  <td className="px-3 text-right">{formatCoinPrice(position.entryPrice)}</td>
+                  <td className="px-3 text-right text-ink">{formatCoinPrice(currentPrice)}</td>
+                  <td className="px-3 text-right font-semibold text-ink">{formatIdr(marketValue)}</td>
+                  <td className="px-3 text-right">{weightPct.toFixed(1)}%</td>
+                  <td className={`py-3 pl-3 text-right font-semibold ${pnl >= 0 ? 'text-positive' : 'text-negative'}`}>{pnl >= 0 ? '+' : '-'}{formatIdr(Math.abs(pnl))}<span className="ml-1 font-normal text-ink-faint">({pnlPct >= 0 ? '+' : ''}{pnlPct.toFixed(2)}%)</span></td>
+                </tr>
+              ))}
+              {openPositionRows.length === 0 ? <tr><td colSpan={8} className="py-8 text-center font-sans text-sm text-ink-faint">Belum ada posisi coin terbuka.</td></tr> : null}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       {/* Agen Pengawas & Riset Khusus */}

@@ -120,14 +120,14 @@ export async function fetchExplorePairs(pairs: PairMeta[]): Promise<ExplorePairR
     const ticker = tickerStats[`${p.symbol}_idr`];
     const usdToIdr = tickerStats.usdt_idr?.priceIdr ?? null;
     const externalPriceIdr = market?.current_price != null && usdToIdr != null ? market.current_price * usdToIdr : null;
-    const externalVolumeIdr = market?.total_volume != null && usdToIdr != null ? market.total_volume * usdToIdr : null;
     return {
       ...p,
       name: market?.name ?? p.name,
       rank: market?.market_cap_rank ?? null,
       marketCapUsd: market?.market_cap ?? null,
       priceIdr: ticker?.priceIdr ?? (p.venue === 'kraken' ? externalPriceIdr : null),
-      volumeIdr: ticker?.volumeIdr ?? (p.venue === 'kraken' ? externalVolumeIdr : null),
+      // Do not compare CoinGecko's global volume with local Indodax turnover.
+      volumeIdr: ticker?.volumeIdr ?? null,
       highIdr: ticker?.highIdr ?? null,
       lowIdr: ticker?.lowIdr ?? null,
       globalChangePct24h: market?.price_change_percentage_24h ?? null,

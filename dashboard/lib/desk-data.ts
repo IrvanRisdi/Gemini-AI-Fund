@@ -36,9 +36,13 @@ export interface LedgerTrade {
 }
 
 export interface LedgerPosition {
+  instrument?: string;
   side: 'long';
   size: number;
   entryPrice: number;
+  currentPrice?: number;
+  marketValue?: number;
+  unrealizedPnlIdr?: number;
   stopPrice: number;
   targetPrice?: number;
   opened: string;
@@ -194,7 +198,19 @@ async function readJson<T>(file: string): Promise<T | null> {
 }
 
 export async function getLatestCoinScan(): Promise<LatestScan | null> {
-  return readJson<LatestScan>('latest-scan.json');
+  try {
+    const response = await fetch(`${GITHUB_DESK_BASE}/latest-scan.json`, { cache: 'no-store' });
+    if (response.ok) return await response.json() as LatestScan;
+  } catch {
+    // Fall back to the bundled/local snapshot below.
+  }
+  try {
+    const fullPath = path.join(getDeskDir(), 'latest-scan.json');
+    if (!existsSync(fullPath)) return null;
+    return JSON.parse(await readFile(fullPath, 'utf8')) as LatestScan;
+  } catch {
+    return null;
+  }
 }
 
 export async function getDeskSnapshot(): Promise<DeskSnapshot> {
@@ -269,7 +285,6 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     const positionsList: LedgerPosition[] = [];
 
     for (const [pair, pos] of Object.entries(rawPositions)) {
-      positionsList.push(pos);
       const tickerKey = normalizeIndodaxKey(pair);
       const currentPrice = prices[tickerKey] ?? pos.entryPrice;
       const grossPnl = pos.side === 'long'
@@ -277,8 +292,10 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
         : (pos.entryPrice - currentPrice) * pos.size;
       const entryAndEstimatedExitFee = (pos.entryPrice + currentPrice) * pos.size * feeRate;
       const posPnl = grossPnl - entryAndEstimatedExitFee;
+      const marketValue = pos.size * currentPrice;
       unrealizedPnl += posPnl;
-      openPositionValue += pos.size * currentPrice;
+      openPositionValue += marketValue;
+      positionsList.push({ ...pos, instrument: pair, currentPrice, marketValue, unrealizedPnlIdr: posPnl });
     }
 
     // Ekuitas = Kas + NILAI PENUH posisi terbuka (bukan cuma floating P&L-nya

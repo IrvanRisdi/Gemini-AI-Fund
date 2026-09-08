@@ -118,7 +118,7 @@ export default async function AgentPage({ params }: { params: Promise<{ slug: st
               {openCount} posisi terbuka · {book.pendingOrders.length} pending
             </span>
           </div>
-          <TradeJournal cycles={book.cycles} pendingOrders={book.pendingOrders} />
+          <TradeJournal cycles={book.cycles} pendingOrders={book.pendingOrders} equity={totalEquity} />
         </section>
       )}
 
