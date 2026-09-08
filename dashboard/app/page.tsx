@@ -22,7 +22,7 @@ export const dynamic = 'force-dynamic';
 const RISK_POLICY = [
   { label: 'Mode & Modal', value: 'Spot-only · Rp250 jt', detail: 'Lima buku paper trading, masing-masing modal awal Rp50 juta. Tidak ada short atau leverage.' },
   { label: 'Risiko per Campaign', value: 'Maks. 5% Equity', detail: 'Ukuran posisi dihitung dari equity dan jarak stop struktural; nominal risiko per campaign dibatasi 5%.' },
-  { label: 'Batas Notional', value: 'Maks. 100% Equity', detail: 'Total nilai spot sebuah campaign tidak boleh melebihi equity buku agen saat ini.' },
+  { label: 'Batas Notional', value: 'Min. Rp500 rb · Maks. 100% Equity', detail: 'Order, fill, atau penambahan posisi di bawah Rp500.000 ditolak; nilai satu campaign tetap tidak boleh melebihi equity buku agen.' },
   { label: 'Stop & Target', value: 'Struktural · min. 1:1,5', detail: 'Stop mengikuti invalidasi struktur/ATR. Target wajib minimal 1,5R dan potensi kotor minimal 1%.' },
   { label: 'Biaya & Proteksi', value: 'Fee 0,30% per sisi', detail: 'Stop dinaikkan untuk menutup estimasi biaya setelah harga mencapai +1,25R.' },
   { label: 'Pending Order', value: 'Limit / Buy-stop · 2–3 jam', detail: 'Order otomatis kedaluwarsa; sentuhan intracycle dicek dari candle 15 menit, tetapi sinyal tetap 1H.' },
