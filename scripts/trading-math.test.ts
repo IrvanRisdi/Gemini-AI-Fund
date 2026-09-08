@@ -1,6 +1,19 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { netRewardRisk, orderedLimitBand, stopForRiskBand, targetForNetReward, validNetPlan } from './trading-math.ts';
+import {
+  meetsMinimumPaperNotional,
+  netRewardRisk,
+  orderedLimitBand,
+  stopForRiskBand,
+  targetForNetReward,
+  validNetPlan,
+} from './trading-math.ts';
+
+test('paper orders require at least Rp500,000 notional', () => {
+  assert.equal(meetsMinimumPaperNotional(499, 1_000), false);
+  assert.equal(meetsMinimumPaperNotional(500, 1_000), true);
+  assert.equal(meetsMinimumPaperNotional(Number.EPSILON, 1_000), false);
+});
 
 test('limit band is always ordered even when the structural floor is above market', () => {
   assert.deepEqual(orderedLimitBand(4_000, 200, 3_900, 3_850), { low: 3_850, high: 3_850 });

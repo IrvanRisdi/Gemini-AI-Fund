@@ -6,7 +6,7 @@ import path from 'node:path';
 import type { OHLCV } from '../lib/indicators.js';
 import { fetchBulkCoinPrices, fetchCoinOhlcv } from '../dashboard/lib/coin-market.js';
 import { displayPair, type UniversePair } from './coin-universe.js';
-import { netRewardRisk, validNetPlan } from './trading-math.js';
+import { meetsMinimumPaperNotional, MIN_PAPER_NOTIONAL_IDR, netRewardRisk, validNetPlan } from './trading-math.js';
 
 const DESK = path.join(process.cwd(), '.desk');
 const LEDGER = path.join(DESK, 'paper-ledger.json');
@@ -25,7 +25,8 @@ const OWNERS = new Set(['breakout-specialist', 'aggressive-breakout-trader', 'me
 
 type Pending = { id: string; campaignId: string; agent?: string; pair: string; side: 'long'; type: 'limit' | 'stop'; entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number; riskReservedIdr: number; notionalReservedIdr: number; expiresAt: string; createdAt: string; status: 'pending' | 'filled' | 'cancelled' | 'expired' | 'rejected'; confirmations: string[]; reason: string; score?: number; volumeRatio?: number; allocationPct?: number; rewardMultiple?: number; };
 type Position = { side: 'long'; size: number; entryPrice: number; initialEntryPrice?: number; stopPrice: number; targetPrice: number; opened: string; campaignId: string; leg: number; initialRiskPerUnit: number; sizingNote: string; };
-type Book = { balance: { IDR: number }; positions: Record<string, Position>; pendingOrders: Pending[]; trades: unknown[] };
+type Trade = { timestamp: string; instrument: string; side: 'long'; type: 'open' | 'close' | 'add'; size: number; price: number; realizedPnlIdr?: number; reason: string; campaignId: string; confirmations?: string[]; feeIdr?: number; maintenance?: boolean };
+type Book = { balance: { IDR: number }; positions: Record<string, Position>; pendingOrders: Pending[]; trades: Trade[] };
 type Ledger = { last_cycle: string; agents: Record<string, Book> };
 type Candidate = Omit<Pending, 'campaignId' | 'riskReservedIdr' | 'notionalReservedIdr' | 'createdAt' | 'status'> & { agent: string; score: number; validationStatus: 'validated' | 'research' };
 type AllocationContext = { campaignId?: string; agent?: string; allocationPct?: number };
@@ -64,6 +65,35 @@ function cashReservePct(order: AllocationContext) {
   return isAgent(order, 'aggressive-breakout-trader') && (order.allocationPct ?? 0) >= 1 ? 0 : CASH_RESERVE_PCT;
 }
 
+function cleanDustPositions(book: Book, prices: Record<string, number>, timestamp: string) {
+  for (const [pair, position] of Object.entries(book.positions)) {
+    // Only migrate positions that were already dust when they were opened.
+    // A valid position that later falls below the threshold must remain under
+    // its strategy stop/target rules, not acquire a hidden Rp500k exit rule.
+    if (meetsMinimumPaperNotional(position.size, position.entryPrice)) continue;
+    const price = priceFor(pair, prices);
+    if (!price) continue;
+    const proceeds = price * position.size;
+    const fee = proceeds * FEE_RATE;
+    const gross = (price - position.entryPrice) * position.size;
+    book.balance.IDR += proceeds - fee;
+    delete book.positions[pair];
+    book.trades.push({
+      timestamp,
+      instrument: pair,
+      side: 'long',
+      type: 'close',
+      size: position.size,
+      price,
+      realizedPnlIdr: gross - fee,
+      reason: `Maintenance: posisi dust di bawah Rp${MIN_PAPER_NOTIONAL_IDR.toLocaleString('id-ID')} ditutup`,
+      campaignId: position.campaignId,
+      feeIdr: fee,
+      maintenance: true,
+    });
+  }
+}
+
 async function pendingTouches(ledger: Ledger) {
   const pairs = [...new Set(Object.values(ledger.agents).flatMap((book) => book.pendingOrders.filter((order) => order.status === 'pending').map((order) => order.pair)))];
   const entries = await Promise.all(pairs.map(async (pair) => {
@@ -87,7 +117,7 @@ function reserveCandidate(book: Book, candidate: Candidate, timestamp: string): 
     cashAvailable / (candidate.entryHigh * (1 + FEE_RATE)),
   );
   const risk = size * riskPerUnit; const notionalReservedIdr = size * candidate.entryHigh * (1 + FEE_RATE);
-  if (!Number.isFinite(size) || size <= 0 || risk <= 0) return null;
+  if (!Number.isFinite(size) || size <= 0 || risk <= 0 || !meetsMinimumPaperNotional(size, candidate.entryHigh)) return null;
   return { ...candidate, campaignId: campaignId(candidate.agent, candidate.pair), riskReservedIdr: risk, notionalReservedIdr, createdAt: timestamp, status: 'pending' };
 }
 
@@ -107,8 +137,8 @@ function fill(book: Book, order: Pending, price: number, timestamp: string) {
     riskAvailable / riskPerUnit,
     cashAvailable / (fillPrice * (1 + FEE_RATE)),
   );
-  if (!Number.isFinite(size) || size <= 0 || fillPrice <= order.stopPrice) { order.status = 'rejected'; return; }
   const notional = fillPrice * size;
+  if (!Number.isFinite(size) || size <= 0 || fillPrice <= order.stopPrice || !meetsMinimumPaperNotional(size, fillPrice)) { order.status = 'rejected'; return; }
   const fee = notional * FEE_RATE;
   if (notional + fee > book.balance.IDR + 1) { order.status = 'rejected'; return; }
   // Spot purchases spend both notional and fee. This prevents later fills
@@ -134,6 +164,7 @@ function pyramidBreakout(book: Book, pair: string, position: Position, price: nu
   if (!Number.isFinite(addSize) || addSize <= 0) return;
   const oldNotional = position.size * position.entryPrice;
   const addNotional = addSize * price;
+  if (!meetsMinimumPaperNotional(addSize, price)) return;
   const addFee = addNotional * FEE_RATE;
   if (addNotional + addFee > book.balance.IDR + 1) return;
   position.entryPrice = (oldNotional + addNotional) / (position.size + addSize);
@@ -159,6 +190,7 @@ async function main() {
   const ledger = read<Ledger>(LEDGER); const scan = read<{ candidates?: Candidate[]; universe?: UniversePair[] }>(SCAN); const state = read<{ agents?: Record<string, { status: string; last_action?: string; assets_covered?: string[] }> }>(STATE); const prices = await fetchBulkCoinPrices(); const timestamp = now(); const touches = await pendingTouches(ledger);
   for (const [agent, book] of Object.entries(ledger.agents)) {
     book.positions ??= {}; book.pendingOrders ??= []; book.trades ??= [];
+    cleanDustPositions(book, prices, timestamp);
     for (const order of book.pendingOrders.filter((item) => item.status === 'pending')) {
       if (order.entryLow > order.entryHigh || !validNetPlan(order.entryHigh, order.stopPrice, order.targetPrice, order.rewardMultiple ?? 1.5)) {
         order.status = 'rejected';

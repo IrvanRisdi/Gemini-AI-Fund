@@ -33,6 +33,7 @@ export interface LedgerTrade {
   feeIdr?: number;
   campaignId?: string;
   reason: string;
+  maintenance?: boolean;
 }
 
 export interface LedgerPosition {
@@ -307,8 +308,9 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
 
     const trades = book?.trades ?? [];
     const pendingOrders = (book?.pendingOrders ?? []).filter((order) => order.status === 'pending');
-    const latestTradeRaw = trades.length
-      ? [...trades].sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0]
+    const strategyTrades = trades.filter((trade) => !trade.maintenance);
+    const latestTradeRaw = strategyTrades.length
+      ? [...strategyTrades].sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0]
       : null;
     const latestTrade = latestTradeRaw?.type === 'close'
       ? {
@@ -411,6 +413,7 @@ export interface PositionCycle {
   closedAt: string | null;
   realizedPnlIdr: number | null;
   unrealizedPnlIdr: number | null;
+  maintenance?: boolean;
 }
 
 export interface AgentBookBreakdown {
@@ -469,6 +472,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
           // total realized P&L all use a complete net result.
           realizedPnlIdr: t.realizedPnlIdr != null ? t.realizedPnlIdr - building.entryFeesIdr : null,
           unrealizedPnlIdr: null,
+          maintenance: t.maintenance,
         });
         openByInstrument.delete(key);
       }
@@ -521,7 +525,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     // SALAH di sini: cash juga turun saat posisi dibuka (notional terpotong),
     // itu modal yang berpindah jadi aset yang dipegang, bukan rugi realized.
     const realizedPnlIdr = cycles
-      .filter((cycle) => cycle.status === 'closed')
+      .filter((cycle) => cycle.status === 'closed' && !cycle.maintenance)
       .reduce((sum, cycle) => sum + (cycle.realizedPnlIdr ?? 0), 0);
 
     return {
@@ -598,7 +602,8 @@ export async function getAgentMeta(slug: string): Promise<AgentMeta> {
     const pnlIdr = hasBook && ledger ? book!.balance.IDR - startingBal : 0;
 
     const trades = book?.trades ?? [];
-    const latestTrade = trades.length ? [...trades].sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0] : null;
+    const strategyTrades = trades.filter((trade) => !trade.maintenance);
+    const latestTrade = strategyTrades.length ? [...strategyTrades].sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0] : null;
 
     return {
       slug,

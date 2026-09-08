@@ -1,7 +1,20 @@
 export const PAPER_FEE_PER_SIDE = 0.003;
+export const MIN_PAPER_NOTIONAL_IDR = 500_000;
 
 export function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(maximum, Math.max(minimum, value));
+}
+
+export function meetsMinimumPaperNotional(
+  size: number,
+  price: number,
+  minimumNotionalIdr = MIN_PAPER_NOTIONAL_IDR,
+) {
+  return Number.isFinite(size)
+    && Number.isFinite(price)
+    && size > 0
+    && price > 0
+    && size * price >= minimumNotionalIdr;
 }
 
 export function orderedLimitBand(entry: number, atrValue: number, floor: number, ceiling: number) {
