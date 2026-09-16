@@ -10,6 +10,7 @@ import path from 'node:path';
 import { fetchCoinOhlcv } from '../dashboard/lib/coin-market.js';
 import { adx, type OHLCV } from '../lib/indicators.js';
 import { CORE_PAIR_IDS, EXTERNAL_PAIR_IDS } from './coin-universe.js';
+import { orderedLimitBand, stopForRiskBand, targetForNetReward, validNetPlan } from './trading-math.js';
 
 // Historical validation stays on the stable core plus explicitly configured
 // external markets; rotating liquidity additions would introduce survivorship bias.
@@ -48,13 +49,17 @@ function bollinger(values: number[]) {
   return { mid, lower: mid - 2 * deviation };
 }
 function valid(setup: Pick<Setup, 'entryHigh' | 'stop' | 'target'>) {
-  const risk = (setup.entryHigh - setup.stop) / setup.entryHigh;
-  const reward = (setup.target - setup.entryHigh) / setup.entryHigh;
-  return setup.entryHigh > setup.stop && reward >= Math.max(risk * 1.5, 0.01);
+  return validNetPlan(setup.entryHigh, setup.stop, setup.target, 1.5);
 }
-function limitBand(entry: number, atrValue: number, floor: number, ceiling: number) {
-  const high = Math.min(ceiling, entry);
-  return { low: Math.max(floor, high - atrValue * 0.3), high };
+function choppiness(candles: OHLCV[], period = 14) {
+  const bars = candles.slice(-(period + 1)); if (bars.length < period + 1) return 0;
+  let trueRangeSum = 0;
+  for (let index = 1; index < bars.length; index += 1) {
+    const bar = bars[index]!; const previousClose = bars[index - 1]!.close;
+    trueRangeSum += Math.max(bar.high - bar.low, Math.abs(bar.high - previousClose), Math.abs(bar.low - previousClose));
+  }
+  const span = Math.max(...bars.slice(1).map(bar => bar.high)) - Math.min(...bars.slice(1).map(bar => bar.low));
+  return span > 0 ? 100 * Math.log10(trueRangeSum / span) / Math.log10(period) : 100;
 }
 function demandZone(candles: OHLCV[], price: number) {
   const recent = candles.slice(-32); const low = Math.min(...recent.map(c => c.low)); const high = Math.max(...recent.map(c => c.high)); const zoneHigh = low + (high - low) * 0.3;
@@ -77,18 +82,27 @@ function setups(one: OHLCV[], four: OHLCV[], btcFour: OHLCV[]): Setup[] {
   const extension = (current.close - resistance) / a;
   const aggressiveScore = Number(volume >= 1.5) + Number(closeStrength >= .7) + Number(body / a >= .5 && body / a <= 1.8) + Number(ema(closes, 9) > ema(closes, 21)) + Number(extension <= .75);
   if (btcStrong && liquid && trendUp && current.close > resistance && aggressiveScore >= 4) {
-    const entry = current.high * 1.001; const stop = Math.max(resistance - a * .2, entry - 1.2 * a); const target = entry + (entry - stop) * 1.5;
+    const entry = current.high * 1.001; const stop = stopForRiskBand(entry, Math.max(resistance - a * .2, entry - 1.2 * a), a); const target = targetForNetReward(entry, stop, 2.5);
     if (valid({ entryHigh: entry, stop, target })) out.push({ agent: 'breakout-specialist', entryLow: entry, entryHigh: entry, stop, target, expiryBars: 3 });
   }
   if (btcStrong && liquid && trendUp && fourAdx >= 22 && current.close > resistance && aggressiveScore >= 4) {
-    const entry = current.high * 1.001; const stop = Math.max(resistance - a * .2, entry - 1.2 * a); const target = entry + (entry - stop) * 1.5;
+    const entry = current.high * 1.001; const stop = stopForRiskBand(entry, Math.max(resistance - a * .2, entry - 1.2 * a), a); const target = targetForNetReward(entry, stop, 1.5);
     if (valid({ entryHigh: entry, stop, target })) out.push({ agent: 'aggressive-breakout-trader', entryLow: entry, entryHigh: entry, stop, target, expiryBars: 2 });
   }
-  const oneEma9 = ema(closes, 9); const oneEma21 = ema(closes, 21); const previousEma9 = ema(closes.slice(0, -1), 9);
-  const pullbackScore = Number(current.low <= oneEma21 * 1.003) + Number(one.at(-2)!.close <= previousEma9) + Number(current.close > oneEma9) + Number(current.close > current.open) + Number(rsi(closes) >= 42 && rsi(closes) <= 65);
-  if (btcStrong && liquid && trendUp && volume >= 1 && pullbackScore >= 5) {
-    const entry = current.high * 1.001; const pullbackLow = Math.min(...one.slice(-6).map(candle => candle.low)); const stop = Math.max(pullbackLow - a * .15, entry - a * 1.3); const target = entry + (entry - stop) * 1.5;
-    if (valid({ entryHigh: entry, stop, target })) out.push({ agent: 'mean-reversion-trader', entryLow: entry, entryHigh: entry, stop, target, expiryBars: 2 });
+  const bands = bollinger(closes); const fourEma9 = ema(fourCloses, 9); const fourEma21 = ema(fourCloses, 21);
+  const range4h = fourAdx <= 24 && Math.abs(fourEma9 - fourEma21) / fourEma21 <= .018 && choppiness(four) >= 52;
+  const rangeOne = choppiness(one) >= 50 && (resistance - support) / current.close <= .12;
+  const previousRsi = rsi(closes.slice(0, -1)); const currentRsi = rsi(closes);
+  const nearLowerBand = current.low <= bands.lower * 1.006 && current.close <= bands.mid;
+  const rsiReclaim = currentRsi <= 48 && (previousRsi <= 42 || currentRsi >= previousRsi);
+  const containedVolume = volume >= .4 && volume <= 2.2;
+  const meanScore = Number(range4h) + Number(rangeOne) + Number(nearLowerBand) + Number(rsiReclaim) + Number(current.close > current.open) + Number(containedVolume);
+  const pairNotBearish = fourEma9 >= fourEma21 * .995 && four.at(-1)!.close >= fourEma21 * .985;
+  if (btcStrong && liquid && pairNotBearish && meanScore >= 6) {
+    const entry = Math.min(current.close, bands.lower + a * .15); const band = orderedLimitBand(entry, a, bands.lower - a * .2, entry);
+    const structuralStop = Math.min(support - a * .25, band.low - a * .35); const stop = stopForRiskBand(band.high, structuralStop, a);
+    const target = Math.max(bands.mid, targetForNetReward(band.high, stop, 2));
+    if (validNetPlan(band.high, stop, target, 2)) out.push({ agent: 'mean-reversion-trader', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 8 });
   }
   const zone = demandZone(one, current.close); const fib = fibConfluence(four, current.close); const engulfing = bullishEngulfing(one);
   const wyckoffHistory = one.slice(-41, -1);
@@ -96,15 +110,15 @@ function setups(one: OHLCV[], four: OHLCV[], btcFour: OHLCV[]): Setup[] {
     const rangeLow = Math.min(...wyckoffHistory.map(bar => bar.low)); const rangeHigh = Math.max(...wyckoffHistory.map(bar => bar.high));
     const ranging4h = fourAdx >= 18 && fourAdx < 30 && ema(fourCloses, 9) >= ema(fourCloses, 21) && Math.abs(ema(fourCloses, 9) - ema(fourCloses, 21)) / ema(fourCloses, 21) < .03;
     const sosScore = Number(current.close > rangeHigh) + Number(volume >= 1.5) + Number(closeStrength >= .7) + Number(body >= a * .5) + Number((rangeHigh - rangeLow) / a <= 7);
-    const entry = Math.max(rangeHigh, current.close - a * .25); const band = limitBand(entry, a, rangeHigh, entry); const stop = Math.max(rangeHigh - a * .55, band.high - a * 1.2); const target = band.high + (band.high - stop) * 1.5;
-    if (btcStrong && liquid && ranging4h && sosScore >= 5 && valid({ entryHigh: band.high, stop, target })) out.push({ agent: 'wyckoff-trader', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 3 });
+    const entry = rangeHigh; const band = orderedLimitBand(entry, a, rangeHigh - a * .3, current.close); const stop = stopForRiskBand(band.high, Math.min(rangeHigh - a * 1.1, band.low - a * .7), a); const target = targetForNetReward(band.high, stop, 2);
+    if (btcStrong && liquid && current.close > rangeHigh && ranging4h && sosScore >= 5 && validNetPlan(band.high, stop, target, 2)) out.push({ agent: 'wyckoff-trader', entryLow: band.low, entryHigh: band.high, stop, target, expiryBars: 8 });
   }
   const sweepWindow = one.slice(-9, -2); const sweepCandle = one.at(-2)!; const swept = sweepWindow.length >= 5 && sweepCandle.low < Math.min(...sweepWindow.map(c => c.low)); const choch = current.close > sweepCandle.high && current.close > current.open;
   const smcScore = Number(Boolean(zone)) + Number(fib || engulfing) + Number(body >= a * .4) + Number(closeStrength >= .55);
-  if (btcStrong && liquid && trendUp && swept && choch && smcScore >= 3) {
-    const entry = current.high * 1.001; const stop = Math.max(sweepCandle.low - a * .15, entry - a * 1.3); const target = entry + (entry - stop) * 1.5;
-    if (valid({ entryHigh: entry, stop, target })) {
-      out.push({ agent: 'smc-trader', entryLow: entry, entryHigh: entry, stop, target, expiryBars: 2 });
+  if (btcStrong && liquid && trendUp && zone && volume >= 1.2 && swept && choch && smcScore >= 4) {
+    const entry = current.high * 1.001; const stop = stopForRiskBand(entry, Math.min(sweepCandle.low - a * .15, entry - a * 1.2), a); const target = targetForNetReward(entry, stop, 2);
+    if (validNetPlan(entry, stop, target, 2)) {
+      out.push({ agent: 'smc-trader', entryLow: entry, entryHigh: entry, stop, target, expiryBars: 6 });
     }
   }
   return out;

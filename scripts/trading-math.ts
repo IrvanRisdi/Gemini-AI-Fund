@@ -1,5 +1,18 @@
 export const PAPER_FEE_PER_SIDE = 0.003;
 export const MIN_PAPER_NOTIONAL_IDR = 500_000;
+export const STARTING_PAPER_EQUITY_IDR = 50_000_000;
+
+/** Reduce portfolio risk while an agent recovers from a material drawdown. */
+export function paperRiskPolicy(equity: number, startingEquity = STARTING_PAPER_EQUITY_IDR) {
+  const equityRatio = startingEquity > 0 ? equity / startingEquity : 1;
+  if (equityRatio <= 0.90) return { riskPerCampaign: 0.01, maxCampaigns: 2, maxAggregateRisk: 0.02, mode: 'recovery-10' as const };
+  if (equityRatio <= 0.95) return { riskPerCampaign: 0.02, maxCampaigns: 3, maxAggregateRisk: 0.05, mode: 'recovery-5' as const };
+  return { riskPerCampaign: 0.03, maxCampaigns: 4, maxAggregateRisk: 0.08, mode: 'normal' as const };
+}
+
+export function paperStrategyCanExecute(validationStatus: 'validated' | 'research', allowResearch = false) {
+  return validationStatus === 'validated' || allowResearch;
+}
 
 export function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(maximum, Math.max(minimum, value));

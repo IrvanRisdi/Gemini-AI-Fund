@@ -111,10 +111,30 @@ class EngineFeatureTests(unittest.TestCase):
         features = engine.feature_set(engine.yahoo_rows(yahoo_fixture()))
         features.update({"open_is_low": True, "session_open": features["close"]-10,
                          "session_trading_minutes": 30, "vwap20": features["close"]-1,
-                         "relative_volume": 2, "change_pct": .5})
+                         "relative_volume": 2, "change_pct": .5,
+                         "momentum_15m_pct": .6, "rsi14": 62})
         proposal = next(p for p in engine.evaluate_agents(features, None, "5m") if p.agent_id == "open-low")
         self.assertEqual((proposal.action, proposal.status), ("BUY", "ACTIONABLE"))
         self.assertEqual(proposal.stop, features["session_open"]-engine.server.tick_size(features["session_open"]))
+
+    def test_recovery_gates_reject_weak_intraday_volume(self):
+        features = engine.feature_set(engine.yahoo_rows(yahoo_fixture()))
+        features.update({"ema20": features["close"]-5, "ema50": features["close"]-10,
+                         "vwap20": features["close"]*.997, "relative_volume": 1.5,
+                         "momentum_15m_pct": .6, "rsi14": 62,
+                         "open_is_low": True, "session_open": features["close"]*.995,
+                         "session_trading_minutes": 30})
+        proposals = {p.agent_id: p for p in engine.evaluate_agents(features, None, "5m")}
+        self.assertEqual(proposals["scalping"].action, "WAIT")
+        self.assertEqual(proposals["open-low"].action, "NOT_APPLICABLE")
+
+    def test_recovery_gates_accept_high_quality_scalp(self):
+        features = engine.feature_set(engine.yahoo_rows(yahoo_fixture()))
+        features.update({"ema20": features["close"]-5, "ema50": features["close"]-10,
+                         "vwap20": features["close"]*.996, "relative_volume": 2.2,
+                         "momentum_15m_pct": .6, "rsi14": 62})
+        proposal = next(p for p in engine.evaluate_agents(features, None, "5m") if p.agent_id == "scalping")
+        self.assertEqual((proposal.action, proposal.status, proposal.risk_pct), ("BUY", "ACTIONABLE", 1))
 
     def test_daily_evaluator_does_not_emit_scalping_or_open_low(self):
         features = engine.feature_set(engine.yahoo_rows(yahoo_fixture()))
@@ -125,6 +145,11 @@ class EngineFeatureTests(unittest.TestCase):
         entry, stop = 358, 354
         target = engine.minimum_target_for_net_rr(entry, stop)
         self.assertGreaterEqual(engine.net_risk_reward(entry, stop, target), engine.MIN_NET_RISK_REWARD)
+
+    def test_stock_risk_reduces_with_agent_drawdown(self):
+        self.assertEqual(engine.recovery_risk_factor(100_000_000, 100_000_000), 1)
+        self.assertEqual(engine.recovery_risk_factor(94_000_000, 100_000_000), .75)
+        self.assertEqual(engine.recovery_risk_factor(89_000_000, 100_000_000), .50)
 
     def test_technical_score_is_not_wait_confidence(self):
         weak = dict(engine.feature_set(engine.yahoo_rows(yahoo_fixture())), breakout=False, relative_volume=.2, change_pct=-1)

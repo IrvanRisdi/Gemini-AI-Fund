@@ -21,14 +21,14 @@ export const dynamic = 'force-dynamic';
  */
 const RISK_POLICY = [
   { label: 'Mode & Modal', value: 'Spot-only · Rp250 jt', detail: 'Lima buku paper trading, masing-masing modal awal Rp50 juta. Tidak ada short atau leverage.' },
-  { label: 'Risiko per Campaign', value: 'Maks. 5% Equity', detail: 'Ukuran posisi dihitung dari equity dan jarak stop struktural; nominal risiko per campaign dibatasi 5%.' },
+  { label: 'Risiko per Campaign', value: '1–3% Equity Adaptif', detail: 'Normal 3%; turun menjadi 2% pada drawdown 5% dan 1% pada drawdown 10%. Stop harga tetap struktural 3–5%.' },
   { label: 'Batas Notional', value: 'Min. Rp500 rb · Maks. 100% Equity', detail: 'Order, fill, atau penambahan posisi di bawah Rp500.000 ditolak; nilai satu campaign tetap tidak boleh melebihi equity buku agen.' },
   { label: 'Stop & Target', value: 'Struktural · min. 1:1,5', detail: 'Stop mengikuti invalidasi struktur/ATR. Target wajib minimal 1,5R dan potensi kotor minimal 1%.' },
   { label: 'Biaya & Proteksi', value: 'Fee 0,30% per sisi', detail: 'Stop dinaikkan untuk menutup estimasi biaya setelah harga mencapai +1,25R.' },
-  { label: 'Pending Order', value: 'Limit / Buy-stop · 2–3 jam', detail: 'Order otomatis kedaluwarsa; sentuhan intracycle dicek dari candle 15 menit, tetapi sinyal tetap 1H.' },
+  { label: 'Pending Order', value: 'Limit / Buy-stop · 6–24 jam', detail: 'Order otomatis kedaluwarsa; sinyal memakai close 15 menit dan konteks tren 4H.' },
   { label: 'Konsentrasi Pair', value: '1 campaign / pair / agen', detail: 'Posisi atau pending order pada pair yang sama mengunci campaign baru dari agen tersebut.' },
-  { label: 'Pyramid Breakout', value: 'Maks. 4 leg × 25%', detail: 'Hanya Breakout Specialist yang boleh menambah posisi saat campaign bergerak profit; total tetap ≤100% equity.' },
-  { label: 'Status Strategi', value: '2 validated · 3 research', detail: 'Kelima agen tetap boleh open posisi paper. Label riset dipakai untuk evaluasi performa, bukan untuk memblokir order.' },
+  { label: 'Pyramid Breakout', value: 'Awal 20% · maks. 4 leg', detail: 'Hanya Breakout Specialist yang menambah posisi saat campaign profit; setiap penambahan tetap tunduk pada cash dan batas notional.' },
+  { label: 'Status Strategi', value: '2 execute · 3 shadow', detail: 'Breakout dan Aggressive boleh entry. Mean Reversion, SMC, dan Wyckoff tetap menghasilkan sinyal riset tetapi tidak memakai modal baru.' },
 ] as const;
 
 function formatIdr(value: number): string {

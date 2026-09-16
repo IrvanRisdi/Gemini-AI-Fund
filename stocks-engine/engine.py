@@ -31,6 +31,19 @@ BUY_FEE = 0.0015
 SELL_FEE = 0.0025
 STRATEGY_VERSION = "2.0"
 MIN_NET_RISK_REWARD = 1.5
+AGENT_MAX_ORDER_ALLOCATION_PCT = {
+    "scalping": 10, "open-low": 15, "swing": 20,
+    "fundamental": 20, "breakout-retest": 20,
+}
+AGENT_MAX_PORTFOLIO_PCT = {
+    "scalping": .30, "open-low": .45, "swing": .60,
+    "fundamental": .80, "breakout-retest": .60,
+}
+AGENT_MAX_PORTFOLIO_RISK_PCT = {
+    "scalping": .03, "open-low": .045, "swing": .06,
+    "fundamental": .08, "breakout-retest": .06,
+}
+AGENT_DAILY_ENTRY_LIMIT = {"scalping": 3, "open-low": 3}
 # Full cached profile for a shortlisted ticker. Fundamental statements are not
 # included because Arjum's documented API does not expose them.
 ARJUM_ENDPOINTS = ("analysis", "broker_summary", "broker_accumulation", "history", "seasonal")
@@ -612,33 +625,37 @@ def evaluate_agents(features: dict, fundamental_quality: int | None, timeframe: 
     if timeframe == "5m":
         vwap_distance = (close - f["vwap20"]) / f["vwap20"] * 100 if f.get("vwap20") else 99
         momentum_15m = float(f.get("momentum_15m_pct") or f["change_pct"])
-        scalp_ok = bool(.20 <= momentum_15m <= 2.0 and 0 <= vwap_distance <= 1.5
-                        and f["relative_volume"] >= 1.5 and 50 <= (f.get("rsi14") or 0) <= 72)
-        scalp_stop_distance = max(1.2 * volatility, close * .008)
-        scalp_target_distance = 2.4 * scalp_stop_distance + close * (BUY_FEE + SELL_FEE)
-        proposals.append(Proposal("scalping", "BUY" if scalp_ok else "WAIT", 72 if scalp_ok else 45,
-            "Momentum 5m, RVOL, RSI, dan jarak VWAP lolos." if scalp_ok else "Gate momentum 5m/RVOL/RSI/VWAP belum lengkap.",
+        intraday_trend = bool(f.get("ema20") and f.get("ema50") and close > f["ema20"] > f["ema50"])
+        scalp_ok = bool(intraday_trend and .35 <= momentum_15m <= 1.25 and .15 <= vwap_distance <= .80
+                        and f["relative_volume"] >= 2.0 and 55 <= (f.get("rsi14") or 0) <= 66)
+        scalp_stop_distance = max(volatility, close * .006)
+        scalp_target_distance = 1.8 * scalp_stop_distance + close * (BUY_FEE + SELL_FEE)
+        proposals.append(Proposal("scalping", "BUY" if scalp_ok else "WAIT", 78 if scalp_ok else 40,
+            "Trend EMA20/50, momentum 15m, RVOL ≥2x, RSI, dan jarak VWAP lolos." if scalp_ok else "Gate scalping recovery belum lengkap; tidak mengejar harga atau volume lemah.",
             "Intraday 5m delayed", close if scalp_ok else None,
             close-scalp_stop_distance if scalp_ok else None,
-            close+scalp_target_distance if scalp_ok else None, 3 if scalp_ok else 0,
+            close+scalp_target_distance if scalp_ok else None, 1 if scalp_ok else 0,
             "ACTIONABLE" if scalp_ok else "WAITING"))
-        opening_window = f.get("session_trading_minutes") is not None and f["session_trading_minutes"] <= 60
+        opening_window = f.get("session_trading_minutes") is not None and f["session_trading_minutes"] <= 45
+        session_gain = (close / f["session_open"] - 1) * 100 if f.get("session_open") else 0
         open_ok = bool(opening_window and f["open_is_low"] and close > f["vwap20"]
-                       and f["relative_volume"] >= 1.25 and momentum_15m > .10)
+                       and f["relative_volume"] >= 1.75 and .25 <= momentum_15m <= 1.20
+                       and .30 <= session_gain <= 2.5 and 55 <= (f.get("rsi14") or 0) <= 70)
         open_stop = f["session_open"] - server.tick_size(f["session_open"])
         open_risk = max(close-open_stop, close*.006)
         proposals.append(Proposal("open-low", "BUY" if open_ok else "NOT_APPLICABLE", 74 if open_ok else None,
-            "Open sesi bertahan sebagai low; candle 5m, RVOL, VWAP, dan jendela 60 menit lolos." if open_ok else "Open=Low 5m tidak valid atau jendela 60 menit sudah lewat.",
+            "Open sesi bertahan sebagai low; kekuatan harga, RVOL ≥1,75x, RSI, VWAP, dan jendela 45 menit lolos." if open_ok else "Open=Low recovery gate tidak lengkap atau jendela 45 menit sudah lewat.",
             "Hari ini · 5m delayed", close if open_ok else None, open_stop if open_ok else None,
-            close + 2.2*open_risk + close*(BUY_FEE+SELL_FEE) if open_ok else None,
-            3 if open_ok else 0, "ACTIONABLE" if open_ok else "WAITING"))
+            close + 2.0*open_risk + close*(BUY_FEE+SELL_FEE) if open_ok else None,
+            1.5 if open_ok else 0, "ACTIONABLE" if open_ok else "WAITING"))
         return proposals
 
     trend = f["ema20"] and f["ema50"] and close > f["ema20"] > f["ema50"]
-    swing_ok = bool(trend and 48 <= (f["rsi14"] or 0) <= 72 and f["relative_volume"] >= 1.0)
-    proposals.append(Proposal("swing", "BUY" if swing_ok else "WAIT", 76 if swing_ok else 50,
-        "Trend Daily EMA20/50, RSI, dan volume lolos." if swing_ok else "Setup Daily belum memenuhi trend/RSI/volume.",
-        "5–15 hari", close if swing_ok else None, close-1.8*volatility if swing_ok else None, close+3.2*volatility if swing_ok else None, 3 if swing_ok else 0, "ACTIONABLE" if swing_ok else "WAITING"))
+    swing_ok = bool(trend and 52 <= (f["rsi14"] or 0) <= 66 and f["relative_volume"] >= 1.25
+                    and 0 < float(f.get("change_pct") or 0) <= 4 and close <= f["ema20"] * 1.08)
+    proposals.append(Proposal("swing", "BUY" if swing_ok else "WAIT", 80 if swing_ok else 45,
+        "Trend Daily EMA20/50, RSI sehat, RVOL ≥1,25x, dan harga belum terlalu jauh dari EMA20." if swing_ok else "Setup swing recovery belum memenuhi trend, RSI, volume, atau anti-chasing.",
+        "5–15 hari", close if swing_ok else None, close-1.8*volatility if swing_ok else None, close+3.6*volatility if swing_ok else None, 2 if swing_ok else 0, "ACTIONABLE" if swing_ok else "WAITING"))
     quality = int(fundamental_quality) if isinstance(fundamental_quality, (int, float)) and not isinstance(fundamental_quality, bool) else None
     fundamental_timing = bool(quality is not None and quality >= 60 and f.get("ema20") and
         close >= f["ema20"] * .95 and close <= f["ema20"] * 1.10 and (f.get("rsi14") or 100) <= 70)
@@ -653,12 +670,13 @@ def evaluate_agents(features: dict, fundamental_quality: int | None, timeframe: 
         fundamental = Proposal("fundamental", "WATCH", min(80, max(40, quality)),
             "Fundamental tersedia, tetapi quality minimum atau timing entry belum lolos.", "3–6 bulan", status="WAITING")
     proposals.append(fundamental)
-    breakout_ok = f.get("retest_confirmed") and f["relative_volume"] >= .8
-    proposals.append(Proposal("breakout-retest", "BUY" if breakout_ok else "WAIT", 84 if breakout_ok else 55,
-        "Breakout Daily candle sebelumnya telah retest dan bertahan di atas resistance." if breakout_ok else "Menunggu breakout Daily diikuti retest valid; breakout satu candle tidak dikejar.",
+    breakout_ok = bool(trend and f.get("retest_confirmed") and f["relative_volume"] >= 1.5
+                       and 50 <= (f.get("rsi14") or 0) <= 68 and 0 < float(f.get("change_pct") or 0) <= 5)
+    proposals.append(Proposal("breakout-retest", "BUY" if breakout_ok else "WAIT", 86 if breakout_ok else 45,
+        "Breakout Daily telah retest, trend EMA mendukung, RVOL ≥1,5x, dan RSI sehat." if breakout_ok else "Menunggu breakout-retest lengkap; volume lemah atau struktur parsial ditolak.",
         "2–10 hari", close if breakout_ok else None,
         min((f.get("breakout_level") or close)-server.tick_size(close), close-1.2*volatility) if breakout_ok else None,
-        close+3*volatility if breakout_ok else None, 3 if breakout_ok else 0, "ACTIONABLE" if breakout_ok else "WAITING"))
+        close+3.6*volatility if breakout_ok else None, 2 if breakout_ok else 0, "ACTIONABLE" if breakout_ok else "WAITING"))
     return proposals
 
 
@@ -685,6 +703,14 @@ def minimum_target_for_net_rr(entry: float, stop: float, ratio: float = 1.55) ->
     return round_up_to_tick(required)
 
 
+def recovery_risk_factor(equity: float, starting_equity: float) -> float:
+    """Cut new-trade risk while preserving the original stop/target geometry."""
+    ratio = equity / starting_equity if starting_equity > 0 else 1
+    if ratio <= .90: return .50
+    if ratio <= .95: return .75
+    return 1.0
+
+
 def cooldown_active(db, agent_id: str, symbol: str, moment: datetime | None = None) -> bool:
     row = db.execute("SELECT until_at FROM agent_cooldowns WHERE agent_id=? AND symbol=?", (agent_id, symbol)).fetchone()
     return bool(row and row["until_at"] > iso(moment))
@@ -704,12 +730,16 @@ def persist_proposal(db, run_id: str, symbol: str, proposal: Proposal, data_stat
                      timeframe: str = "5m") -> tuple[str, bool]:
     proposal_id = f"prop-{uuid.uuid4().hex[:18]}"
     entry, stop, target = proposal.entry, proposal.stop, proposal.target
+    effective_risk_pct = proposal.risk_pct
     if entry and stop and target:
         entry, stop, target = round_to_tick(entry), round_to_tick(stop), round_to_tick(target)
         target = max(target, minimum_target_for_net_rr(entry, stop))
         rr = net_risk_reward(entry, stop, target) if entry > stop else 0
-        equity = db.execute("SELECT equity FROM agents WHERE id=?", (proposal.agent_id,)).fetchone()[0]
-        sizing = server.risk_size(equity, entry, stop, proposal.risk_pct, 25)
+        agent_capital = db.execute("SELECT equity,starting_equity FROM agents WHERE id=?", (proposal.agent_id,)).fetchone()
+        equity = float(agent_capital["equity"])
+        effective_risk_pct *= recovery_risk_factor(equity, float(agent_capital["starting_equity"]))
+        max_order_allocation = AGENT_MAX_ORDER_ALLOCATION_PCT.get(proposal.agent_id, 20)
+        sizing = server.risk_size(equity, entry, stop, effective_risk_pct, max_order_allocation)
         lots = sizing["lots"]
         final_status = proposal.status if rr >= MIN_NET_RISK_REWARD and lots > 0 else "REJECTED_BY_RISK"
         if data_status == "DELAYED" and not settings.allow_delayed_paper:
@@ -725,13 +755,13 @@ def persist_proposal(db, run_id: str, symbol: str, proposal: Proposal, data_stat
        stop_price,target_price,equity_risk_pct,risk_reward,lots,status,created_at,valid_until,data_status,strategy_version)
       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
       (proposal_id, run_id, proposal.agent_id, symbol, proposal.action, proposal.confidence,
-       proposal.horizon, proposal.rationale, entry, entry, stop, target, proposal.risk_pct,
+       proposal.horizon, proposal.rationale, entry, entry, stop, target, effective_risk_pct,
        round(rr, 2) if rr is not None else None, lots, final_status, created, valid_until, data_status, STRATEGY_VERSION))
     db.execute("""INSERT INTO decisions(agent_id,symbol,action,confidence,rationale,entry_low,
       entry_high,stop_price,target_price,equity_risk_pct,risk_reward,status,evaluated_at)
       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)""",
       (proposal.agent_id, symbol, proposal.action, proposal.confidence, proposal.rationale,
-       entry, entry, stop, target, proposal.risk_pct, round(rr,2) if rr is not None else None,
+       entry, entry, stop, target, effective_risk_pct, round(rr,2) if rr is not None else None,
        final_status, created))
     order_created = False
     if final_status == "ACTIONABLE" and proposal.action in {"BUY", "ACCUMULATE"} and lots and not settings.demo_mode:
@@ -741,9 +771,20 @@ def persist_proposal(db, run_id: str, symbol: str, proposal: Proposal, data_stat
         equity = db.execute("SELECT equity FROM agents WHERE id=?", (proposal.agent_id,)).fetchone()[0]
         reserved_notional, reserved_risk = portfolio_usage(db, proposal.agent_id)
         order_notional, order_risk = entry*lots*100, max(0,(entry-stop)*lots*100)
-        capacity_ok = reserved_notional+order_notional <= equity*.80 and reserved_risk+order_risk <= equity*.10
+        max_portfolio = AGENT_MAX_PORTFOLIO_PCT.get(proposal.agent_id, .60)
+        max_portfolio_risk = AGENT_MAX_PORTFOLIO_RISK_PCT.get(proposal.agent_id, .06)
+        capacity_ok = (reserved_notional+order_notional <= equity*max_portfolio
+                       and reserved_risk+order_risk <= equity*max_portfolio_risk)
         cooling_down = cooldown_active(db, proposal.agent_id, symbol, created_at)
-        if not exists and position_count < max_symbol_positions and capacity_ok and not cooling_down:
+        day_key = created_at.date().isoformat()
+        daily_entries = db.execute("SELECT COUNT(*) FROM paper_orders WHERE agent_id=? AND substr(created_at,1,10)=?",
+                                   (proposal.agent_id, day_key)).fetchone()[0]
+        daily_limit = AGENT_DAILY_ENTRY_LIMIT.get(proposal.agent_id)
+        daily_entry_ok = daily_limit is None or daily_entries < daily_limit
+        daily_net_pnl = float(db.execute("SELECT COALESCE(SUM(net_pnl),0) FROM trade_journal WHERE agent_id=? AND substr(closed_at,1,10)=?",
+                                         (proposal.agent_id, day_key)).fetchone()[0])
+        daily_loss_ok = daily_net_pnl > -equity*.02
+        if not exists and position_count < max_symbol_positions and capacity_ok and not cooling_down and daily_entry_ok and daily_loss_ok:
             order_id = f"ord-{uuid.uuid4().hex[:18]}"
             db.execute("""INSERT INTO paper_orders
               (id,proposal_id,agent_id,symbol,side,order_type,lots,limit_price,stop_price,target_price,
@@ -757,6 +798,10 @@ def persist_proposal(db, run_id: str, symbol: str, proposal: Proposal, data_stat
             db.execute("UPDATE agent_proposals SET status='REJECTED_PORTFOLIO_CAP' WHERE id=?", (proposal_id,))
         elif cooling_down:
             db.execute("UPDATE agent_proposals SET status='REJECTED_COOLDOWN' WHERE id=?", (proposal_id,))
+        elif not daily_entry_ok:
+            db.execute("UPDATE agent_proposals SET status='REJECTED_DAILY_ENTRY_LIMIT' WHERE id=?", (proposal_id,))
+        elif not daily_loss_ok:
+            db.execute("UPDATE agent_proposals SET status='REJECTED_DAILY_LOSS_LIMIT' WHERE id=?", (proposal_id,))
         elif position_count >= max_symbol_positions:
             db.execute("UPDATE agent_proposals SET status='REJECTED_POSITION_EXISTS' WHERE id=?", (proposal_id,))
     return proposal_id, order_created
@@ -842,8 +887,8 @@ def manage_positions(db, timeframe: str) -> int:
                 active_age = idx_trading_minutes_between(opened, current_candle)
                 if current_candle.date() > opened.date():
                     exit_price, reason = candle["open"], "OVERNIGHT_SAFETY_EXIT"
-                elif position["agent_id"] == "scalping" and active_age is not None and active_age >= 60:
-                    exit_price, reason = candle["close"], "TIME_STOP_60M"
+                elif position["agent_id"] == "scalping" and active_age is not None and active_age >= 90:
+                    exit_price, reason = candle["close"], "TIME_STOP_90M"
                 elif position["agent_id"] == "open-low" and current_candle.time() >= clock_time(15, 40):
                     exit_price, reason = candle["close"], "END_OF_DAY_EXIT"
             if not exit_price:
@@ -870,7 +915,7 @@ def manage_positions(db, timeframe: str) -> int:
                reason,"Yahoo delayed; stop diprioritaskan bila urutan intrabar ambigu",
                float(position["buy_fees"] or 0),sell_fees,initial_risk,STRATEGY_VERSION))
             exit_at = datetime.fromisoformat(candle["candle_at"])
-            cooldown_until = (add_idx_trading_minutes(exit_at, 30) if position["agent_id"] in {"scalping","open-low"}
+            cooldown_until = (add_idx_trading_minutes(exit_at, 120) if position["agent_id"] in {"scalping","open-low"}
                               else exit_at+timedelta(days=1))
             db.execute("""INSERT INTO agent_cooldowns(agent_id,symbol,until_at,reason,strategy_version)
               VALUES(?,?,?,?,?) ON CONFLICT(agent_id,symbol) DO UPDATE SET

@@ -4,10 +4,30 @@ import {
   meetsMinimumPaperNotional,
   netRewardRisk,
   orderedLimitBand,
+  paperRiskPolicy,
+  paperStrategyCanExecute,
   stopForRiskBand,
   targetForNetReward,
   validNetPlan,
 } from './trading-math.ts';
+
+test('paper risk policy enters recovery mode after drawdown', () => {
+  assert.deepEqual(paperRiskPolicy(50_000_000), {
+    riskPerCampaign: 0.03, maxCampaigns: 4, maxAggregateRisk: 0.08, mode: 'normal',
+  });
+  assert.deepEqual(paperRiskPolicy(47_000_000), {
+    riskPerCampaign: 0.02, maxCampaigns: 3, maxAggregateRisk: 0.05, mode: 'recovery-5',
+  });
+  assert.deepEqual(paperRiskPolicy(44_000_000), {
+    riskPerCampaign: 0.01, maxCampaigns: 2, maxAggregateRisk: 0.02, mode: 'recovery-10',
+  });
+});
+
+test('research strategies stay in shadow mode unless explicitly enabled', () => {
+  assert.equal(paperStrategyCanExecute('validated'), true);
+  assert.equal(paperStrategyCanExecute('research'), false);
+  assert.equal(paperStrategyCanExecute('research', true), true);
+});
 
 test('paper orders require at least Rp500,000 notional', () => {
   assert.equal(meetsMinimumPaperNotional(499, 1_000), false);
