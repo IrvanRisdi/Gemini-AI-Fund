@@ -34,6 +34,7 @@ export interface LedgerTrade {
   campaignId?: string;
   reason: string;
   maintenance?: boolean;
+  strategyVersion?: string;
 }
 
 export interface LedgerPosition {
@@ -50,6 +51,7 @@ export interface LedgerPosition {
   sizingNote?: string;
   campaignId?: string;
   leg?: number;
+  strategyVersion?: string;
 }
 
 export interface PendingOrder {
@@ -68,6 +70,7 @@ export interface PendingOrder {
   status: 'pending' | 'filled' | 'cancelled' | 'expired' | 'rejected';
   confirmations: string[];
   reason: string;
+  strategyVersion?: string;
 }
 
 interface LedgerAgent {
@@ -107,6 +110,8 @@ export interface LatestScanCandidate {
   agent: string;
   reason: string;
   data?: Record<string, number>;
+  validationStatus?: 'validated' | 'research';
+  strategyVersion?: string;
 }
 
 export interface LatestScan {
@@ -414,6 +419,7 @@ export interface PositionCycle {
   realizedPnlIdr: number | null;
   unrealizedPnlIdr: number | null;
   maintenance?: boolean;
+  strategyVersion?: string;
 }
 
 export interface AgentBookBreakdown {
@@ -423,6 +429,7 @@ export interface AgentBookBreakdown {
   unrealizedPnlIdr: number;
   cycles: PositionCycle[];
   pendingOrders: PendingOrder[];
+  recoveryV3: { closedTrades: number; wins: number; winRate: number | null; realizedPnlIdr: number };
 }
 
 export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBreakdown> {
@@ -438,6 +445,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
       openedAt: string;
       legs: { size: number; price: number }[];
       entryFeesIdr: number;
+      strategyVersion?: string;
     }
     const openByInstrument = new Map<string, Building>();
     const cycles: PositionCycle[] = [];
@@ -445,7 +453,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     for (const t of chronological) {
       const key = t.instrument;
       if (t.type === 'open') {
-        openByInstrument.set(key, { side: t.side, openedAt: t.timestamp, legs: [{ size: t.size, price: t.price }], entryFeesIdr: t.feeIdr ?? 0 });
+        openByInstrument.set(key, { side: t.side, openedAt: t.timestamp, legs: [{ size: t.size, price: t.price }], entryFeesIdr: t.feeIdr ?? 0, strategyVersion: t.strategyVersion });
       } else if (t.type === 'add') {
         const building = openByInstrument.get(key);
         building?.legs.push({ size: t.size, price: t.price });
@@ -473,6 +481,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
           realizedPnlIdr: t.realizedPnlIdr != null ? t.realizedPnlIdr - building.entryFeesIdr : null,
           unrealizedPnlIdr: null,
           maintenance: t.maintenance,
+          strategyVersion: building.strategyVersion,
         });
         openByInstrument.delete(key);
       }
@@ -516,6 +525,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
         closedAt: null,
         realizedPnlIdr: null,
         unrealizedPnlIdr: unrealized,
+        strategyVersion: building.strategyVersion,
       });
     }
 
@@ -527,6 +537,8 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     const realizedPnlIdr = cycles
       .filter((cycle) => cycle.status === 'closed' && !cycle.maintenance)
       .reduce((sum, cycle) => sum + (cycle.realizedPnlIdr ?? 0), 0);
+    const recoveryCycles = cycles.filter((cycle) => cycle.status === 'closed' && !cycle.maintenance && cycle.strategyVersion === 'recovery-v3');
+    const recoveryWins = recoveryCycles.filter((cycle) => (cycle.realizedPnlIdr ?? 0) > 0).length;
 
     return {
       cash: book?.balance?.IDR ?? DEFAULT_STARTING_BALANCE,
@@ -535,6 +547,12 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
       unrealizedPnlIdr,
       cycles,
       pendingOrders: (book?.pendingOrders ?? []).filter((order) => order.status === 'pending').sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+      recoveryV3: {
+        closedTrades: recoveryCycles.length,
+        wins: recoveryWins,
+        winRate: recoveryCycles.length ? recoveryWins / recoveryCycles.length * 100 : null,
+        realizedPnlIdr: recoveryCycles.reduce((sum, cycle) => sum + (cycle.realizedPnlIdr ?? 0), 0),
+      },
     };
   } catch {
     return {
@@ -544,6 +562,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
       unrealizedPnlIdr: 0,
       cycles: [],
       pendingOrders: [],
+      recoveryV3: { closedTrades: 0, wins: 0, winRate: null, realizedPnlIdr: 0 },
     };
   }
 }

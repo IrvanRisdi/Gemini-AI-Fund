@@ -59,7 +59,7 @@ export default async function AgentPage({ params }: { params: Promise<{ slug: st
       </header>
 
       {meta.hasBook && (
-        <section className="mb-6 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+        <><section className="mb-3 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
           <div className="rounded-lg border border-border bg-surface px-3 py-2.5">
             <span className="block font-mono text-[10px] tracking-wide text-ink-muted uppercase">Total Ekuitas</span>
             <span className="font-mono text-sm font-semibold text-ink">{fmtIdr(totalEquity)}</span>
@@ -101,6 +101,21 @@ export default async function AgentPage({ params }: { params: Promise<{ slug: st
             <span className="font-mono text-sm font-semibold text-ink">{meta.latestTrade ? meta.latestTrade.type.toUpperCase() : '—'}</span>
           </div>
         </section>
+        <section className="mb-6 rounded-lg border border-border bg-surface px-3 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span className="block font-mono text-[10px] tracking-wide text-ink-muted uppercase">Recovery-v3 · performa terpisah</span>
+              <p className="mt-1 font-sans text-xs text-ink-muted">Histori lama tetap disimpan, tetapi tidak dipakai untuk menilai aturan yang baru.</p>
+            </div>
+            <div className="flex gap-4 font-mono text-xs text-ink">
+              <span>{book.recoveryV3.closedTrades} closed</span>
+              <span>WR {book.recoveryV3.winRate == null ? '—' : `${book.recoveryV3.winRate.toFixed(1)}%`}</span>
+              <span className={book.recoveryV3.realizedPnlIdr >= 0 ? 'text-positive' : 'text-negative'}>
+                {book.recoveryV3.realizedPnlIdr >= 0 ? '+' : '-'}{fmtIdr(Math.abs(book.recoveryV3.realizedPnlIdr))}
+              </span>
+            </div>
+          </div>
+        </section></>
       )}
 
       {(book.cycles.length > 0 || book.pendingOrders.length > 0) && (

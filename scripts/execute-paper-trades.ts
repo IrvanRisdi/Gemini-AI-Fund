@@ -23,8 +23,8 @@ const ALLOW_RESEARCH_ORDERS = process.env.COIN_ALLOW_RESEARCH_ORDERS === 'true';
 const OWNERS = new Set(['breakout-specialist', 'aggressive-breakout-trader', 'mean-reversion-trader', 'smc-trader', 'wyckoff-trader']);
 
 type Pending = { id: string; campaignId: string; agent?: string; pair: string; side: 'long'; type: 'limit' | 'stop'; entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number; riskReservedIdr: number; notionalReservedIdr: number; expiresAt: string; createdAt: string; status: 'pending' | 'filled' | 'cancelled' | 'expired' | 'rejected'; confirmations: string[]; reason: string; score?: number; volumeRatio?: number; allocationPct?: number; rewardMultiple?: number; strategyVersion?: string; };
-type Position = { side: 'long'; size: number; entryPrice: number; initialEntryPrice?: number; stopPrice: number; targetPrice: number; opened: string; campaignId: string; leg: number; initialRiskPerUnit: number; sizingNote: string; };
-type Trade = { timestamp: string; instrument: string; side: 'long'; type: 'open' | 'close' | 'add'; size: number; price: number; realizedPnlIdr?: number; reason: string; campaignId: string; confirmations?: string[]; feeIdr?: number; maintenance?: boolean };
+type Position = { side: 'long'; size: number; entryPrice: number; initialEntryPrice?: number; stopPrice: number; targetPrice: number; opened: string; campaignId: string; leg: number; initialRiskPerUnit: number; sizingNote: string; strategyVersion?: string; };
+type Trade = { timestamp: string; instrument: string; side: 'long'; type: 'open' | 'close' | 'add'; size: number; price: number; realizedPnlIdr?: number; reason: string; campaignId: string; confirmations?: string[]; feeIdr?: number; maintenance?: boolean; strategyVersion?: string };
 type Book = { balance: { IDR: number }; positions: Record<string, Position>; pendingOrders: Pending[]; trades: Trade[] };
 type Ledger = { last_cycle: string; agents: Record<string, Book> };
 type Candidate = Omit<Pending, 'campaignId' | 'riskReservedIdr' | 'notionalReservedIdr' | 'createdAt' | 'status'> & { agent: string; score: number; validationStatus: 'validated' | 'research' };
@@ -92,6 +92,7 @@ function cleanDustPositions(book: Book, prices: Record<string, number>, timestam
       campaignId: position.campaignId,
       feeIdr: fee,
       maintenance: true,
+      strategyVersion: position.strategyVersion,
     });
   }
 }
@@ -148,9 +149,9 @@ function fill(book: Book, order: Pending, price: number, timestamp: string) {
   // Spot purchases spend both notional and fee. This prevents later fills
   // from sizing against capital that is already tied up in a position.
   book.balance.IDR -= notional + fee;
-  book.positions[order.pair] = { side: 'long', size, entryPrice: fillPrice, initialEntryPrice: fillPrice, stopPrice: order.stopPrice, targetPrice: order.targetPrice, opened: timestamp, campaignId: order.campaignId, leg: 1, initialRiskPerUnit: priceRiskPerUnit, sizingNote: `Spot-only | Alokasi awal ${(cap * 100).toFixed(0)}% | Risiko harga ${((priceRiskPerUnit / fillPrice) * 100).toFixed(2)}% | Risiko equity maks. ${(policy.riskPerCampaign * 100).toFixed(0)}% (${policy.mode}) | Fee masuk Rp${Math.round(fee).toLocaleString('id-ID')}` };
+  book.positions[order.pair] = { side: 'long', size, entryPrice: fillPrice, initialEntryPrice: fillPrice, stopPrice: order.stopPrice, targetPrice: order.targetPrice, opened: timestamp, campaignId: order.campaignId, leg: 1, initialRiskPerUnit: priceRiskPerUnit, sizingNote: `Spot-only | Alokasi awal ${(cap * 100).toFixed(0)}% | Risiko harga ${((priceRiskPerUnit / fillPrice) * 100).toFixed(2)}% | Risiko equity maks. ${(policy.riskPerCampaign * 100).toFixed(0)}% (${policy.mode}) | Fee masuk Rp${Math.round(fee).toLocaleString('id-ID')}`, strategyVersion: order.strategyVersion };
   order.status = 'filled';
-  book.trades.push({ timestamp, instrument: order.pair, side: 'long', type: 'open', size, price: fillPrice, reason: order.reason, campaignId: order.campaignId, confirmations: order.confirmations, feeIdr: fee });
+  book.trades.push({ timestamp, instrument: order.pair, side: 'long', type: 'open', size, price: fillPrice, reason: order.reason, campaignId: order.campaignId, confirmations: order.confirmations, feeIdr: fee, strategyVersion: order.strategyVersion });
 }
 
 function pyramidBreakout(book: Book, pair: string, position: Position, price: number, timestamp: string) {
@@ -187,7 +188,7 @@ function pyramidBreakout(book: Book, pair: string, position: Position, price: nu
   if (position.leg >= 3) position.stopPrice = Math.max(position.stopPrice, initialEntry * (1 + FEE_RATE * 2));
   if (position.leg >= 4) position.stopPrice = Math.max(position.stopPrice, initialEntry + initialRisk * .5);
   book.balance.IDR -= addNotional + addFee;
-  book.trades.push({ timestamp, instrument: pair, side: 'long', type: 'add', size: addSize, price, reason: `Jesse Livermore pyramid leg ${position.leg}/4 setelah +${threshold}R`, campaignId: position.campaignId, feeIdr: addFee });
+  book.trades.push({ timestamp, instrument: pair, side: 'long', type: 'add', size: addSize, price, reason: `Jesse Livermore pyramid leg ${position.leg}/4 setelah +${threshold}R`, campaignId: position.campaignId, feeIdr: addFee, strategyVersion: position.strategyVersion });
 }
 
 function close(book: Book, pair: string, position: Position, price: number, timestamp: string, reason: string) {
@@ -196,7 +197,7 @@ function close(book: Book, pair: string, position: Position, price: number, time
   // cash when the position was opened; realized P&L remains reported below.
   const proceeds = price * position.size;
   book.balance.IDR += proceeds - fee; delete book.positions[pair];
-  book.trades.push({ timestamp, instrument: pair, side: 'long', type: 'close', size: position.size, price, realizedPnlIdr: pnl, reason, campaignId: position.campaignId, feeIdr: fee });
+  book.trades.push({ timestamp, instrument: pair, side: 'long', type: 'close', size: position.size, price, realizedPnlIdr: pnl, reason, campaignId: position.campaignId, feeIdr: fee, strategyVersion: position.strategyVersion });
 }
 
 async function main() {
