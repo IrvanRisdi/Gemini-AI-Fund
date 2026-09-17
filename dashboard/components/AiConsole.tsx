@@ -142,6 +142,8 @@ export function AiConsole({ scope = 'coin' }: AiConsoleProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [selectedModel, setSelectedModel] = useState('');
+  const [expanded, setExpanded] = useState(false);
+  const [wasTruncated, setWasTruncated] = useState(false);
 
   async function handleSend() {
     const trimmed = question.trim();
@@ -149,6 +151,8 @@ export function AiConsole({ scope = 'coin' }: AiConsoleProps) {
 
     setIsLoading(true);
     setSelectedModel('');
+    setWasTruncated(false);
+    setExpanded(false);
     setDisplayed(`> ${trimmed}\n\n[${copy.loading}]`);
 
     try {
@@ -162,6 +166,7 @@ export function AiConsole({ scope = 'coin' }: AiConsoleProps) {
       if (data.response) {
         setDisplayed(`> ${trimmed}\n\n${data.response}`);
         setSelectedModel(typeof data.model === 'string' ? data.model : '');
+        setWasTruncated(data.truncated === true);
       } else {
         setDisplayed(`> ${trimmed}\n\n⚠️ Tidak dapat memuat respon dari server.`);
       }
@@ -252,15 +257,29 @@ export function AiConsole({ scope = 'coin' }: AiConsoleProps) {
               <span className="h-2 w-2 rounded-full bg-blue-400" />
               <span className="font-mono text-[11px] text-ink-muted">Analisis Gemini AI · {scope === 'stock' ? 'Saham' : 'Coin'}{selectedModel ? ` · ${selectedModel}` : ''}</span>
             </div>
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="font-mono text-[10px] text-ink-faint hover:text-accent transition-colors"
-            >
-              {copied ? 'Tersalin' : 'Salin'}
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setExpanded((value) => !value)}
+                className="font-mono text-[10px] text-ink-faint hover:text-accent transition-colors"
+              >
+                {expanded ? 'Ringkas panel' : 'Perbesar panel'}
+              </button>
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="font-mono text-[10px] text-ink-faint hover:text-accent transition-colors"
+              >
+                {copied ? 'Tersalin' : 'Salin'}
+              </button>
+            </div>
           </div>
-          <div className="max-h-[28rem] overflow-y-auto overflow-x-hidden pr-1 break-words">
+          {wasTruncated && (
+            <div className="mb-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+              Respons masih mencapai batas keluaran model. Coba pecah pertanyaan menjadi satu evaluasi agen per permintaan.
+            </div>
+          )}
+          <div className={`${expanded ? 'max-h-none' : 'max-h-[42rem]'} overflow-y-auto overflow-x-hidden pr-1 break-words`}>
             {renderFormattedText(displayed)}
           </div>
         </div>

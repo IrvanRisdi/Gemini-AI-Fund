@@ -2,12 +2,14 @@ import { NextResponse } from 'next/server';
 import { getDeskSnapshot } from '@/lib/desk-data';
 import { getStockDashboard, getStockRuntime, type Row, type RuntimeState, type StockDashboard } from '@/lib/stock-data';
 import { getGeminiModelCandidates } from '@/lib/gemini-models';
+import { readGeminiCandidate, type GeminiGenerateResponse } from '@/lib/gemini-response';
 import { formatWibDateTime } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
 const MAX_QUESTION_LENGTH = 2_000;
-const MAX_OUTPUT_TOKENS = 1_600;
+const MAX_OUTPUT_TOKENS = 4_096;
+const CONTINUATION_OUTPUT_TOKENS = 2_048;
 
 function formatIdr(value: number): string {
   return `Rp${Math.round(value).toLocaleString('id-ID')}`;
@@ -195,6 +197,9 @@ Ringkasan langsung 2–4 kalimat.
 ### Langkah Pemantauan
 - Kondisi terukur yang perlu diperiksa pada snapshot berikutnya; jangan memberi instruksi beli/jual yang pasti.
 
+Jawaban Singkat hanyalah pembuka, bukan keseluruhan jawaban. Tuntaskan semua bagian yang relevan dan jangan berhenti di tengah kalimat.
+Jika diminta membandingkan agen, wajib bahas setiap agen yang diminta dalam tabel: ekuitas/P&L, win rate yang tersedia, jumlah atau keterbatasan sampel, diagnosis, dan tindakan evaluasi. Jangan menghilangkan agen hanya karena datanya lemah atau tidak lengkap.
+
 KONTEKS SAHAM TERSIMPAN
 ${context}
 `.trim() : `
@@ -225,6 +230,8 @@ ${context}
     let answer = '';
     let selectedModel = '';
     let lastError = '';
+    let finishReason = '';
+    let wasTruncated = false;
 
     for (const model of modelCandidates) {
       try {
@@ -246,10 +253,43 @@ ${context}
           continue;
         }
 
-        const data = await res.json();
-        answer = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+        const data = await res.json() as GeminiGenerateResponse;
+        const candidate = readGeminiCandidate(data);
+        answer = candidate.text;
+        finishReason = candidate.finishReason;
+        wasTruncated = candidate.wasTruncated;
         if (answer) {
           selectedModel = model;
+
+          if (wasTruncated) {
+            const continuationRes = await fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+              signal: AbortSignal.timeout(25_000),
+              body: JSON.stringify({
+                systemInstruction: { parts: [{ text: systemInstruction }] },
+                contents: [
+                  { role: 'user', parts: [{ text: question }] },
+                  { role: 'model', parts: [{ text: answer }] },
+                  {
+                    role: 'user',
+                    parts: [{
+                      text: 'Lanjutkan tepat dari bagian terakhir. Jangan ulangi isi sebelumnya. Selesaikan semua bagian analisis yang belum dibahas dan akhiri dengan kalimat lengkap.',
+                    }],
+                  },
+                ],
+                generationConfig: { temperature: 0.2, maxOutputTokens: CONTINUATION_OUTPUT_TOKENS },
+              }),
+            });
+
+            if (continuationRes.ok) {
+              const continuationData = await continuationRes.json() as GeminiGenerateResponse;
+              const continuation = readGeminiCandidate(continuationData);
+              if (continuation.text) answer = `${answer}\n\n${continuation.text}`;
+              finishReason = continuation.finishReason || finishReason;
+              wasTruncated = continuation.wasTruncated;
+            }
+          }
           break;
         }
         lastError = `Respons kosong dari ${model}`;
@@ -264,7 +304,14 @@ ${context}
       });
     }
 
-    return NextResponse.json({ response: answer, model: selectedModel, scope, generatedAt: new Date().toISOString() });
+    return NextResponse.json({
+      response: answer,
+      model: selectedModel,
+      scope,
+      generatedAt: new Date().toISOString(),
+      finishReason,
+      truncated: wasTruncated,
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ response: `⚠️ Terjadi kesalahan internal: ${message}` }, { status: 500 });
