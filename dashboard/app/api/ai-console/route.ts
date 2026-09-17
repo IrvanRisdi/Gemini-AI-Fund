@@ -1,25 +1,16 @@
 import { NextResponse } from 'next/server';
 import { getDeskSnapshot } from '@/lib/desk-data';
 import { getStockDashboard, getStockRuntime, type Row, type RuntimeState, type StockDashboard } from '@/lib/stock-data';
+import { getGeminiModelCandidates } from '@/lib/gemini-models';
 import { formatWibDateTime } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
-const DEFAULT_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'] as const;
 const MAX_QUESTION_LENGTH = 2_000;
 const MAX_OUTPUT_TOKENS = 1_600;
 
 function formatIdr(value: number): string {
   return `Rp${Math.round(value).toLocaleString('id-ID')}`;
-}
-
-function getModelCandidates(): string[] {
-  const configured = (process.env.GEMINI_MODELS || '')
-    .split(',')
-    .map((model) => model.trim())
-    .filter(Boolean);
-
-  return configured.length > 0 ? configured : [...DEFAULT_MODELS];
 }
 
 function buildDeskContext(snapshot: Awaited<ReturnType<typeof getDeskSnapshot>>): string {
@@ -182,7 +173,7 @@ export async function POST(req: Request) {
     } else {
       context = buildDeskContext(await getDeskSnapshot());
     }
-    const modelCandidates = getModelCandidates();
+    const modelCandidates = getGeminiModelCandidates(process.env.GEMINI_MODELS || '');
     const systemInstruction = scope === 'stock' ? `
 Anda adalah Gemini Stock Desk Analyst untuk NusaQuant, sebuah dashboard paper-trading saham Indonesia.
 Jawab hanya berdasarkan konteks snapshot tersimpan di bawah. Membuka console tidak menjalankan scan dan tidak memanggil Yahoo, Arjum, broker, atau sumber berita.

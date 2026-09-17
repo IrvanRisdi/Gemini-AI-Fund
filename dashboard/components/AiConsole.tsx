@@ -141,12 +141,14 @@ export function AiConsole({ scope = 'coin' }: AiConsoleProps) {
   const [displayed, setDisplayed] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('');
 
   async function handleSend() {
     const trimmed = question.trim();
     if (!trimmed || isLoading) return;
 
     setIsLoading(true);
+    setSelectedModel('');
     setDisplayed(`> ${trimmed}\n\n[${copy.loading}]`);
 
     try {
@@ -159,6 +161,7 @@ export function AiConsole({ scope = 'coin' }: AiConsoleProps) {
       const data = await res.json();
       if (data.response) {
         setDisplayed(`> ${trimmed}\n\n${data.response}`);
+        setSelectedModel(typeof data.model === 'string' ? data.model : '');
       } else {
         setDisplayed(`> ${trimmed}\n\n⚠️ Tidak dapat memuat respon dari server.`);
       }
@@ -247,7 +250,7 @@ export function AiConsole({ scope = 'coin' }: AiConsoleProps) {
           <div className="flex items-center justify-between border-b border-border/60 pb-2 mb-2.5">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-blue-400" />
-              <span className="font-mono text-[11px] text-ink-muted">Analisis Gemini AI · {scope === 'stock' ? 'Saham' : 'Coin'}</span>
+              <span className="font-mono text-[11px] text-ink-muted">Analisis Gemini AI · {scope === 'stock' ? 'Saham' : 'Coin'}{selectedModel ? ` · ${selectedModel}` : ''}</span>
             </div>
             <button
               type="button"

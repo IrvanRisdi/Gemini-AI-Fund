@@ -2,6 +2,7 @@
 /** Session evaluation report: desk data is factual; AI adds only brief interpretation. */
 import fs from 'node:fs';
 import path from 'node:path';
+import { getGeminiModelCandidates } from '../dashboard/lib/gemini-models.js';
 
 const API_KEY = process.env.GEMINI_API_KEY;
 const DESK_DIR = path.resolve(process.cwd(), '.desk');
@@ -117,7 +118,7 @@ Kandidat scan belum otomatis menjadi transaksi. Executor menolak order non-long/
 
 async function callGemini(prompt: string): Promise<string | undefined> {
   if (!API_KEY) return undefined;
-  for (const model of ['gemini-2.5-flash-lite', 'gemini-2.5-flash']) {
+  for (const model of getGeminiModelCandidates(process.env.GEMINI_MODELS || '')) {
     try {
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.15, maxOutputTokens: 450 } }) });
       if (response.ok) { const data = await response.json(); const text = data.candidates?.[0]?.content?.parts?.[0]?.text; if (text) return text; }
