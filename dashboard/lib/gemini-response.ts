@@ -20,7 +20,31 @@ export type GeminiCandidateResult = {
   text: string;
   finishReason: string;
   wasTruncated: boolean;
+  usage: GeminiUsage;
 };
+
+export type GeminiUsage = {
+  inputTokens: number;
+  answerTokens: number;
+  thinkingTokens: number;
+  totalTokens: number;
+};
+
+export const EMPTY_GEMINI_USAGE: GeminiUsage = {
+  inputTokens: 0,
+  answerTokens: 0,
+  thinkingTokens: 0,
+  totalTokens: 0,
+};
+
+export function mergeGeminiUsage(left: GeminiUsage, right: GeminiUsage): GeminiUsage {
+  return {
+    inputTokens: left.inputTokens + right.inputTokens,
+    answerTokens: left.answerTokens + right.answerTokens,
+    thinkingTokens: left.thinkingTokens + right.thinkingTokens,
+    totalTokens: left.totalTokens + right.totalTokens,
+  };
+}
 
 export function readGeminiCandidate(payload: GeminiGenerateResponse): GeminiCandidateResult {
   const candidate = payload.candidates?.[0];
@@ -36,5 +60,11 @@ export function readGeminiCandidate(payload: GeminiGenerateResponse): GeminiCand
     text,
     finishReason,
     wasTruncated: finishReason === 'MAX_TOKENS',
+    usage: {
+      inputTokens: payload.usageMetadata?.promptTokenCount ?? 0,
+      answerTokens: payload.usageMetadata?.candidatesTokenCount ?? 0,
+      thinkingTokens: payload.usageMetadata?.thoughtsTokenCount ?? 0,
+      totalTokens: payload.usageMetadata?.totalTokenCount ?? 0,
+    },
   };
 }

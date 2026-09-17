@@ -2,6 +2,28 @@
 
 import { useState } from 'react';
 
+type GeminiUsage = {
+  inputTokens: number;
+  answerTokens: number;
+  thinkingTokens: number;
+  totalTokens: number;
+};
+
+type AgentOption = { id: string; name: string };
+type AgentAnalysis = {
+  response: string;
+  model: string;
+  truncated: boolean;
+  usage?: GeminiUsage;
+};
+
+const tokenNumber = new Intl.NumberFormat('id-ID');
+
+function usageLabel(usage?: GeminiUsage): string {
+  if (!usage || !usage.totalTokens) return '';
+  return `Input ${tokenNumber.format(usage.inputTokens)} · Thinking ${tokenNumber.format(usage.thinkingTokens)} · Jawaban ${tokenNumber.format(usage.answerTokens)}`;
+}
+
 function formatInline(text: string): string {
   if (!text) return '';
   let html = text
@@ -39,6 +61,36 @@ function renderFormattedText(text: string) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue;
+
+    // Tabel Markdown sederhana.
+    if (line.includes('|') && i + 1 < lines.length && /^\|?\s*:?-+/.test(lines[i + 1].trim())) {
+      const cells = (value: string) => value.replace(/^\||\|$/g, '').split('|').map((cell) => cell.trim());
+      const headers = cells(line);
+      const rows: string[][] = [];
+      i += 2;
+      while (i < lines.length && lines[i].trim().includes('|')) {
+        rows.push(cells(lines[i].trim()));
+        i += 1;
+      }
+      i -= 1;
+      elements.push(
+        <div key={`table-${i}`} className="my-3 overflow-x-auto rounded-lg border border-border/70">
+          <table className="min-w-full border-collapse text-left text-[11px] sm:text-xs">
+            <thead className="bg-surface-hover/70 text-ink">
+              <tr>{headers.map((header, index) => <th key={`${header}-${index}`} className="whitespace-nowrap border-b border-border px-3 py-2 font-semibold" dangerouslySetInnerHTML={{ __html: formatInline(header) }} />)}</tr>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {rows.map((row, rowIndex) => (
+                <tr key={rowIndex} className="align-top">
+                  {headers.map((_, cellIndex) => <td key={cellIndex} className="min-w-28 px-3 py-2 leading-relaxed text-ink-muted" dangerouslySetInnerHTML={{ __html: formatInline(row[cellIndex] ?? '') }} />)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      continue;
+    }
 
     // Header: ### atau ####
     if (line.startsWith('### ') || line.startsWith('#### ')) {
@@ -144,6 +196,11 @@ export function AiConsole({ scope = 'coin' }: AiConsoleProps) {
   const [selectedModel, setSelectedModel] = useState('');
   const [expanded, setExpanded] = useState(false);
   const [wasTruncated, setWasTruncated] = useState(false);
+  const [usage, setUsage] = useState<GeminiUsage>();
+  const [lastQuestion, setLastQuestion] = useState('');
+  const [agentOptions, setAgentOptions] = useState<AgentOption[]>([]);
+  const [agentAnalyses, setAgentAnalyses] = useState<Record<string, AgentAnalysis>>({});
+  const [loadingAgentId, setLoadingAgentId] = useState('');
 
   async function handleSend() {
     const trimmed = question.trim();
@@ -152,7 +209,11 @@ export function AiConsole({ scope = 'coin' }: AiConsoleProps) {
     setIsLoading(true);
     setSelectedModel('');
     setWasTruncated(false);
+    setUsage(undefined);
     setExpanded(false);
+    setLastQuestion(trimmed);
+    setAgentOptions([]);
+    setAgentAnalyses({});
     setDisplayed(`> ${trimmed}\n\n[${copy.loading}]`);
 
     try {
@@ -163,18 +224,55 @@ export function AiConsole({ scope = 'coin' }: AiConsoleProps) {
       });
 
       const data = await res.json();
-      if (data.response) {
+      if (res.ok && data.response) {
         setDisplayed(`> ${trimmed}\n\n${data.response}`);
         setSelectedModel(typeof data.model === 'string' ? data.model : '');
         setWasTruncated(data.truncated === true);
+        setUsage(data.usage);
+        setAgentOptions(Array.isArray(data.agentOptions) ? data.agentOptions : []);
       } else {
-        setDisplayed(`> ${trimmed}\n\n⚠️ Tidak dapat memuat respon dari server.`);
+        setDisplayed(`> ${trimmed}\n\n⚠️ ${data.error || 'Tidak dapat memuat respons dari server.'}`);
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Network error';
       setDisplayed(`> ${trimmed}\n\n⚠️ Gagal terhubung: ${message}`);
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function loadAgentAnalysis(agent: AgentOption) {
+    if (!lastQuestion || loadingAgentId) return;
+    setLoadingAgentId(agent.id);
+    try {
+      const res = await fetch('/api/ai-console', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: lastQuestion, scope: 'stock', agentId: agent.id }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.response) throw new Error(data.error || 'Respons detail agen kosong.');
+      setAgentAnalyses((current) => ({
+        ...current,
+        [agent.id]: {
+          response: data.response,
+          model: typeof data.model === 'string' ? data.model : '',
+          truncated: data.truncated === true,
+          usage: data.usage,
+        },
+      }));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Network error';
+      setAgentAnalyses((current) => ({
+        ...current,
+        [agent.id]: {
+          response: `⚠️ Detail agen gagal dimuat: ${message}`,
+          model: '',
+          truncated: false,
+        },
+      }));
+    } finally {
+      setLoadingAgentId('');
     }
   }
 
@@ -279,9 +377,48 @@ export function AiConsole({ scope = 'coin' }: AiConsoleProps) {
               Respons masih mencapai batas keluaran model. Coba pecah pertanyaan menjadi satu evaluasi agen per permintaan.
             </div>
           )}
+          {usageLabel(usage) && <p className="mb-2 font-mono text-[10px] text-ink-faint">{usageLabel(usage)}</p>}
           <div className={`${expanded ? 'max-h-none' : 'max-h-[42rem]'} overflow-y-auto overflow-x-hidden pr-1 break-words`}>
             {renderFormattedText(displayed)}
           </div>
+          {scope === 'stock' && agentOptions.length > 0 && (
+            <div className="mt-5 border-t border-border/60 pt-4">
+              <div className="mb-3">
+                <h4 className="text-sm font-semibold text-ink">Analisis mendalam per agen</h4>
+                <p className="mt-1 text-xs text-ink-faint">Dimuat terpisah agar ringkasan lintas agen tetap lengkap dan tidak terpotong.</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {agentOptions.map((agent) => (
+                  <button
+                    key={agent.id}
+                    type="button"
+                    onClick={() => loadAgentAnalysis(agent)}
+                    disabled={Boolean(loadingAgentId)}
+                    className="rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-ink-muted transition hover:border-blue-400/50 hover:text-blue-300 disabled:opacity-50"
+                  >
+                    {loadingAgentId === agent.id ? 'Menganalisis…' : agentAnalyses[agent.id] ? `Muat ulang ${agent.name}` : agent.name}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-4 space-y-3">
+                {agentOptions.filter((agent) => agentAnalyses[agent.id]).map((agent) => {
+                  const analysis = agentAnalyses[agent.id];
+                  return (
+                    <details key={agent.id} open className="rounded-xl border border-border/70 bg-surface/60 p-3 sm:p-4">
+                      <summary className="cursor-pointer list-none text-sm font-semibold text-blue-300">
+                        {agent.name}
+                        <span className="ml-2 font-mono text-[10px] font-normal text-ink-faint">{analysis.model}{usageLabel(analysis.usage) ? ` · ${usageLabel(analysis.usage)}` : ''}</span>
+                      </summary>
+                      {analysis.truncated && <p className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">Detail agen mencapai batas keluaran model.</p>}
+                      <div className="mt-3 max-h-[48rem] overflow-y-auto pr-1 break-words">
+                        {renderFormattedText(analysis.response)}
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

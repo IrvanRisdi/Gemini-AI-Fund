@@ -2,14 +2,21 @@ import { NextResponse } from 'next/server';
 import { getDeskSnapshot } from '@/lib/desk-data';
 import { getStockDashboard, getStockRuntime, type Row, type RuntimeState, type StockDashboard } from '@/lib/stock-data';
 import { getGeminiModelCandidates } from '@/lib/gemini-models';
-import { readGeminiCandidate, type GeminiGenerateResponse } from '@/lib/gemini-response';
+import {
+  EMPTY_GEMINI_USAGE,
+  mergeGeminiUsage,
+  readGeminiCandidate,
+  type GeminiGenerateResponse,
+  type GeminiUsage,
+} from '@/lib/gemini-response';
 import { formatWibDateTime } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 const MAX_QUESTION_LENGTH = 2_000;
-const MAX_OUTPUT_TOKENS = 4_096;
-const CONTINUATION_OUTPUT_TOKENS = 2_048;
+const MAX_OUTPUT_TOKENS = 16_384;
+const CONTINUATION_OUTPUT_TOKENS = 8_192;
 
 function formatIdr(value: number): string {
   return `Rp${Math.round(value).toLocaleString('id-ID')}`;
@@ -56,8 +63,9 @@ function runtimeTable(state: RuntimeState, name: string): Row[] {
   return state.tables[name] ?? [];
 }
 
-function buildStockContext(snapshot: StockDashboard, state: RuntimeState): string {
-  const agents = snapshot.agents.map((agent) => ({
+function buildStockContext(snapshot: StockDashboard, state: RuntimeState, focusAgentId = ''): string {
+  const inFocus = (agentId: unknown) => !focusAgentId || String(agentId ?? '') === focusAgentId;
+  const agents = snapshot.agents.filter((agent) => inFocus(agent.id)).map((agent) => ({
     id: agent.id,
     name: agent.name,
     equity: agent.equity,
@@ -66,7 +74,7 @@ function buildStockContext(snapshot: StockDashboard, state: RuntimeState): strin
     displayedWinRate: agent.display_win_rate,
     validationStatus: agent.status,
   }));
-  const positions = snapshot.positions.map((position) => ({
+  const positions = snapshot.positions.filter((position) => inFocus(position.agent_id)).map((position) => ({
     agent: position.agent_id,
     symbol: position.symbol,
     lots: position.lots,
@@ -91,6 +99,7 @@ function buildStockContext(snapshot: StockDashboard, state: RuntimeState): strin
       marketDataAsOf: row.market_data_as_of ?? null,
     }));
   const decisions = [...runtimeTable(state, 'decisions')]
+    .filter((row) => inFocus(row.agent_id))
     .sort((left, right) => String(right.evaluated_at ?? '').localeCompare(String(left.evaluated_at ?? '')))
     .slice(0, 25)
     .map((row) => ({
@@ -106,7 +115,7 @@ function buildStockContext(snapshot: StockDashboard, state: RuntimeState): strin
       evaluatedAt: row.evaluated_at,
     }));
   const pendingOrders = runtimeTable(state, 'paper_orders')
-    .filter((row) => String(row.status ?? '') === 'PENDING')
+    .filter((row) => String(row.status ?? '') === 'PENDING' && inFocus(row.agent_id))
     .slice(0, 25)
     .map((row) => ({
       agent: row.agent_id,
@@ -119,7 +128,7 @@ function buildStockContext(snapshot: StockDashboard, state: RuntimeState): strin
       strategyVersion: row.strategy_version,
     }));
   const recentClosedTrades = [...runtimeTable(state, 'trade_journal')]
-    .filter((row) => Boolean(row.closed_at))
+    .filter((row) => Boolean(row.closed_at) && inFocus(row.agent_id))
     .sort((left, right) => String(right.closed_at ?? '').localeCompare(String(left.closed_at ?? '')))
     .slice(0, 30)
     .map((row) => ({
@@ -150,11 +159,29 @@ function buildStockContext(snapshot: StockDashboard, state: RuntimeState): strin
   });
 }
 
+function generationConfig(model: string, maxOutputTokens: number) {
+  if (model.startsWith('gemini-3')) {
+    return {
+      maxOutputTokens,
+      thinkingConfig: { thinkingLevel: 'low' },
+    };
+  }
+  if (model.startsWith('gemini-2.5')) {
+    return {
+      temperature: 0.2,
+      maxOutputTokens,
+      thinkingConfig: { thinkingBudget: 0 },
+    };
+  }
+  return { temperature: 0.2, maxOutputTokens };
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
     const question = typeof body.question === 'string' ? body.question.trim() : '';
     const scope = body.scope === 'stock' ? 'stock' : 'coin';
+    const requestedAgentId = typeof body.agentId === 'string' ? body.agentId.trim() : '';
 
     if (!question || question.length > MAX_QUESTION_LENGTH) {
       return NextResponse.json({ error: 'Pertanyaan harus berisi 1–2.000 karakter.' }, { status: 400 });
@@ -169,13 +196,42 @@ export async function POST(req: Request) {
 
     // The server is the source of truth: never let a browser-provided portfolio snapshot influence analysis.
     let context: string;
+    let focusAgent: { id: string; name: string } | null = null;
+    let agentOptions: Array<{ id: string; name: string }> = [];
     if (scope === 'stock') {
       const [stockSnapshot, stockState] = await Promise.all([getStockDashboard(), getStockRuntime()]);
-      context = buildStockContext(stockSnapshot, stockState);
+      agentOptions = stockSnapshot.agents.map((agent) => ({ id: agent.id, name: agent.name }));
+      focusAgent = requestedAgentId
+        ? agentOptions.find((agent) => agent.id === requestedAgentId) ?? null
+        : null;
+      if (requestedAgentId && !focusAgent) {
+        return NextResponse.json({ error: 'Agen saham tidak ditemukan pada snapshot tersimpan.' }, { status: 400 });
+      }
+      context = buildStockContext(stockSnapshot, stockState, focusAgent?.id);
     } else {
       context = buildDeskContext(await getDeskSnapshot());
     }
     const modelCandidates = getGeminiModelCandidates(process.env.GEMINI_MODELS || '');
+    const stockResponseFormat = focusAgent ? `
+FOKUS ANALISIS: ${focusAgent.name} (${focusAgent.id}). Analisis hanya agen ini; jangan mengulang perbandingan semua agen.
+Gunakan format berikut dan batasi sekitar 700–1.000 kata:
+### Diagnosis ${focusAgent.name}
+### Performa & Kualitas Sampel
+### Posisi, Order & Keputusan
+### Masalah Strategi
+### Perbaikan Terukur
+### Risiko & Data yang Kurang
+Setiap klaim harus merujuk angka atau fakta snapshot. Bila sampel tidak cukup, nyatakan dengan jelas.
+`.trim() : `
+Jika pertanyaan membandingkan beberapa agen, jawaban utama ini adalah ringkasan lintas agen. Batasi sekitar 700–1.000 kata dan wajib gunakan:
+### Kesimpulan
+### Perbandingan Agen
+Tabel tepat satu baris per agen: Agen | Equity/P&L | Win Rate | Sampel/Status | Diagnosis | Prioritas Perbaikan.
+### Masalah Bersama
+### Risiko & Batasan Data
+### Prioritas Evaluasi Berikutnya
+Jangan membuat uraian panjang per agen karena analisis mendalam tersedia pada panel terpisah.
+`.trim();
     const systemInstruction = scope === 'stock' ? `
 Anda adalah Gemini Stock Desk Analyst untuk NusaQuant, sebuah dashboard paper-trading saham Indonesia.
 Jawab hanya berdasarkan konteks snapshot tersimpan di bawah. Membuka console tidak menjalankan scan dan tidak memanggil Yahoo, Arjum, broker, atau sumber berita.
@@ -184,21 +240,8 @@ Yahoo bersifat delayed dan Arjum berasal dari cache. Jangan menyebut data sebaga
 Bedakan performa v2/recovery dari histori legacy bila versi tersedia. Confidence agen bukan probabilitas profit.
 Semua waktu ditulis dalam WIB. Selalu bedakan fakta desk, inferensi, dan asumsi. Ini adalah evaluasi paper trading, bukan ajakan transaksi.
 
-Gunakan Bahasa Indonesia profesional dan langsung. Untuk pertanyaan analitis, gunakan format Markdown berikut:
-### Jawaban Singkat
-Ringkasan langsung 2–4 kalimat.
-### Bukti dari Snapshot
-- Angka, posisi, keputusan, status data, dan timestamp yang relevan.
-### Analisis
-1. Penalaran utama dan konflik antarsinyal.
-2. Implikasi terhadap trading plan atau evaluasi agen.
-### Risiko & Batasan
-- Kualitas/delay data, ukuran sampel, fee, serta informasi yang tidak tersedia.
-### Langkah Pemantauan
-- Kondisi terukur yang perlu diperiksa pada snapshot berikutnya; jangan memberi instruksi beli/jual yang pasti.
-
-Jawaban Singkat hanyalah pembuka, bukan keseluruhan jawaban. Tuntaskan semua bagian yang relevan dan jangan berhenti di tengah kalimat.
-Jika diminta membandingkan agen, wajib bahas setiap agen yang diminta dalam tabel: ekuitas/P&L, win rate yang tersedia, jumlah atau keterbatasan sampel, diagnosis, dan tindakan evaluasi. Jangan menghilangkan agen hanya karena datanya lemah atau tidak lengkap.
+Gunakan Bahasa Indonesia profesional, langsung, dan Markdown yang mudah dibaca. Tuntaskan semua bagian yang diminta dan jangan berhenti di tengah kalimat.
+${stockResponseFormat}
 
 KONTEKS SAHAM TERSIMPAN
 ${context}
@@ -232,6 +275,7 @@ ${context}
     let lastError = '';
     let finishReason = '';
     let wasTruncated = false;
+    let usage: GeminiUsage = { ...EMPTY_GEMINI_USAGE };
 
     for (const model of modelCandidates) {
       try {
@@ -243,7 +287,7 @@ ${context}
           body: JSON.stringify({
             systemInstruction: { parts: [{ text: systemInstruction }] },
             contents: [{ role: 'user', parts: [{ text: question }] }],
-            generationConfig: { temperature: 0.2, maxOutputTokens: MAX_OUTPUT_TOKENS },
+            generationConfig: generationConfig(model, MAX_OUTPUT_TOKENS),
           }),
         });
 
@@ -258,6 +302,7 @@ ${context}
         answer = candidate.text;
         finishReason = candidate.finishReason;
         wasTruncated = candidate.wasTruncated;
+        usage = candidate.usage;
         if (answer) {
           selectedModel = model;
 
@@ -278,7 +323,7 @@ ${context}
                     }],
                   },
                 ],
-                generationConfig: { temperature: 0.2, maxOutputTokens: CONTINUATION_OUTPUT_TOKENS },
+                generationConfig: generationConfig(model, CONTINUATION_OUTPUT_TOKENS),
               }),
             });
 
@@ -288,6 +333,7 @@ ${context}
               if (continuation.text) answer = `${answer}\n\n${continuation.text}`;
               finishReason = continuation.finishReason || finishReason;
               wasTruncated = continuation.wasTruncated;
+              usage = mergeGeminiUsage(usage, continuation.usage);
             }
           }
           break;
@@ -311,6 +357,10 @@ ${context}
       generatedAt: new Date().toISOString(),
       finishReason,
       truncated: wasTruncated,
+      usage,
+      analysisMode: focusAgent ? 'agent-detail' : 'summary',
+      focusAgent,
+      agentOptions,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
