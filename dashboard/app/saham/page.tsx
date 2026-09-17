@@ -1,6 +1,7 @@
 import { getStockDashboard } from '@/lib/stock-data';
 import Link from 'next/link';
 import { StockScreener } from '@/components/StockScreener';
+import { AiConsole } from '@/components/AiConsole';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,7 +44,7 @@ export default async function StockDeskPage() {
         </div>
       </header>
 
-      <div className="mb-6 flex flex-wrap gap-2"><Link href="/saham/reports" className="rounded-lg border border-border bg-surface px-4 py-2 font-mono text-xs text-ink hover:border-emerald-500/50">Buka Daily Report</Link><a href="#screener" className="rounded-lg border border-border bg-surface px-4 py-2 font-mono text-xs text-ink hover:border-emerald-500/50">Cari saham</a><span className="rounded-lg border border-border px-4 py-2 font-mono text-xs text-ink-muted">Arjum {snapshot.provider_usage.requests_used}/{snapshot.provider_usage.request_limit} request hari ini</span></div>
+      <div className="mb-6 flex flex-wrap gap-2"><Link href="/saham/reports" className="rounded-lg border border-border bg-surface px-4 py-2 font-mono text-xs text-ink hover:border-emerald-500/50">Buka Daily Report</Link><a href="#screener" className="rounded-lg border border-border bg-surface px-4 py-2 font-mono text-xs text-ink hover:border-emerald-500/50">Cari saham</a><a href="#gemini-console" className="rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 py-2 font-mono text-xs text-blue-300 hover:border-blue-400/60">Tanya Gemini</a><span className="rounded-lg border border-border px-4 py-2 font-mono text-xs text-ink-muted">Arjum {snapshot.provider_usage.requests_used}/{snapshot.provider_usage.request_limit} request hari ini</span></div>
 
       <section id="agents" className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5" aria-label="Equity setiap agen saham">
         {snapshot.agents.map((agent) => (
@@ -82,6 +83,10 @@ export default async function StockDeskPage() {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section id="gemini-console" className="mb-8 scroll-mt-24" aria-label="Gemini console untuk desk saham">
+        <AiConsole scope="stock" />
       </section>
 
       <StockScreener rows={allStocks} />

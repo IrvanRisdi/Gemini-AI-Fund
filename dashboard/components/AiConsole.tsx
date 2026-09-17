@@ -109,7 +109,34 @@ function renderFormattedText(text: string) {
   );
 }
 
-export function AiConsole() {
+type AiConsoleProps = { scope?: 'coin' | 'stock' };
+
+const CONSOLE_COPY = {
+  coin: {
+    title: 'Console',
+    placeholder: 'Tanya apa saja tentang desk coin...',
+    loading: 'Sedang menganalisis portofolio coin dengan Gemini AI...',
+    prompts: [
+      'Buat ringkasan kondisi desk dan risiko utamanya saat ini.',
+      'Analisis sinyal terbaru: mana yang saling mengonfirmasi atau bertentangan?',
+      'Jelaskan seluruh posisi terbuka dan level risiko yang perlu dipantau.',
+    ],
+  },
+  stock: {
+    title: 'Stock Console',
+    placeholder: 'Tanya tentang saham, agen, posisi, screener, atau kualitas data...',
+    loading: 'Sedang menganalisis snapshot saham tersimpan dengan Gemini AI...',
+    prompts: [
+      'Evaluasi kondisi seluruh agen saham dan jelaskan risiko terbesarnya.',
+      'Saham apa yang paling menarik pada screener tersimpan, dan apa batasan datanya?',
+      'Jelaskan posisi terbuka, trading plan, dan potensi konflik antaragen.',
+      'Bandingkan performa Scalping, Open=Low, Swing, Fundamental, dan Breakout.',
+    ],
+  },
+} as const;
+
+export function AiConsole({ scope = 'coin' }: AiConsoleProps) {
+  const copy = CONSOLE_COPY[scope];
   const [question, setQuestion] = useState('');
   const [displayed, setDisplayed] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -120,13 +147,13 @@ export function AiConsole() {
     if (!trimmed || isLoading) return;
 
     setIsLoading(true);
-    setDisplayed(`> ${trimmed}\n\n[Sedang menganalisis portofolio dengan Gemini AI...]`);
+    setDisplayed(`> ${trimmed}\n\n[${copy.loading}]`);
 
     try {
       const res = await fetch('/api/ai-console', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: trimmed }),
+        body: JSON.stringify({ question: trimmed, scope }),
       });
 
       const data = await res.json();
@@ -135,8 +162,9 @@ export function AiConsole() {
       } else {
         setDisplayed(`> ${trimmed}\n\n⚠️ Tidak dapat memuat respon dari server.`);
       }
-    } catch (err: any) {
-      setDisplayed(`> ${trimmed}\n\n⚠️ Gagal terhubung: ${err?.message || 'Network error'}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Network error';
+      setDisplayed(`> ${trimmed}\n\n⚠️ Gagal terhubung: ${message}`);
     } finally {
       setIsLoading(false);
     }
@@ -162,7 +190,7 @@ export function AiConsole() {
           <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent font-bold">
             Gemini
           </span>{' '}
-          Console
+            {copy.title}
         </h3>
         <span className="rounded-full bg-blue-500/10 px-2.5 py-0.5 font-mono text-[10px] sm:text-[11px] font-medium tracking-wide text-blue-400 border border-blue-500/20 uppercase flex items-center gap-1">
           <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" />
@@ -180,7 +208,8 @@ export function AiConsole() {
               handleSend();
             }
           }}
-          placeholder="Tanya apa saja tentang desk..."
+          placeholder={copy.placeholder}
+          aria-label={scope === 'stock' ? 'Pertanyaan untuk Gemini Stock Console' : 'Pertanyaan untuk Gemini Coin Console'}
           rows={2}
           disabled={isLoading}
           className="flex-1 resize-none rounded-lg border border-border bg-bg/80 px-3 py-2 font-sans text-xs sm:text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none disabled:opacity-50"
@@ -200,11 +229,7 @@ export function AiConsole() {
       </div>
 
       <div className="flex flex-wrap gap-1.5">
-        {[
-          'Buat ringkasan kondisi desk dan risiko utamanya saat ini.',
-          'Analisis sinyal terbaru: mana yang saling mengonfirmasi atau bertentangan?',
-          'Jelaskan seluruh posisi terbuka dan level risiko yang perlu dipantau.',
-        ].map((prompt) => (
+        {copy.prompts.map((prompt) => (
           <button
             key={prompt}
             type="button"
@@ -218,11 +243,11 @@ export function AiConsole() {
       </div>
 
       {displayed && (
-        <div className="relative mt-2 rounded-xl border border-border/80 bg-bg/90 p-3.5 sm:p-4 overflow-hidden w-full">
+        <div aria-live="polite" className="relative mt-2 rounded-xl border border-border/80 bg-bg/90 p-3.5 sm:p-4 overflow-hidden w-full">
           <div className="flex items-center justify-between border-b border-border/60 pb-2 mb-2.5">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-blue-400" />
-              <span className="font-mono text-[11px] text-ink-muted">Analisis Gemini AI</span>
+              <span className="font-mono text-[11px] text-ink-muted">Analisis Gemini AI · {scope === 'stock' ? 'Saham' : 'Coin'}</span>
             </div>
             <button
               type="button"
