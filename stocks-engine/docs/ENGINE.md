@@ -16,7 +16,7 @@ IDX calendar gate -> Yahoo collector -> normalized candles -> timeframe-specific
 
 Risk is strategy-specific after the recovery review: Scalping 1%, Open=Low 1.5%, Swing and Breakout–Retest 2%, Fundamental 1%. The budget is multiplied by 0.75 after a 5% agent drawdown and 0.50 after a 10% drawdown. Per-order notional caps are 10%, 15%, and 20% respectively. Total exposure/open-risk caps are isolated per agent (Scalping 30%/3%, Open=Low 45%/4.5%, Swing and Breakout 60%/6%, Fundamental 80%/8%). Reward/risk must remain at least 1.5 after 0.15% buy and 0.25% sell fees. Orders cannot fill from a candle timestamp at or before the wall-clock decision time, and stops/targets cannot execute on the fill candle. If both touch in one later OHLC bar, the conservative stop outcome wins.
 
-Scalping has a 90-active-minute time stop. Open=Low exits by the end of the session. Lunch and off-market time do not age a 5m order. A 120-active-minute symbol cooldown follows an intraday exit. Each intraday agent is limited to three new entries per day, and new entries stop after realized daily loss reaches 2% of current equity. The dashboard separates strategy v2 performance from retained `1.0-legacy` history.
+Scalping and Open=Low have no intraday time stop. Stop-loss and target remain active throughout the session, and any surviving position exits on the final regular 5-minute candle at 15:45 WIB. An overnight safety exit closes a position at the next available open if the EOD cycle was missed. Lunch and off-market time do not age a 5m order. A 120-active-minute symbol cooldown follows an intraday exit. Each intraday agent is limited to three new entries per day, and new entries stop after realized daily loss reaches 2% of current equity. The dashboard separates strategy v2 performance from retained `1.0-legacy` history.
 
 ## Cadence
 
@@ -26,7 +26,7 @@ Scalping has a 90-active-minute time stop. Open=Low exits by the end of the sess
 - Post-close Daily scan/report: once per exchange day.
 - Lunch, weekends, and validated exchange holidays: no run.
 
-The intraday universe defaults to 50 cached candidates. The complete master universe is evaluated on Daily data after close. Scalping and Open=Low are active only as `paper-validation`; delayed Yahoo data is never represented as live execution.
+The Daily discovery funnel uses a 100-name core ranked by adjusted average daily value plus up to 50 challengers ranked by technical score, relative volume, and Arjum screener priority. Both lanes must pass the same absolute liquidity and ATR gates. Up to 75 technical candidates are retained, while the intraday universe defaults to 75 symbols with open positions and pending orders pinned first. Arjum deep analysis remains limited to the best 20 setups. The complete master universe is evaluated on Daily data after close. Scalping and Open=Low are active only as `paper-validation`; delayed Yahoo data is never represented as live execution.
 
 ## Commands
 

@@ -16,7 +16,7 @@ from github_state import finalize, prepare
 def main() -> None:
     restored = prepare()
     result = engine.run_engine(timeframe="5m", range_="5d", collect=True, force=False)
-    # On an exchange holiday or outside a continuous session, leave the Git
+    # On an exchange holiday or outside a trading/closing session, leave the Git
     # state byte-for-byte unchanged so the workflow does not create empty
     # timestamp-only commits.
     published = None if result.get("status") == "SKIPPED" and result.get("reason") == "market_closed" else finalize()

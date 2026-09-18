@@ -44,8 +44,8 @@ Semua proses memakai `Asia/Jakarta` dan kalender libur IDX tervalidasi.
 | --- | --- |
 | 07:15 | Self-check, kalender, universe, provider, disk, dan kuota |
 | 07:30 | Warmup Arjum universe; cache analysis dan broker summary |
-| 08:30 | Susun 100 saham likuid lalu pilih Intraday 50 |
-| Sesi 1 dan 2 | Yahoo 5m untuk Intraday 50; evaluasi agen tiap 5 menit |
+| 08:30 | Susun Core 100 + Challenger 50 lalu pilih Intraday 75 |
+| Sesi 1 dan 2 | Yahoo 5m untuk Intraday 75; evaluasi agen tiap 5 menit |
 | Jeda/di luar sesi | Tidak membentuk candle dan tidak menghitung usia sinyal |
 | 16:15 | Koleksi daily, mark-to-market, expiry/cancel, dan rekonsiliasi |
 | 16:30 | Daily report, snapshot immutable, backup SQLite |

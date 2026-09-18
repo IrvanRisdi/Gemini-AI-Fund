@@ -119,7 +119,7 @@ def agent_table(report, st):
 AGENT_GUIDE = {
   "swing": ("Trend dan momentum Daily", "5-15 hari"),
   "scalping": ("Momentum intraday 5 menit", "Intraday"),
-  "open-low": ("Kekuatan pembukaan Open = Low", "60 menit pertama"),
+  "open-low": ("Kekuatan pembukaan Open = Low", "entry 45 menit pertama · kelola hingga EOD"),
   "fundamental": ("Quality, valuation, dan timing akumulasi", "3-6 bulan"),
   "breakout-retest": ("Breakout lalu retest struktur", "2-10 hari"),
 }

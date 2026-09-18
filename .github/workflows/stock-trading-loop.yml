@@ -22,7 +22,7 @@ jobs:
       NQ_PAPER_ONLY: 'true'
       NQ_YAHOO_ENABLED: 'true'
       NQ_ALLOW_DELAYED_PAPER: 'true'
-      NQ_INTRADAY_UNIVERSE_LIMIT: '50'
+      NQ_INTRADAY_UNIVERSE_LIMIT: '75'
       NQ_ARJUM_ENABLED: 'true'
       ARJUM_DAILY_LIMIT: '21000'
       ARJUM_API_KEY: ${{ secrets.ARJUM_API_KEY }}

@@ -90,6 +90,17 @@ class EngineFeatureTests(unittest.TestCase):
         self.assertEqual(expired, 1)
         self.assertEqual(self.db.execute("SELECT status FROM paper_orders WHERE id='order-old'").fetchone()[0], "EXPIRED")
 
+    def test_eod_guard_expires_pending_intraday_orders(self):
+        self.db.execute("""INSERT INTO paper_orders
+          (id,proposal_id,agent_id,symbol,side,order_type,lots,limit_price,stop_price,target_price,
+           status,created_at,expires_at,source_candle_at,timeframe,strategy_version) VALUES(
+          'order-eod','proposal-eod','scalping','TEST','BUY','LIMIT',1,100,95,110,
+          'PENDING','2026-08-27T15:40:00+07:00','2026-08-28T09:30:00+07:00',
+          '2026-08-27T15:35:00+07:00','5m','2.0')
+        """)
+        self.assertEqual(engine.expire_intraday_orders_eod(self.db), 1)
+        self.assertEqual(self.db.execute("SELECT status FROM paper_orders WHERE id='order-eod'").fetchone()[0], "EXPIRED_EOD")
+
     def test_feature_engine_ignores_trailing_zero_volume_bar(self):
         rows = engine.yahoo_rows(yahoo_fixture())
         expected_candle = rows[-2]["candle_at"]
@@ -188,9 +199,11 @@ class EngineFeatureTests(unittest.TestCase):
     def test_market_session_gate(self):
         monday = datetime(2026, 8, 24, 9, 30, tzinfo=engine.JAKARTA)
         lunch = datetime(2026, 8, 24, 12, 30, tzinfo=engine.JAKARTA)
+        closing = datetime(2026, 8, 24, 16, 0, tzinfo=engine.JAKARTA)
         saturday = datetime(2026, 8, 29, 10, 0, tzinfo=engine.JAKARTA)
         self.assertEqual(engine.market_phase(monday), "SESSION_1")
         self.assertEqual(engine.market_phase(lunch), "CLOSED")
+        self.assertEqual(engine.market_phase(closing), "CLOSING")
         self.assertEqual(engine.market_phase(saturday), "CLOSED")
 
     def test_engine_lock_prevents_overlapping_run(self):
@@ -263,11 +276,28 @@ class EngineFeatureTests(unittest.TestCase):
         features["atr_pct"] = 3
         features["relative_volume"] = 2
         features["ema20"] = 1000; features["ema50"] = 900; features["close"] = 1100
-        fake_settings = SimpleNamespace(liquidity_min_adv=250_000_000, liquid_universe_limit=100, technical_candidate_limit=50)
+        fake_settings = SimpleNamespace(liquidity_min_adv=250_000_000, liquid_universe_limit=100,
+                                        challenger_universe_limit=50, technical_candidate_limit=75)
         with patch.object(engine, "settings", fake_settings):
             liquid, candidates = engine.local_liquidity_shortlist([("ABCD", features)], {"ABCD"})
         self.assertEqual([symbol for symbol, _ in liquid], ["ABCD"])
         self.assertEqual([symbol for symbol, _ in candidates], ["ABCD"])
+
+    def test_liquidity_pipeline_adds_high_setup_challenger_outside_adv_core(self):
+        base = engine.feature_set(engine.yahoo_rows(yahoo_fixture()))
+        core = dict(base, average_daily_value=1_000_000_000, atr_pct=2,
+                    relative_volume=.2, breakout=False, change_pct=-1)
+        challenger = dict(base, average_daily_value=500_000_000, atr_pct=3,
+                          relative_volume=2.5, breakout=True, change_pct=2)
+        lower = dict(base, average_daily_value=400_000_000, atr_pct=3,
+                     relative_volume=.2, breakout=False, change_pct=-1)
+        fake_settings = SimpleNamespace(liquidity_min_adv=250_000_000, liquid_universe_limit=1,
+                                        challenger_universe_limit=1, technical_candidate_limit=2)
+        with patch.object(engine, "settings", fake_settings):
+            pool, candidates = engine.local_liquidity_shortlist(
+                [("CORE", core), ("CHALLENGER", challenger), ("LOWER", lower)], set())
+        self.assertEqual([symbol for symbol, _ in pool], ["CORE", "CHALLENGER"])
+        self.assertIn("CHALLENGER", [symbol for symbol, _ in candidates])
 
 
 class PaperExecutionV2Tests(unittest.TestCase):
@@ -330,6 +360,21 @@ class PaperExecutionV2Tests(unittest.TestCase):
         self.assertEqual(trade['exit_reason'], 'AMBIGUOUS_STOP')
         self.assertAlmostEqual(trade['fees'], trade['buy_fees'] + trade['sell_fees'])
         self.assertIsNotNone(trade['r_multiple'])
+
+    def test_scalping_holds_past_old_time_stop_and_exits_at_end_of_day(self):
+        self.candle('2026-08-24T09:15:00+07:00')
+        with patch.object(engine, "expire_pending_orders", return_value=0):
+            engine.process_pending_orders(self.db, '5m')
+
+        self.candle('2026-08-24T11:00:00+07:00')
+        self.assertEqual(engine.manage_positions(self.db, '5m'), 0)
+        self.assertEqual(self.db.execute("SELECT status FROM positions").fetchone()[0], "OPEN")
+
+        self.candle('2026-08-24T15:45:00+07:00')
+        self.assertEqual(engine.manage_positions(self.db, '5m'), 1)
+        trade = self.db.execute("SELECT * FROM trade_journal").fetchone()
+        self.assertEqual(trade['closed_at'], '2026-08-24T15:45:00+07:00')
+        self.assertEqual(trade['exit_reason'], 'END_OF_DAY_EXIT')
 
 
 if __name__ == "__main__": unittest.main()

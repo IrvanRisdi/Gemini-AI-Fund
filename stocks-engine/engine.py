@@ -576,28 +576,42 @@ def intraday_feature_is_fresh(features: dict, moment: datetime | None = None) ->
 
 
 def local_liquidity_shortlist(staged: list[tuple[str, dict]], arjum_symbols: set[str]) -> tuple[list[tuple[str, dict]], list[tuple[str, dict]]]:
-    """Gate Yahoo-cached IDX data locally: 900 -> 100 liquid -> 30–50 technical."""
-    liquid = []
+    """Build a stable core plus an emerging-setup challenger pool."""
+    eligible = []
     for symbol, features in staged:
         adv = float(features.get("average_daily_value") or 0)
         atr_pct = float(features.get("atr_pct") or 0)
         if adv >= settings.liquidity_min_adv and .25 <= atr_pct <= 20:
             # Arjum's daily screener is a priority signal, never a liquidity bypass.
             priority = 1.20 if symbol in arjum_symbols else 1.0
-            liquid.append((symbol, features, adv * priority))
-    liquid.sort(key=lambda item: item[2], reverse=True)
-    liquid_top = [(symbol, features) for symbol, features, _ in liquid[:settings.liquid_universe_limit]]
+            setup_score = technical_score(features) + (10 if symbol in arjum_symbols else 0)
+            eligible.append((symbol, features, adv * priority, setup_score))
+
+    # Core remains predictable and execution-friendly: highest adjusted ADV.
+    eligible.sort(key=lambda item: (item[2], item[3]), reverse=True)
+    core = eligible[:settings.liquid_universe_limit]
+    core_symbols = {symbol for symbol, _, _, _ in core}
+
+    # Challengers capture emerging momentum outside the top-ADV core without
+    # lowering the absolute liquidity and ATR safety gates.
+    challengers = [item for item in eligible if item[0] not in core_symbols]
+    challengers.sort(key=lambda item: (
+        item[3],
+        float(item[1].get("relative_volume") or 0),
+        item[2],
+    ), reverse=True)
+    challengers = challengers[:settings.challenger_universe_limit]
+    discovery_pool = [(symbol, features) for symbol, features, _, _ in core + challengers]
+
     technical = []
-    for symbol, features in liquid_top:
-        trend = int(bool(features.get("ema20") and features.get("ema50") and features["close"] > features["ema20"] > features["ema50"]))
-        breakout = int(bool(features.get("breakout")))
+    for symbol, features in discovery_pool:
         score = technical_score(features)
         if symbol in arjum_symbols:
             score += 10
         if score > 10:
             technical.append((symbol, features, score))
     technical.sort(key=lambda item: item[2], reverse=True)
-    return liquid_top, [(symbol, features) for symbol, features, _ in technical[:settings.technical_candidate_limit]]
+    return discovery_pool, [(symbol, features) for symbol, features, _ in technical[:settings.technical_candidate_limit]]
 
 
 def candle_rows(db, symbol: str, timeframe: str, limit: int = 120) -> list[dict]:
@@ -820,6 +834,14 @@ def expire_pending_orders(db, moment: datetime | None = None) -> int:
     return cursor.rowcount
 
 
+def expire_intraday_orders_eod(db) -> int:
+    """Closing-cycle guard: no delayed order may fill after the regular session."""
+    cursor = db.execute("""UPDATE paper_orders SET status='EXPIRED_EOD'
+      WHERE status='PENDING' AND timeframe='5m'""")
+    db.commit()
+    return cursor.rowcount
+
+
 def process_pending_orders(db, timeframe: str) -> int:
     if timeframe != "5m":
         return 0
@@ -884,12 +906,9 @@ def manage_positions(db, timeframe: str) -> int:
             elif position["agent_id"] in {"scalping", "open-low"}:
                 opened = datetime.fromisoformat(position["opened_at"])
                 current_candle = datetime.fromisoformat(candle["candle_at"])
-                active_age = idx_trading_minutes_between(opened, current_candle)
                 if current_candle.date() > opened.date():
                     exit_price, reason = candle["open"], "OVERNIGHT_SAFETY_EXIT"
-                elif position["agent_id"] == "scalping" and active_age is not None and active_age >= 90:
-                    exit_price, reason = candle["close"], "TIME_STOP_90M"
-                elif position["agent_id"] == "open-low" and current_candle.time() >= clock_time(15, 40):
+                elif current_candle.time() >= clock_time(15, 45):
                     exit_price, reason = candle["close"], "END_OF_DAY_EXIT"
             if not exit_price:
                 continue
@@ -1086,7 +1105,7 @@ def acquire_run_lock(db, run_id: str) -> bool:
 
 def run_engine(timeframe: str="5m", range_: str="5d", collect: bool=True, force: bool=False, full_universe: bool=False) -> dict:
     phase=market_phase()
-    allowed_phases={"POSTCLOSE"} if timeframe=="1d" else {"SESSION_1","SESSION_2"}
+    allowed_phases={"POSTCLOSE"} if timeframe=="1d" else {"SESSION_1","SESSION_2","CLOSING"}
     if not force and phase not in allowed_phases:
         return {"status":"SKIPPED","reason":"market_closed","phase":phase}
     server.init_db(); db=server.connect(); ensure_runtime(db); master_universe=load_universe(); sync_universe(db,master_universe)
@@ -1099,7 +1118,9 @@ def run_engine(timeframe: str="5m", range_: str="5d", collect: bool=True, force:
     try:
         ok, errors=(collect_yahoo(db,universe,timeframe,range_) if collect else (len(universe),[]))
         ihsg_collection = collect_ihsg_daily(db) if collect and timeframe == "1d" else None
-        fills=process_pending_orders(db,timeframe) if not settings.demo_mode and timeframe == "5m" else 0
+        closing_cycle = timeframe == "5m" and phase == "CLOSING"
+        expired_eod = expire_intraday_orders_eod(db) if closing_cycle and not settings.demo_mode else 0
+        fills=process_pending_orders(db,timeframe) if not settings.demo_mode and timeframe == "5m" and not closing_cycle else 0
         closed=manage_positions(db,timeframe) if not settings.demo_mode and timeframe == "5m" else 0
         proposal_count=order_count=features_count=stale_features=0
         arjum_candidates=[]
@@ -1124,10 +1145,14 @@ def run_engine(timeframe: str="5m", range_: str="5d", collect: bool=True, force:
                 if not intraday_feature_is_fresh(features):
                     stale_features += 1
                     continue
-                db.execute("UPDATE instruments SET evaluation_score=?,evaluation_status='WATCH' WHERE symbol=?",(technical_score(features),symbol))
+                db.execute("UPDATE instruments SET evaluation_score=?,evaluation_status='SCREENED_OUT' WHERE symbol=?",(technical_score(features),symbol))
                 fresh_staged.append((symbol,features))
             staged=fresh_staged
         liquid, candidates = local_liquidity_shortlist(staged, arjum_symbols) if timeframe == "1d" or full_universe else (staged, staged)
+        if closing_cycle:
+            # Yahoo's delayed final 15:45 candle is processed after 15:50.
+            # Closing runs manage existing risk only and never generate entries.
+            candidates = []
         for symbol, features in candidates:
             best=technical_score(features)
             # A stale completed candle may refresh the read-only dashboard score,
@@ -1153,7 +1178,9 @@ def run_engine(timeframe: str="5m", range_: str="5d", collect: bool=True, force:
             mark_to_market(db)
         # Enrichment does not block Yahoo-based strategy evaluation or paper fills.
         arjum_results = collect_arjum_candidates(db, arjum_candidates) if timeframe == "1d" else []
-        stats={"phase":phase,"features":features_count,"stale_features":stale_features,"liquid_universe":len(liquid),"technical_candidates":len(candidates),"collector_errors":errors,"positions_closed":closed,"ihsg":ihsg_collection,"arjum_screener":screener_result,"arjum":arjum_results}
+        core_count = min(len(liquid), settings.liquid_universe_limit) if timeframe == "1d" or full_universe else 0
+        challenger_count = max(0, len(liquid) - core_count) if timeframe == "1d" or full_universe else 0
+        stats={"phase":phase,"features":features_count,"stale_features":stale_features,"liquid_universe":len(liquid),"core_universe":core_count,"challenger_universe":challenger_count,"technical_candidates":len(candidates),"collector_errors":errors,"positions_closed":closed,"orders_expired_eod":expired_eod,"ihsg":ihsg_collection,"arjum_screener":screener_result,"arjum":arjum_results}
         status="COMPLETED" if not errors else ("PARTIAL" if ok else "FAILED")
         db.execute("""UPDATE engine_runs SET completed_at=?,status=?,symbols_ok=?,symbols_failed=?,proposals=?,orders_created=?,fills_created=?,stats_json=? WHERE id=?""",(iso(),status,ok,len(errors),proposal_count,order_count,fills,json.dumps(stats),run_id));db.commit()
         if timeframe == "1d" or phase == "POSTCLOSE":
@@ -1182,7 +1209,7 @@ def daemon(interval_seconds: int=60) -> None:
         moment=now_wib(); phase=market_phase(moment)
         cadence=15 if phase=="PREOPEN" else 5
         bucket=(moment.date().isoformat(),phase) if phase=="POSTCLOSE" else (moment.date().isoformat(),moment.hour,moment.minute//cadence,phase)
-        if phase in {"SESSION_1","SESSION_2","POSTCLOSE"} and bucket!=last_bucket:
+        if phase in {"SESSION_1","SESSION_2","CLOSING","POSTCLOSE"} and bucket!=last_bucket:
             timeframe="5m" if phase not in {"POSTCLOSE"} else "1d"
             try: print(json.dumps(run_engine(timeframe,"5d" if timeframe=="5m" else "6mo"),ensure_ascii=False))
             except Exception as exc: print(json.dumps({"status":"FAILED","error":str(exc)}))

@@ -3,7 +3,7 @@ export type IdxGate = {
   localTime: string;
   weekday: number;
   holiday: boolean;
-  session: 'SESSION_1' | 'SESSION_2' | 'CLOSED';
+  session: 'SESSION_1' | 'SESSION_2' | 'CLOSING' | 'CLOSED';
   open: boolean;
   calendarStatus: 'VALIDATED' | 'UNAVAILABLE';
 };
@@ -68,6 +68,7 @@ export async function idxGate(now = new Date()): Promise<IdxGate> {
   let session: IdxGate['session'] = 'CLOSED';
   if (clock.minuteOfDay >= 9 * 60 && clock.minuteOfDay < session1End) session = 'SESSION_1';
   if (clock.minuteOfDay >= session2Start && clock.minuteOfDay < 15 * 60 + 50) session = 'SESSION_2';
+  if (clock.minuteOfDay >= 15 * 60 + 50 && clock.minuteOfDay <= 16 * 60 + 15) session = 'CLOSING';
   const open = weekdayOpen && !holiday && calendar.status === 'VALIDATED' && session !== 'CLOSED';
   return { ...clock, holiday, session, open, calendarStatus: calendar.status };
 }

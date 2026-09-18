@@ -48,7 +48,7 @@ class Settings:
     yahoo_delay_minutes: int = int(os.getenv("NQ_YAHOO_DELAY_MINUTES", "10"))
     allow_delayed_paper: bool = flag("NQ_ALLOW_DELAYED_PAPER", True)
     min_universe_size: int = int(os.getenv("NQ_MIN_UNIVERSE_SIZE", "700"))
-    intraday_universe_limit: int = int(os.getenv("NQ_INTRADAY_UNIVERSE_LIMIT", "50"))
+    intraday_universe_limit: int = int(os.getenv("NQ_INTRADAY_UNIVERSE_LIMIT", "75"))
     intraday_stale_minutes: int = int(os.getenv("NQ_INTRADAY_STALE_MINUTES", "30"))
     access_user: str = os.getenv("NQ_ACCESS_USER", "")
     access_password: str = os.getenv("NQ_ACCESS_PASSWORD", "")
@@ -61,7 +61,8 @@ class Settings:
     fundamental_cache_days: int = int(os.getenv("NQ_FUNDAMENTAL_CACHE_DAYS", "7"))
     liquidity_min_adv: int = int(os.getenv("NQ_LIQUIDITY_MIN_ADV", "250000000"))
     liquid_universe_limit: int = int(os.getenv("NQ_LIQUID_UNIVERSE_LIMIT", "100"))
-    technical_candidate_limit: int = int(os.getenv("NQ_TECHNICAL_CANDIDATE_LIMIT", "50"))
+    challenger_universe_limit: int = int(os.getenv("NQ_CHALLENGER_UNIVERSE_LIMIT", "50"))
+    technical_candidate_limit: int = int(os.getenv("NQ_TECHNICAL_CANDIDATE_LIMIT", "75"))
     stale_after_hours: int = int(os.getenv("NQ_STALE_AFTER_HOURS", "30"))
 
     @property
