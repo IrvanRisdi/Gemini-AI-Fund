@@ -1,29 +1,969 @@
 {
-  "timestamp": "2026-09-03T16:45:40.008Z",
-  "mode": "spot-only-v2",
-  "pairsScanned": 19,
-  "candidates": [
+  "timestamp": "2026-09-19T17:10:25.918Z",
+  "mode": "spot-only-v3-recovery",
+  "strategyVersion": "recovery-v3",
+  "marketRegime": {
+    "riskOn": true,
+    "close": 1428150000,
+    "ema21": 1388740015.7200158,
+    "adx": 35.145777742931095,
+    "reason": "BTC 4H bullish dan ADX ≥ 18"
+  },
+  "pairsScanned": 50,
+  "universe": [
     {
-      "id": "wyckoff-trader-pepeidr-1788453939953",
+      "pair": "btcidr",
+      "volumeIdr": 28043797850,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "ethidr",
+      "volumeIdr": 20772592602,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "solidr",
+      "volumeIdr": 9188210291,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "xrpidr",
+      "volumeIdr": 14936973897,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "dogeidr",
+      "volumeIdr": 4836242465,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
       "pair": "pepeidr",
-      "agent": "wyckoff-trader",
-      "side": "long",
-      "type": "limit",
-      "timeframe": "15m",
-      "entryLow": 0.06768382142857143,
-      "entryHigh": 0.067287,
-      "stopPrice": 0.06684067857142857,
-      "targetPrice": 0.06795987,
-      "expiresAt": "2026-09-04T00:45:39.953Z",
-      "confirmations": [
-        "Wyckoff phase D / SoS",
-        "Skor 3/5",
-        "Retest range high dalam zona 0,3 ATR"
-      ],
-      "score": 3,
-      "validationStatus": "research",
-      "reason": "Wyckoff SoS: buy limit pada zona retest range high."
+      "volumeIdr": 3687886387,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "suiidr",
+      "volumeIdr": 3397326954,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "bnbidr",
+      "volumeIdr": 1193760590,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "trxidr",
+      "volumeIdr": 445352178,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "hypeidr",
+      "volumeIdr": 11714927205,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "linkidr",
+      "volumeIdr": 779410562,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "adaidr",
+      "volumeIdr": 3259513747,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "bchidr",
+      "volumeIdr": 0,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "tonidr",
+      "volumeIdr": 0,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "ltcidr",
+      "volumeIdr": 567068367,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "hbaridr",
+      "volumeIdr": 632792088,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "avaxidr",
+      "volumeIdr": 444352653,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "shibidr",
+      "volumeIdr": 529812666,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "uniidr",
+      "volumeIdr": 448499799,
+      "source": "indodax",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "zecidr",
+      "volumeIdr": 0,
+      "source": "kraken",
+      "selectedBecause": "external"
+    },
+    {
+      "pair": "myxidr",
+      "volumeIdr": 24094700999,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "fartcoinidr",
+      "volumeIdr": 4798220217,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "bridr",
+      "volumeIdr": 3909055444,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "synidr",
+      "volumeIdr": 3114658229,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "ondoidr",
+      "volumeIdr": 2738740592,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "gravityidr",
+      "volumeIdr": 2488254293,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "enaidr",
+      "volumeIdr": 2456926618,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "b2idr",
+      "volumeIdr": 2162033979,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "arbidr",
+      "volumeIdr": 2129044769,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "uselessidr",
+      "volumeIdr": 1779615598,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "zamaidr",
+      "volumeIdr": 1711981015,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "uaiidr",
+      "volumeIdr": 1595632094,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "asteridr",
+      "volumeIdr": 1552262320,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "beatidr",
+      "volumeIdr": 1384628664,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "penguidr",
+      "volumeIdr": 1360797950,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "skyaiidr",
+      "volumeIdr": 1210184118,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "krdidr",
+      "volumeIdr": 1188015223,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "anoaidr",
+      "volumeIdr": 1175863402,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "trollsolidr",
+      "volumeIdr": 1117500652,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "pippinidr",
+      "volumeIdr": 1086015957,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "moodengidr",
+      "volumeIdr": 1053177397,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "nearidr",
+      "volumeIdr": 1048557126,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "strkidr",
+      "volumeIdr": 974102299,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "sirenidr",
+      "volumeIdr": 913163659,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "auraidr",
+      "volumeIdr": 912970033,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "whitewhaleidr",
+      "volumeIdr": 880151555,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "xlmidr",
+      "volumeIdr": 822243830,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "zerebroidr",
+      "volumeIdr": 805847542,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "btrnewidr",
+      "volumeIdr": 737889360,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "stikidr",
+      "volumeIdr": 706063821,
+      "source": "indodax",
+      "selectedBecause": "liquidity"
     }
   ],
+  "diagnostics": [
+    {
+      "pair": "btcidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 28043797850,
+      "status": "uptrend",
+      "close": 1428150000,
+      "ema9": 1409795683.288888,
+      "ema21": 1388740015.7200158,
+      "adx": 35.145777742931095,
+      "relativeVolume": 0.4766260449377273,
+      "candidates": 0
+    },
+    {
+      "pair": "ethidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 20772592602,
+      "status": "uptrend",
+      "close": 46250000,
+      "ema9": 45519843.94913589,
+      "ema21": 44666128.6730337,
+      "adx": 27.79985390862867,
+      "relativeVolume": 0.315536870321352,
+      "candidates": 0
+    },
+    {
+      "pair": "solidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 9188210291,
+      "status": "uptrend",
+      "close": 1958818,
+      "ema9": 1933265.298900582,
+      "ema21": 1874705.7098774312,
+      "adx": 45.64706509575941,
+      "relativeVolume": 0.1553114382666812,
+      "candidates": 0
+    },
+    {
+      "pair": "xrpidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 14936973897,
+      "status": "uptrend",
+      "close": 25082,
+      "ema9": 24493.725973352506,
+      "ema21": 24037.78831795254,
+      "adx": 27.906184738346354,
+      "relativeVolume": 0.061764247265791335,
+      "candidates": 0
+    },
+    {
+      "pair": "dogeidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 4836242465,
+      "status": "uptrend",
+      "close": 1559,
+      "ema9": 1526.1634103846186,
+      "ema21": 1496.8110067608552,
+      "adx": 31.304452650891488,
+      "relativeVolume": 0.23084411870333493,
+      "candidates": 0
+    },
+    {
+      "pair": "pepeidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 3687886387,
+      "status": "uptrend",
+      "close": 0.067304,
+      "ema9": 0.06606543245409374,
+      "ema21": 0.06436620307922385,
+      "adx": 41.45509637078903,
+      "relativeVolume": 1.4501350035749214,
+      "candidates": 0
+    },
+    {
+      "pair": "suiidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 3397326954,
+      "status": "uptrend",
+      "close": 14774,
+      "ema9": 14306.4900222807,
+      "ema21": 13719.686055432918,
+      "adx": 48.950748086240864,
+      "relativeVolume": 0.11210695470921059,
+      "candidates": 0
+    },
+    {
+      "pair": "bnbidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 1193760590,
+      "status": "uptrend",
+      "close": 13454522,
+      "ema9": 13326772.00419774,
+      "ema21": 13136169.910237294,
+      "adx": 29.424938234004276,
+      "relativeVolume": 0.12355041156106147,
+      "candidates": 0
+    },
+    {
+      "pair": "trxidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 445352178,
+      "status": "uptrend",
+      "close": 5941,
+      "ema9": 5935.891918149368,
+      "ema21": 5934.926898012435,
+      "adx": 18.479821107236994,
+      "relativeVolume": 0.49096321510353325,
+      "candidates": 0
+    },
+    {
+      "pair": "hypeidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 11714927205,
+      "status": "uptrend",
+      "close": 1628117,
+      "ema9": 1598039.5815320509,
+      "ema21": 1534405.7245753885,
+      "adx": 55.0229504454093,
+      "relativeVolume": 0.6129759998352071,
+      "candidates": 0
+    },
+    {
+      "pair": "linkidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 779410562,
+      "status": "uptrend",
+      "close": 224837,
+      "ema9": 215598.72757340764,
+      "ema21": 208994.89470033665,
+      "adx": 40.90720592558869,
+      "relativeVolume": 0,
+      "candidates": 0
+    },
+    {
+      "pair": "adaidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 3259513747,
+      "status": "uptrend",
+      "close": 3983,
+      "ema9": 3889.0059041473555,
+      "ema21": 3767.4675942228264,
+      "adx": 36.249802568515655,
+      "relativeVolume": 0.21271929748226417,
+      "candidates": 0
+    },
+    {
+      "pair": "bchidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 0,
+      "status": "sideways",
+      "close": 7700000,
+      "ema9": 7700000,
+      "ema21": 7700000,
+      "adx": null,
+      "relativeVolume": 0,
+      "candidates": 0
+    },
+    {
+      "pair": "tonidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 0,
+      "status": "uptrend",
+      "close": 24459,
+      "ema9": 24070.18945084551,
+      "ema21": 23878.101424260753,
+      "adx": 14.813116064343271,
+      "relativeVolume": 0,
+      "candidates": 0
+    },
+    {
+      "pair": "ltcidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 567068367,
+      "status": "uptrend",
+      "close": 1018000,
+      "ema9": 998954.5872784579,
+      "ema21": 973033.4480377041,
+      "adx": 17.294460591542116,
+      "relativeVolume": 0.17133693578776943,
+      "candidates": 0
+    },
+    {
+      "pair": "hbaridr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 632792088,
+      "status": "uptrend",
+      "close": 1432,
+      "ema9": 1389.2126084189529,
+      "ema21": 1365.1118247467377,
+      "adx": 23.47915104898157,
+      "relativeVolume": 0.4819396817411537,
+      "candidates": 0
+    },
+    {
+      "pair": "avaxidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 444352653,
+      "status": "uptrend",
+      "close": 165888,
+      "ema9": 151109.60315725795,
+      "ema21": 143082.42159079894,
+      "adx": 62.947253655566406,
+      "relativeVolume": 0.15938235160575848,
+      "candidates": 0
+    },
+    {
+      "pair": "shibidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 529812666,
+      "status": "uptrend",
+      "close": 0.096438,
+      "ema9": 0.09492574971783005,
+      "ema21": 0.09315268343539647,
+      "adx": 18.409634206005382,
+      "relativeVolume": 0.038044617651116094,
+      "candidates": 0
+    },
+    {
+      "pair": "uniidr",
+      "source": "indodax",
+      "selectedBecause": "core",
+      "volumeIdr24h": 448499799,
+      "status": "uptrend",
+      "close": 157136,
+      "ema9": 153495.6225838058,
+      "ema21": 141630.82424555195,
+      "adx": 64.1402083201958,
+      "relativeVolume": 0.44245708756520874,
+      "candidates": 0
+    },
+    {
+      "pair": "zecidr",
+      "source": "kraken",
+      "selectedBecause": "external",
+      "volumeIdr24h": 0,
+      "status": "uptrend",
+      "close": 26654298.25,
+      "ema9": 26475944.389375426,
+      "ema21": 25084946.003348116,
+      "adx": 51.761850018804694,
+      "relativeVolume": 4.211370872711397,
+      "candidates": 0
+    },
+    {
+      "pair": "myxidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 24094700999,
+      "status": "uptrend",
+      "close": 1526,
+      "ema9": 1452.7780331376719,
+      "ema21": 1291.7998168904878,
+      "adx": 53.27654565150489,
+      "relativeVolume": 0.6507295034103138,
+      "candidates": 0
+    },
+    {
+      "pair": "fartcoinidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 4798220217,
+      "status": "uptrend",
+      "close": 2816,
+      "ema9": 2767.8320551944125,
+      "ema21": 2677.0891100419394,
+      "adx": 21.0308694304665,
+      "relativeVolume": 0.9325787604512311,
+      "candidates": 0
+    },
+    {
+      "pair": "bridr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 3909055444,
+      "status": "uptrend",
+      "close": 20567,
+      "ema9": 15866.172622933851,
+      "ema21": 13109.11823531137,
+      "adx": 29.027860064719896,
+      "relativeVolume": 0.44098422862394626,
+      "candidates": 0
+    },
+    {
+      "pair": "synidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 3114658229,
+      "status": "uptrend",
+      "close": 4161,
+      "ema9": 3786.228109215923,
+      "ema21": 3318.118008953064,
+      "adx": 54.71917278646589,
+      "relativeVolume": 0.10093491378433102,
+      "candidates": 0
+    },
+    {
+      "pair": "ondoidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 2738740592,
+      "status": "uptrend",
+      "close": 7648,
+      "ema9": 7048.46370146131,
+      "ema21": 6730.942414068192,
+      "adx": 41.42831262282072,
+      "relativeVolume": 0.16222370727635124,
+      "candidates": 0
+    },
+    {
+      "pair": "gravityidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 2488254293,
+      "status": "uptrend",
+      "close": 177,
+      "ema9": 142.08663205921397,
+      "ema21": 117.29912706764024,
+      "adx": 81.59871896417023,
+      "relativeVolume": 4.7747854695611025,
+      "candidates": 0
+    },
+    {
+      "pair": "enaidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 2456926618,
+      "status": "uptrend",
+      "close": 3496,
+      "ema9": 3133.9542086062015,
+      "ema21": 2920.5312099545945,
+      "adx": 47.79765412122716,
+      "relativeVolume": 0.19520281585001426,
+      "candidates": 0
+    },
+    {
+      "pair": "b2idr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 2162033979,
+      "status": "uptrend",
+      "close": 9970,
+      "ema9": 8915.825930749834,
+      "ema21": 8122.240349773017,
+      "adx": 27.94764053947955,
+      "relativeVolume": 0.27480860775910504,
+      "candidates": 0
+    },
+    {
+      "pair": "arbidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 2129044769,
+      "status": "uptrend",
+      "close": 3671,
+      "ema9": 3651.464357617383,
+      "ema21": 3384.185166777514,
+      "adx": 66.05586038978457,
+      "relativeVolume": 0.005241525282398048,
+      "candidates": 0
+    },
+    {
+      "pair": "uselessidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1779615598,
+      "status": "uptrend",
+      "close": 4815,
+      "ema9": 4775.126940309171,
+      "ema21": 4556.596167116836,
+      "adx": 33.321332496922615,
+      "relativeVolume": 0.5777721169673847,
+      "candidates": 0
+    },
+    {
+      "pair": "zamaidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1711981015,
+      "status": "uptrend",
+      "close": 1468,
+      "ema9": 1147.4568376868556,
+      "ema21": 1018.2572386243578,
+      "adx": 56.722027549698964,
+      "relativeVolume": 0.13370919077188473,
+      "candidates": 0
+    },
+    {
+      "pair": "uaiidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1595632094,
+      "status": "downtrend",
+      "close": 7056,
+      "ema9": 7096.392584184128,
+      "ema21": 7220.142243461311,
+      "adx": 10.476710715334823,
+      "relativeVolume": 0.01799440957772712,
+      "candidates": 0
+    },
+    {
+      "pair": "asteridr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1552262320,
+      "status": "uptrend",
+      "close": 13402,
+      "ema9": 13338.675820348191,
+      "ema21": 13059.778295589995,
+      "adx": 47.54222359623425,
+      "relativeVolume": 1.3742045514830075,
+      "candidates": 0
+    },
+    {
+      "pair": "beatidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1384628664,
+      "status": "uptrend",
+      "close": 1509,
+      "ema9": 1507.957200940797,
+      "ema21": 1498.6984880518141,
+      "adx": 10.968873136933547,
+      "relativeVolume": 1.7596976840959895,
+      "candidates": 0
+    },
+    {
+      "pair": "penguidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1360797950,
+      "status": "uptrend",
+      "close": 137.916,
+      "ema9": 136.24083461576487,
+      "ema21": 132.5001803298534,
+      "adx": 47.79089650572952,
+      "relativeVolume": 2.094358008947978,
+      "candidates": 0
+    },
+    {
+      "pair": "skyaiidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1210184118,
+      "status": "downtrend",
+      "close": 890,
+      "ema9": 900.7793946030106,
+      "ema21": 918.7184958346465,
+      "adx": 11.793685651360414,
+      "relativeVolume": 0.2939448723559394,
+      "candidates": 0
+    },
+    {
+      "pair": "krdidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1188015223,
+      "status": "sideways",
+      "close": 4,
+      "ema9": 4.380674316055832,
+      "ema21": 3.653045766079798,
+      "adx": 90.60828625304221,
+      "relativeVolume": 0.5415610675559537,
+      "candidates": 0
+    },
+    {
+      "pair": "anoaidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1175863402,
+      "status": "sideways",
+      "close": 213959,
+      "ema9": 212229.33358075726,
+      "ema21": 217069.4138727831,
+      "adx": 7.269856356345301,
+      "relativeVolume": 0.021571638358584454,
+      "candidates": 0
+    },
+    {
+      "pair": "trollsolidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1117500652,
+      "status": "uptrend",
+      "close": 850.001,
+      "ema9": 846.971426335137,
+      "ema21": 826.5506350986444,
+      "adx": 28.05948333508263,
+      "relativeVolume": 0.02069962348098668,
+      "candidates": 0
+    },
+    {
+      "pair": "pippinidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1086015957,
+      "status": "uptrend",
+      "close": 315.789,
+      "ema9": 315.184980848542,
+      "ema21": 311.48853101278456,
+      "adx": 8.633178230084816,
+      "relativeVolume": 1.4017977928778254,
+      "candidates": 0
+    },
+    {
+      "pair": "moodengidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1053177397,
+      "status": "uptrend",
+      "close": 780,
+      "ema9": 774.9772392281918,
+      "ema21": 749.4325149828452,
+      "adx": 54.50850827179874,
+      "relativeVolume": 1.795847352841769,
+      "candidates": 0
+    },
+    {
+      "pair": "nearidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1048557126,
+      "status": "uptrend",
+      "close": 63000,
+      "ema9": 62319.02043083302,
+      "ema21": 57102.746320994505,
+      "adx": 76.18251748720017,
+      "relativeVolume": 0.2553470571847049,
+      "candidates": 0
+    },
+    {
+      "pair": "strkidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 974102299,
+      "status": "uptrend",
+      "close": 778,
+      "ema9": 714.8978443105383,
+      "ema21": 632.3695340039839,
+      "adx": 62.30275166690411,
+      "relativeVolume": 0.06869731877215332,
+      "candidates": 0
+    },
+    {
+      "pair": "sirenidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 913163659,
+      "status": "downtrend",
+      "close": 414,
+      "ema9": 421.0930365218824,
+      "ema21": 423.7530402114266,
+      "adx": 23.539811817190678,
+      "relativeVolume": 0.001970524588133044,
+      "candidates": 0
+    },
+    {
+      "pair": "auraidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 912970033,
+      "status": "downtrend",
+      "close": 232,
+      "ema9": 241.458822455351,
+      "ema21": 260.78184229959334,
+      "adx": 34.22293078552999,
+      "relativeVolume": 0.009361733623111221,
+      "candidates": 0
+    },
+    {
+      "pair": "whitewhaleidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 880151555,
+      "status": "downtrend",
+      "close": 17,
+      "ema9": 17.96547615793272,
+      "ema21": 19.373433221285815,
+      "adx": 28.47196977406282,
+      "relativeVolume": 0.5402552232749107,
+      "candidates": 0
+    },
+    {
+      "pair": "xlmidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 822243830,
+      "status": "insufficient-data",
+      "close": null,
+      "ema9": null,
+      "ema21": null,
+      "adx": null,
+      "relativeVolume": null,
+      "candidates": 0
+    },
+    {
+      "pair": "zerebroidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 805847542,
+      "status": "sideways",
+      "close": 550,
+      "ema9": 555.217762029344,
+      "ema21": 548.2552111734151,
+      "adx": 26.855677019254216,
+      "relativeVolume": 0.7615996627781247,
+      "candidates": 0
+    },
+    {
+      "pair": "btrnewidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 737889360,
+      "status": "downtrend",
+      "close": 0.1498,
+      "ema9": 0.22742927374127864,
+      "ema21": 0.2842190819252262,
+      "adx": 56.81647430749068,
+      "relativeVolume": 0.3792063888272195,
+      "candidates": 0
+    },
+    {
+      "pair": "stikidr",
+      "source": "indodax",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 706063821,
+      "status": "uptrend",
+      "close": 93,
+      "ema9": 92.69012150116619,
+      "ema21": 91.09460866321673,
+      "adx": 34.508787607963065,
+      "relativeVolume": 0.9805511823284482,
+      "candidates": 0
+    }
+  ],
+  "candidates": [],
   "errors": []
 }
