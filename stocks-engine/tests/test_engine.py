@@ -312,7 +312,7 @@ class PaperExecutionV2Tests(unittest.TestCase):
             fill_id TEXT,opened_at TEXT,entry_candle_at TEXT,last_managed_candle_at TEXT,
             buy_fees REAL DEFAULT 0,initial_risk REAL,strategy_version TEXT DEFAULT '2.0');
           CREATE TABLE trade_journal(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,agent_id TEXT,symbol TEXT,opened_at TEXT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,agent_id TEXT,symbol TEXT,opened_at TEXT NOT NULL,
             closed_at TEXT,side TEXT DEFAULT 'LONG',lots INTEGER,entry_price REAL,exit_price REAL,
             gross_pnl REAL,fees REAL DEFAULT 0,net_pnl REAL,r_multiple REAL,setup TEXT,
             exit_reason TEXT,notes TEXT,buy_fees REAL DEFAULT 0,sell_fees REAL DEFAULT 0,

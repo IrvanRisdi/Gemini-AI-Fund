@@ -933,12 +933,14 @@ def manage_positions(db, timeframe: str) -> int:
               fees_paid=fees_paid+?,updated_at=? WHERE agent_id=?""",
               (gross-sell_fees,net_pnl,sell_fees,iso(),position["agent_id"]))
             position_version = position["strategy_version"] or STRATEGY_VERSION
-            legacy_note = "; posisi legacy mulai dikelola dari candle terbaru yang valid" if position_version != STRATEGY_VERSION else ""
+            journal_opened_at = position["opened_at"] or position["entry_candle_at"] or candle["candle_at"]
+            legacy_note = ("; posisi legacy mulai dikelola dari candle terbaru yang valid; "
+                           "timestamp entry asli tidak tersedia" if position_version != STRATEGY_VERSION else "")
             db.execute("""INSERT INTO trade_journal
               (agent_id,symbol,opened_at,closed_at,lots,entry_price,exit_price,gross_pnl,fees,
                net_pnl,r_multiple,setup,exit_reason,notes,buy_fees,sell_fees,initial_risk,strategy_version)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-              (position["agent_id"],position["symbol"],position["opened_at"],candle["candle_at"],
+              (position["agent_id"],position["symbol"],journal_opened_at,candle["candle_at"],
                position["lots"],position["entry_price"],exit_price,gross_pnl,
                float(position["buy_fees"] or 0)+sell_fees,net_pnl,r_multiple,"engine-paper-v2",
                reason,"Yahoo delayed; stop diprioritaskan bila urutan intrabar ambigu"+legacy_note,
