@@ -885,11 +885,19 @@ def manage_positions(db, timeframe: str) -> int:
     if timeframe != "5m":
         return 0
     closed = 0
-    positions = db.execute("SELECT * FROM positions WHERE status='OPEN' AND strategy_version=?", (STRATEGY_VERSION,)).fetchall()
+    # Open positions from the legacy simulator are still real paper exposure.
+    # Manage them from the latest fresh candle forward instead of leaving them
+    # frozen forever or replaying candles that pre-date this execution engine.
+    positions = db.execute("SELECT * FROM positions WHERE status='OPEN'").fetchall()
     for position in positions:
         after = position["last_managed_candle_at"] or position["entry_candle_at"] or position["opened_at"]
-        candles = db.execute("""SELECT * FROM market_candles WHERE symbol=? AND timeframe=?
-          AND candle_at>? ORDER BY candle_at""", (position["symbol"], timeframe, after)).fetchall()
+        if after:
+            candles = db.execute("""SELECT * FROM market_candles WHERE symbol=? AND timeframe=?
+              AND candle_at>? ORDER BY candle_at""", (position["symbol"], timeframe, after)).fetchall()
+        else:
+            latest = db.execute("""SELECT * FROM market_candles WHERE symbol=? AND timeframe=?
+              ORDER BY candle_at DESC LIMIT 1""", (position["symbol"], timeframe)).fetchone()
+            candles = [latest] if latest and intraday_feature_is_fresh({"candle_at": latest["candle_at"]}) else []
         for candle in candles:
             if not is_idx_trading_timestamp(candle["candle_at"]):
                 continue
@@ -904,8 +912,8 @@ def manage_positions(db, timeframe: str) -> int:
             elif target_hit:
                 exit_price, reason = position["target_price"], "TARGET"
             elif position["agent_id"] in {"scalping", "open-low"}:
-                opened = datetime.fromisoformat(position["opened_at"])
                 current_candle = datetime.fromisoformat(candle["candle_at"])
+                opened = datetime.fromisoformat(position["opened_at"]) if position["opened_at"] else current_candle
                 if current_candle.date() > opened.date():
                     exit_price, reason = candle["open"], "OVERNIGHT_SAFETY_EXIT"
                 elif current_candle.time() >= clock_time(15, 45):
@@ -924,6 +932,8 @@ def manage_positions(db, timeframe: str) -> int:
             db.execute("""UPDATE agent_ledgers SET cash=cash+?,realized_pnl=realized_pnl+?,
               fees_paid=fees_paid+?,updated_at=? WHERE agent_id=?""",
               (gross-sell_fees,net_pnl,sell_fees,iso(),position["agent_id"]))
+            position_version = position["strategy_version"] or STRATEGY_VERSION
+            legacy_note = "; posisi legacy mulai dikelola dari candle terbaru yang valid" if position_version != STRATEGY_VERSION else ""
             db.execute("""INSERT INTO trade_journal
               (agent_id,symbol,opened_at,closed_at,lots,entry_price,exit_price,gross_pnl,fees,
                net_pnl,r_multiple,setup,exit_reason,notes,buy_fees,sell_fees,initial_risk,strategy_version)
@@ -931,8 +941,8 @@ def manage_positions(db, timeframe: str) -> int:
               (position["agent_id"],position["symbol"],position["opened_at"],candle["candle_at"],
                position["lots"],position["entry_price"],exit_price,gross_pnl,
                float(position["buy_fees"] or 0)+sell_fees,net_pnl,r_multiple,"engine-paper-v2",
-               reason,"Yahoo delayed; stop diprioritaskan bila urutan intrabar ambigu",
-               float(position["buy_fees"] or 0),sell_fees,initial_risk,STRATEGY_VERSION))
+               reason,"Yahoo delayed; stop diprioritaskan bila urutan intrabar ambigu"+legacy_note,
+               float(position["buy_fees"] or 0),sell_fees,initial_risk,position_version))
             exit_at = datetime.fromisoformat(candle["candle_at"])
             cooldown_until = (add_idx_trading_minutes(exit_at, 120) if position["agent_id"] in {"scalping","open-low"}
                               else exit_at+timedelta(days=1))
@@ -945,7 +955,20 @@ def manage_positions(db, timeframe: str) -> int:
     db.commit(); return closed
 
 
+def sync_open_position_prices(db) -> int:
+    """Mark every open paper position with the latest collected instrument price."""
+    cursor = db.execute("""UPDATE positions SET last_price=(
+        SELECT instruments.last_price FROM instruments WHERE instruments.symbol=positions.symbol
+      ) WHERE status='OPEN' AND EXISTS (
+        SELECT 1 FROM instruments WHERE instruments.symbol=positions.symbol
+          AND instruments.last_price IS NOT NULL AND instruments.last_price>0
+      )""")
+    db.commit()
+    return cursor.rowcount
+
+
 def mark_to_market(db) -> None:
+    sync_open_position_prices(db)
     for agent in db.execute("SELECT id,starting_equity FROM agents").fetchall():
         ledger = db.execute("SELECT cash FROM agent_ledgers WHERE agent_id=?",(agent["id"],)).fetchone()
         if not ledger: continue
@@ -1122,6 +1145,10 @@ def run_engine(timeframe: str="5m", range_: str="5d", collect: bool=True, force:
         expired_eod = expire_intraday_orders_eod(db) if closing_cycle and not settings.demo_mode else 0
         fills=process_pending_orders(db,timeframe) if not settings.demo_mode and timeframe == "5m" and not closing_cycle else 0
         closed=manage_positions(db,timeframe) if not settings.demo_mode and timeframe == "5m" else 0
+        if not settings.demo_mode:
+            # Refresh prices/equity before sizing new orders so legacy exposure
+            # cannot keep an agent on a stale portfolio value.
+            mark_to_market(db)
         proposal_count=order_count=features_count=stale_features=0
         arjum_candidates=[]
         screener_result = collect_arjum_screener(db) if timeframe == "1d" or full_universe else None
@@ -1174,8 +1201,6 @@ def run_engine(timeframe: str="5m", range_: str="5d", collect: bool=True, force:
             if final == "ACTIONABLE":
                 arjum_candidates.append((symbol, best))
             db.execute("UPDATE instruments SET evaluation_score=?,evaluation_status=? WHERE symbol=?",(best,final,symbol))
-        if not settings.demo_mode:
-            mark_to_market(db)
         # Enrichment does not block Yahoo-based strategy evaluation or paper fills.
         arjum_results = collect_arjum_candidates(db, arjum_candidates) if timeframe == "1d" else []
         core_count = min(len(liquid), settings.liquid_universe_limit) if timeframe == "1d" or full_universe else 0

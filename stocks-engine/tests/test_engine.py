@@ -376,5 +376,34 @@ class PaperExecutionV2Tests(unittest.TestCase):
         self.assertEqual(trade['closed_at'], '2026-08-24T15:45:00+07:00')
         self.assertEqual(trade['exit_reason'], 'END_OF_DAY_EXIT')
 
+    def test_mark_to_market_refreshes_legacy_position_from_instrument_price(self):
+        self.db.execute("CREATE TABLE instruments(symbol TEXT PRIMARY KEY,last_price REAL)")
+        self.db.execute("INSERT INTO instruments(symbol,last_price) VALUES('TEST',90)")
+        self.db.execute("""INSERT INTO positions
+          (agent_id,symbol,lots,entry_price,last_price,stop_price,target_price,status,strategy_version)
+          VALUES('scalping','TEST',10,100,110,95,112,'OPEN','1.0-legacy')""")
+
+        engine.mark_to_market(self.db)
+
+        position = self.db.execute("SELECT last_price FROM positions WHERE status='OPEN'").fetchone()
+        self.assertEqual(position['last_price'], 90)
+
+    def test_unanchored_legacy_position_starts_management_at_latest_fresh_candle(self):
+        self.db.execute("""INSERT INTO positions
+          (agent_id,symbol,lots,entry_price,last_price,stop_price,target_price,status,strategy_version)
+          VALUES('scalping','TEST',10,100,100,95,112,'OPEN','1.0-legacy')""")
+        self.candle('2026-08-24T10:00:00+07:00', low=89, high=91, close=90)
+        current = datetime(2026, 8, 24, 10, 5, tzinfo=engine.JAKARTA)
+
+        with patch.object(engine, "now_wib", return_value=current):
+            self.assertEqual(engine.manage_positions(self.db, '5m'), 1)
+
+        position = self.db.execute("SELECT status,last_price FROM positions").fetchone()
+        trade = self.db.execute("SELECT strategy_version,exit_reason,notes FROM trade_journal").fetchone()
+        self.assertEqual((position['status'], position['last_price']), ('CLOSED', 90))
+        self.assertEqual(trade['strategy_version'], '1.0-legacy')
+        self.assertEqual(trade['exit_reason'], 'STOP_LOSS')
+        self.assertIn('posisi legacy', trade['notes'])
+
 
 if __name__ == "__main__": unittest.main()
