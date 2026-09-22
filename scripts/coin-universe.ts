@@ -1,3 +1,5 @@
+import { fetchBinanceSpotBases } from '../dashboard/lib/binance.js';
+
 export const CORE_PAIR_IDS = [
   'btcidr', 'ethidr', 'solidr', 'xrpidr', 'dogeidr', 'pepeidr', 'suiidr', 'bnbidr',
   'trxidr', 'hypeidr', 'linkidr', 'adaidr', 'bchidr', 'tonidr', 'ltcidr', 'hbaridr',
@@ -16,7 +18,7 @@ export interface UniverseTicker {
 }
 
 export interface UniversePair extends UniverseTicker {
-  source: 'indodax' | 'kraken';
+  source: 'binance';
   selectedBecause: 'core' | 'external' | 'open-or-pending' | 'liquidity';
 }
 
@@ -37,18 +39,20 @@ export function selectUniverse(
   liquidTickers: UniverseTicker[],
   pinnedPairs: string[],
   maxPairs = 50,
+  supportedBases?: ReadonlySet<string>,
 ): UniversePair[] {
   const liquidity = new Map(liquidTickers.map((ticker) => [normalizePair(ticker.pair), ticker.volumeIdr]));
   const selected: UniversePair[] = [];
   const seen = new Set<string>();
   const add = (pair: string, selectedBecause: UniversePair['selectedBecause']) => {
     const normalized = normalizePair(pair);
+    if (supportedBases && !supportedBases.has(baseSymbol(normalized))) return;
     if (seen.has(normalized)) return;
     seen.add(normalized);
     selected.push({
       pair: normalized,
       volumeIdr: liquidity.get(normalized) ?? 0,
-      source: (EXTERNAL_PAIR_IDS as readonly string[]).includes(normalized) ? 'kraken' : 'indodax',
+      source: 'binance',
       selectedBecause,
     });
   };
@@ -76,6 +80,7 @@ export async function discoverTradingUniverse(pinnedPairs: string[] = []): Promi
   const configuredMinimum = Number(process.env.SCAN_MIN_VOLUME_IDR ?? 250_000_000);
   const minimumVolume = Number.isFinite(configuredMinimum) ? Math.max(0, configuredMinimum) : 250_000_000;
   let tickers: UniverseTicker[] = [];
+  const supportedBases = await fetchBinanceSpotBases();
 
   try {
     const response = await fetch('https://indodax.com/api/ticker_all', { cache: 'no-store' });
@@ -89,7 +94,7 @@ export async function discoverTradingUniverse(pinnedPairs: string[] = []): Promi
     console.warn(`[Universe] Dynamic Indodax discovery unavailable: ${String(error)}`);
   }
 
-  return selectUniverse(tickers, pinnedPairs, maxPairs);
+  return selectUniverse(tickers, pinnedPairs, maxPairs, supportedBases ?? undefined);
 }
 
 export function displayPair(pair: string): string {

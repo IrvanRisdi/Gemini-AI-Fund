@@ -12,14 +12,14 @@ export default async function ExplorePage() {
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-6">
-        <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">Market Intelligence · Multi-venue · IDR</p>
+        <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">Market Intelligence · Binance Spot · IDR</p>
         <h1 className="mt-1 font-sans text-3xl font-semibold text-ink">Market Explorer</h1>
         <p className="mt-1 max-w-3xl font-sans text-sm leading-relaxed text-ink-muted">
           Temukan pair kripto, lihat universe yang benar-benar dipindai agen dan status tren 4H, lalu buka analisis teknikal.
           Tambahkan pair ke watchlist agar riset Anda tetap fokus—Explore tidak membuka atau mengubah posisi paper trading.
         </p>
         <p className="mt-2 font-mono text-[10px] text-ink-faint">
-          Pair IDR: Indodax · ZEC: Kraken ZEC/USD yang dikonversi ke IDR · Market cap serta perubahan global 24 jam: CoinGecko.
+          Candle analisis: Binance Spot USDT yang dikonversi ke IDR · Harga eksekusi paper: Indodax IDR · Market cap serta perubahan global 24 jam: CoinGecko.
         </p>
       </header>
 

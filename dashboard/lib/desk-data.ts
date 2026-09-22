@@ -119,13 +119,13 @@ export interface LatestScan {
   pairsScanned: number;
   universe?: Array<{
     pair: string;
-    source: 'indodax' | 'kraken';
+    source: 'binance';
     selectedBecause: 'core' | 'external' | 'open-or-pending' | 'liquidity';
     volumeIdr: number;
   }>;
   diagnostics?: Array<{
     pair: string;
-    source: 'indodax' | 'kraken';
+    source: 'binance';
     selectedBecause: 'core' | 'external' | 'open-or-pending' | 'liquidity';
     volumeIdr24h: number;
     status: 'uptrend' | 'downtrend' | 'sideways' | 'insufficient-data';

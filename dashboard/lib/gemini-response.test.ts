@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mergeGeminiUsage, readGeminiCandidate } from './gemini-response.ts';
+import { mergeGeminiUsage, readGeminiCandidate } from './gemini-response.js';
 
 test('joins every visible text part instead of returning only the first part', () => {
   const result = readGeminiCandidate({

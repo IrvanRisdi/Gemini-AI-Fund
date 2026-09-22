@@ -43,6 +43,10 @@ jobs:
         run: npx tsx scripts/scan-signals.ts
 
       - name: 2. Execute Paper Orders & Update Ledger
+        env:
+          # Paper-trading phase: allow the three shadow strategies to prove
+          # themselves with real scheduled fills before any live integration.
+          COIN_ALLOW_RESEARCH_ORDERS: 'true'
         run: npx tsx scripts/execute-paper-trades.ts
 
       - name: 3. Commit and Push Updated Ledger State

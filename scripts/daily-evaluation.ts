@@ -85,7 +85,7 @@ ${rows}
 | --- | --- | --- | ---: | ---: | ---: |
 ${candidates}
 
-Kandidat scan belum otomatis menjadi transaksi. Executor menolak order non-long/spot, melebihi equity, melampaui risk budget adaptif, atau R:R di bawah 1:1.5. Strategi berstatus research dicatat sebagai shadow signal dan tidak memakai modal kecuali override eksperimen diaktifkan secara eksplisit.
+Kandidat scan belum otomatis menjadi transaksi. Executor menolak order non-long/spot, melebihi equity, melampaui risk budget adaptif, atau R:R di bawah 1:1.5. Pada fase paper trading saat ini, strategi berstatus research boleh membuat order eksperimen; status research tetap ditampilkan agar hasilnya tidak disamakan dengan strategi yang sudah tervalidasi.
 
 ## 5. Prioritas strategi sesi berikutnya
 

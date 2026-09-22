@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { GEMINI_MODEL_PRIORITY, getGeminiModelCandidates } from './gemini-models.ts';
+import { GEMINI_MODEL_PRIORITY, getGeminiModelCandidates } from './gemini-models.js';
 
 test('Gemini Flash models are tried before Lite fallbacks', () => {
   assert.deepEqual(GEMINI_MODEL_PRIORITY.slice(0, 4), [

@@ -47,8 +47,8 @@ export default async function PairPage({
   const pair = getPair(symbol) ?? (await findPairBySymbol(symbol));
   if (!pair) notFound();
 
-  // .catch(() => []) covers both "no data for this pair" and transient
-  // Indodax failures (e.g. a 429 rate-limit) — either way, degrade to the
+  // .catch(() => []) covers both "no Binance Spot market for this pair" and
+  // transient REST failures — either way, degrade to the
   // same empty-state message below instead of throwing an unhandled 500.
   const [candles, dailyCandles, coinInfo, news] = await Promise.all([
     fetchCoinOhlcv(pair.indodaxId, timeframe, timeframeMeta.candles).catch(() => []),
@@ -61,7 +61,7 @@ export default async function PairPage({
     return (
       <main className="mx-auto max-w-6xl px-6 py-10">
         <header className="mb-6">
-          <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">{pair.indodaxId.toUpperCase()} · {pair.venue === 'kraken' ? 'Kraken USD → IDR sintetis' : 'Indodax IDR'}</p>
+          <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">{pair.indodaxId.toUpperCase()} · Binance Spot USDT → IDR sintetis</p>
           <h1 className="mt-1 font-sans text-3xl font-semibold text-ink">{pair.name}</h1>
         </header>
         <div className="rounded-xl border border-border bg-surface p-5 text-sm text-ink-muted">
@@ -97,7 +97,7 @@ export default async function PairPage({
     <main className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">{pair.indodaxId.toUpperCase()} · {pair.venue === 'kraken' ? 'Kraken USD → IDR sintetis' : 'Indodax IDR'}</p>
+          <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">{pair.indodaxId.toUpperCase()} · Binance Spot USDT → IDR sintetis</p>
           <h1 className="mt-1 font-sans text-3xl font-semibold text-ink">{pair.name}</h1>
         </div>
         <div className="text-right">
@@ -111,11 +111,9 @@ export default async function PairPage({
         </div>
       </header>
 
-      {pair.venue === 'kraken' && (
-        <div className="mb-6 rounded-xl border border-warning/30 bg-warning/5 px-4 py-3 font-sans text-xs leading-relaxed text-ink-muted">
-          ZEC tidak tersedia pada feed pair aktif Indodax. Candle berasal dari Kraken ZEC/USD lalu dikonversi dengan kurs USDT/IDR Indodax. Harga ini hanya dipakai untuk simulasi paper trading, bukan acuan eksekusi live.
-        </div>
-      )}
+      <div className="mb-6 rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 font-sans text-xs leading-relaxed text-ink-muted">
+        Candle berasal dari Binance Spot REST API dan dikonversi dengan kurs USDT/IDR. Harga eksekusi dan valuasi paper trading tetap mengikuti last price Indodax IDR bila pair tersedia.
+      </div>
 
       <section className="rounded-xl border border-border bg-surface p-5">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">

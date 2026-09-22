@@ -17,7 +17,7 @@ export interface PriceTick {
 export async function GET() {
   const results = await Promise.allSettled(
     PAIRS.map(async (pair): Promise<PriceTick> => {
-      if (pair.venue === 'kraken') {
+      if (pair.venue === 'binance') {
         const candles = await fetchCoinOhlcv(pair.indodaxId, '1d', 2);
         const latest = candles.at(-1);
         const prior = candles.at(-2);

@@ -11,9 +11,24 @@ test('keeps core, ZEC, and active campaign pairs before adding liquid markets', 
     ['rareidr'],
     CORE_PAIR_IDS.length + 3,
   );
-  assert.equal(result.some((item) => item.pair === 'zecidr' && item.source === 'kraken'), true);
+  assert.equal(result.some((item) => item.pair === 'zecidr' && item.source === 'binance'), true);
   assert.equal(result.some((item) => item.pair === 'rareidr' && item.selectedBecause === 'open-or-pending'), true);
   assert.equal(result.some((item) => item.pair === 'fooidr' && item.selectedBecause === 'liquidity'), true);
+});
+
+test('filters the universe to active Binance Spot bases when supplied', () => {
+  const supported = new Set(['btc', 'eth', 'zec', 'foo']);
+  const result = selectUniverse(
+    [
+      { pair: 'foo_idr', volumeIdr: 2_000_000_000 },
+      { pair: 'bar_idr', volumeIdr: 1_000_000_000 },
+    ],
+    ['rareidr'],
+    50,
+    supported,
+  );
+  assert.deepEqual(result.map((item) => item.pair), ['btcidr', 'ethidr', 'zecidr', 'fooidr']);
+  assert.equal(result.every((item) => item.source === 'binance'), true);
 });
 
 test('excludes stablecoin bases from dynamic liquidity additions', () => {

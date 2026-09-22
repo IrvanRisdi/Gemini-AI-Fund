@@ -125,7 +125,7 @@ export async function fetchExplorePairs(pairs: PairMeta[]): Promise<ExplorePairR
       name: market?.name ?? p.name,
       rank: market?.market_cap_rank ?? null,
       marketCapUsd: market?.market_cap ?? null,
-      priceIdr: ticker?.priceIdr ?? (p.venue === 'kraken' ? externalPriceIdr : null),
+      priceIdr: ticker?.priceIdr ?? (p.venue === 'binance' ? externalPriceIdr : null),
       // Do not compare CoinGecko's global volume with local Indodax turnover.
       volumeIdr: ticker?.volumeIdr ?? null,
       highIdr: ticker?.highIdr ?? null,
