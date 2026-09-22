@@ -9,10 +9,10 @@ import { discoverTradingUniverse, type UniversePair } from './coin-universe.js';
 import { orderedLimitBand, stopForRiskBand, targetForNetReward, validNetPlan } from './trading-math.js';
 
 type Owner = 'breakout-specialist' | 'aggressive-breakout-trader' | 'mean-reversion-trader' | 'smc-trader' | 'wyckoff-trader';
-const COIN_STRATEGY_VERSION = 'recovery-v3';
+const COIN_STRATEGY_VERSION = 'recovery-v4-usdt';
 type MarketRegime = { riskOn: boolean; close: number | null; ema21: number | null; adx: number | null; reason: string };
 export interface Candidate {
-  id: string; pair: string; agent: Owner; side: 'long'; type: 'limit' | 'stop'; timeframe: '15m' | '4h';
+  id: string; pair: string; agent: Owner; side: 'long'; quoteCurrency: 'USDT'; type: 'limit' | 'stop'; timeframe: '15m' | '4h';
   entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number; expiresAt: string;
   confirmations: string[]; reason: string; score: number; volumeRatio: number; allocationPct: number;
   rewardMultiple: number; validationStatus: 'validated' | 'research';
@@ -84,13 +84,13 @@ async function scanPair(universePair: UniversePair, market: MarketRegime): Promi
   // Prepare just below resistance, but retain buy-stop confirmation.
   if (market.riskOn && liquid && trendUp && one.vol >= 1.5 && one.last.close > one.resistance && aggressiveScore >= 4) {
     const entry = one.last.high * 1.0005; const structuralStop = Math.max(one.resistance - one.atr * .25, entry - 1.2 * one.atr); const stop = stopForRiskBand(entry, structuralStop, one.atr); const target = targetForNetReward(entry, stop, 2.5);
-    if (validNetPlan(entry, stop, target, 2.5)) candidates.push({ id: id('breakout-specialist'), pair, agent: 'breakout-specialist', side: 'long', type: 'stop', timeframe: '15m', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(24), confirmations: ['Regime BTC 4H mendukung', 'Trend pair 4H ADX ≥ 22', `Skor breakout ${aggressiveScore}/5`, 'Entry awal 20%; tambah posisi hanya ketika harga bergerak sesuai rencana', 'Target kampanye 2,5R bersih setelah fee'], score: aggressiveScore, volumeRatio: one.vol, allocationPct: .20, rewardMultiple: 2.5, validationStatus: 'validated', strategyVersion: COIN_STRATEGY_VERSION, reason: 'Breakout 15m terkonfirmasi close di atas resistance dalam regime pasar positif.' });
+    if (validNetPlan(entry, stop, target, 2.5)) candidates.push({ id: id('breakout-specialist'), pair, agent: 'breakout-specialist', side: 'long', quoteCurrency: 'USDT', type: 'stop', timeframe: '15m', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(24), confirmations: ['Regime BTC 4H mendukung', 'Trend pair 4H ADX ≥ 22', `Skor breakout ${aggressiveScore}/5`, 'Entry awal 20%; tambah posisi hanya ketika harga bergerak sesuai rencana', 'Target kampanye 2,5R bersih setelah fee'], score: aggressiveScore, volumeRatio: one.vol, allocationPct: .20, rewardMultiple: 2.5, validationStatus: 'validated', strategyVersion: COIN_STRATEGY_VERSION, reason: 'Breakout 15m terkonfirmasi close di atas resistance dalam regime pasar positif.' });
   }
   // Aggressive is a premium stop-entry, never pyramids, and may deploy the
   // whole book only when both confirmation score and relative volume agree.
   if (market.riskOn && liquid && trendUp && one.vol >= 1.5 && one.last.close > one.resistance && aggressiveScore >= 4) {
     const entry = one.last.high * 1.0003; const structuralStop = Math.max(one.resistance - one.atr * .25, entry - 1.15 * one.atr); const stop = stopForRiskBand(entry, structuralStop, one.atr); const target = targetForNetReward(entry, stop, 1.5); const allocationPct = aggressiveAllocation(aggressiveScore, one.vol);
-    if (validNetPlan(entry, stop, target, 1.5)) candidates.push({ id: id('aggressive-breakout-trader'), pair, agent: 'aggressive-breakout-trader', side: 'long', type: 'stop', timeframe: '15m', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(6), confirmations: ['Regime BTC 4H mendukung', 'Trend pair 4H ADX ≥ 22', `Skor momentum ${aggressiveScore}/5`, `Relative volume ${one.vol.toFixed(2)}x`, `Alokasi langsung ${(allocationPct * 100).toFixed(0)}%`], score: aggressiveScore, volumeRatio: one.vol, allocationPct, rewardMultiple: 1.5, validationStatus: 'validated', strategyVersion: COIN_STRATEGY_VERSION, reason: 'Momentum 15m agresif hanya setelah breakout terkonfirmasi dan volume kuat.' });
+    if (validNetPlan(entry, stop, target, 1.5)) candidates.push({ id: id('aggressive-breakout-trader'), pair, agent: 'aggressive-breakout-trader', side: 'long', quoteCurrency: 'USDT', type: 'stop', timeframe: '15m', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(6), confirmations: ['Regime BTC 4H mendukung', 'Trend pair 4H ADX ≥ 22', `Skor momentum ${aggressiveScore}/5`, `Relative volume ${one.vol.toFixed(2)}x`, `Alokasi langsung ${(allocationPct * 100).toFixed(0)}%`], score: aggressiveScore, volumeRatio: one.vol, allocationPct, rewardMultiple: 1.5, validationStatus: 'validated', strategyVersion: COIN_STRATEGY_VERSION, reason: 'Momentum 15m agresif hanya setelah breakout terkonfirmasi dan volume kuat.' });
   }
   // Mean reversion is deliberately a ranging-market strategy, not a
   // trend-pullback strategy. ADX/EMA compression identifies the regime;
@@ -110,7 +110,7 @@ async function scanPair(universePair: UniversePair, market: MarketRegime): Promi
     const stop = stopForRiskBand(band.high, structuralStop, one.atr);
     // The mean/middle Bollinger band is the natural first exit in a range.
     const target = Math.max(one.mid, targetForNetReward(band.high, stop, 2));
-    if (validNetPlan(band.high, stop, target, 2)) candidates.push({ id: id('mean-reversion-trader'), pair, agent: 'mean-reversion-trader', side: 'long', type: 'limit', timeframe: '15m', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Regime BTC tidak bearish', 'Regime pair ranging lengkap', 'Reversal di Bollinger bawah', 'RSI reclaim + candle bullish + volume terkendali', `Skor range-reversion ${meanScore}/6`], score: meanScore, volumeRatio: one.vol, allocationPct: .25, rewardMultiple: 2, validationStatus: 'research', strategyVersion: COIN_STRATEGY_VERSION, reason: 'Range mean reversion selektif: seluruh enam konfirmasi wajib lolos, target 2R bersih.' });
+    if (validNetPlan(band.high, stop, target, 2)) candidates.push({ id: id('mean-reversion-trader'), pair, agent: 'mean-reversion-trader', side: 'long', quoteCurrency: 'USDT', type: 'limit', timeframe: '15m', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Regime BTC tidak bearish', 'Regime pair ranging lengkap', 'Reversal di Bollinger bawah', 'RSI reclaim + candle bullish + volume terkendali', `Skor range-reversion ${meanScore}/6`], score: meanScore, volumeRatio: one.vol, allocationPct: .25, rewardMultiple: 2, validationStatus: 'research', strategyVersion: COIN_STRATEGY_VERSION, reason: 'Range mean reversion selektif: seluruh enam konfirmasi wajib lolos, target 2R bersih.' });
   }
   // SMC and Wyckoff remain separate research strategies.
   const fib = fibConfluence(fourHour, one.last.close); const engulfing = bullishCandle(fifteenMinute);
@@ -126,7 +126,7 @@ async function scanPair(universePair: UniversePair, market: MarketRegime): Promi
     // A real retest band avoids the previous zero-width limit at rangeHigh.
     const entry = rangeHigh; const band = orderedLimitBand(entry, one.atr, rangeHigh - one.atr * .3, one.last.close); const structuralStop = Math.min(rangeHigh - one.atr * 1.1, band.low - one.atr * .7); const stop = stopForRiskBand(band.high, structuralStop, one.atr); const target = targetForNetReward(band.high, stop, 2);
     if (market.riskOn && liquid && one.last.close > rangeHigh && ranging4h && sosScore >= 5 && validNetPlan(band.high, stop, target, 2)) {
-      candidates.push({ id: id('wyckoff-trader'), pair, agent: 'wyckoff-trader', side: 'long', type: 'limit', timeframe: '15m', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Regime BTC 4H mendukung', 'Wyckoff phase D / SoS lengkap', `Skor ${sosScore}/5`, 'Retest range high dalam zona 0,3 ATR'], score: sosScore, volumeRatio: one.vol, allocationPct: .25, rewardMultiple: 2, validationStatus: 'research', strategyVersion: COIN_STRATEGY_VERSION, reason: 'Wyckoff SoS selektif: lima konfirmasi wajib, entry hanya pada retest breakout valid.' });
+      candidates.push({ id: id('wyckoff-trader'), pair, agent: 'wyckoff-trader', side: 'long', quoteCurrency: 'USDT', type: 'limit', timeframe: '15m', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Regime BTC 4H mendukung', 'Wyckoff phase D / SoS lengkap', `Skor ${sosScore}/5`, 'Retest range high dalam zona 0,3 ATR'], score: sosScore, volumeRatio: one.vol, allocationPct: .25, rewardMultiple: 2, validationStatus: 'research', strategyVersion: COIN_STRATEGY_VERSION, reason: 'Wyckoff SoS selektif: lima konfirmasi wajib, entry hanya pada retest breakout valid.' });
     }
   }
   const sweepWindow = one.closed.slice(-9, -2); const sweepCandle = one.closed.at(-2)!; const swept = sweepWindow.length >= 5 && sweepCandle.low < Math.min(...sweepWindow.map((bar) => bar.low)); const choch = one.last.close > sweepCandle.high && one.last.close > one.last.open;
@@ -137,7 +137,7 @@ async function scanPair(universePair: UniversePair, market: MarketRegime): Promi
     const stop = stopForRiskBand(entry, structuralStop, one.atr);
     const target = targetForNetReward(entry, stop, 2);
     if (validNetPlan(entry, stop, target, 2)) {
-      candidates.push({ id: id('smc-trader'), pair, agent: 'smc-trader', side: 'long', type: 'stop', timeframe: '15m', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(6), confirmations: ['Regime BTC + trend pair 4H', 'Sweep lalu CHoCH terkonfirmasi', 'Demand/fibonacci atau engulfing + volume ≥ 1,2x', `Skor konteks ${smcScore}/4`], score: smcScore, volumeRatio: one.vol, allocationPct: .25, rewardMultiple: 2, validationStatus: 'research', strategyVersion: COIN_STRATEGY_VERSION, reason: 'SMC confirmation entry: buy-stop di atas high setelah sweep dan CHoCH, bukan menangkap harga turun.' });
+      candidates.push({ id: id('smc-trader'), pair, agent: 'smc-trader', side: 'long', quoteCurrency: 'USDT', type: 'stop', timeframe: '15m', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(6), confirmations: ['Regime BTC + trend pair 4H', 'Sweep lalu CHoCH terkonfirmasi', 'Demand/fibonacci atau engulfing + volume ≥ 1,2x', `Skor konteks ${smcScore}/4`], score: smcScore, volumeRatio: one.vol, allocationPct: .25, rewardMultiple: 2, validationStatus: 'research', strategyVersion: COIN_STRATEGY_VERSION, reason: 'SMC confirmation entry: buy-stop di atas high setelah sweep dan CHoCH, bukan menangkap harga turun.' });
     }
   }
   const status: PairDiagnostic['status'] = four.ema9 > four.ema21 && four.last.close >= four.ema9
@@ -215,7 +215,7 @@ async function main() {
     if (result.status === 'fulfilled') { candidates.push(...result.value.candidates); diagnostics.push(result.value.diagnostic); }
     else errors.push(`${universe[index]?.pair ?? 'unknown'}: ${String(result.reason)}`);
   });
-  const output = { timestamp: new Date().toISOString(), mode: 'spot-only-v3-recovery', strategyVersion: COIN_STRATEGY_VERSION, marketRegime, pairsScanned: universe.length, universe, diagnostics, candidates, errors };
+  const output = { timestamp: new Date().toISOString(), mode: 'spot-only-v4-usdt', quoteCurrency: 'USDT', accountingCurrency: 'IDR', strategyVersion: COIN_STRATEGY_VERSION, marketRegime, pairsScanned: universe.length, universe, diagnostics, candidates, errors };
   fs.writeFileSync(path.join(process.cwd(), '.desk', 'latest-scan.json'), JSON.stringify(output, null, 2) + '\n'); console.log(JSON.stringify(output, null, 2));
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });

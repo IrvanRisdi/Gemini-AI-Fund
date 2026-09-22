@@ -28,7 +28,7 @@ const RISK_POLICY = [
   { label: 'Pending Order', value: 'Limit / Buy-stop · 6–24 jam', detail: 'Order otomatis kedaluwarsa; sinyal memakai close 15 menit dan konteks tren 4H.' },
   { label: 'Konsentrasi Pair', value: '1 campaign / pair / agen', detail: 'Posisi atau pending order pada pair yang sama mengunci campaign baru dari agen tersebut.' },
   { label: 'Pyramid Breakout', value: 'Awal 20% · maks. 4 leg', detail: 'Hanya Breakout Specialist yang menambah posisi saat campaign profit; setiap penambahan tetap tunduk pada cash dan batas notional.' },
-  { label: 'Status Strategi', value: '2 execute · 3 shadow', detail: 'Breakout dan Aggressive boleh entry. Mean Reversion, SMC, dan Wyckoff tetap menghasilkan sinyal riset tetapi tidak memakai modal baru.' },
+  { label: 'Status Strategi', value: '5 paper agents', detail: 'Dua strategi tervalidasi dan tiga strategi research boleh menguji order pada paper trading; label validasinya tetap dipisahkan.' },
 ] as const;
 
 function formatIdr(value: number): string {
@@ -36,8 +36,8 @@ function formatIdr(value: number): string {
 }
 
 function formatCoinPrice(value: number): string {
-  if (Math.abs(value) >= 1) return formatIdr(value);
-  return `Rp${value.toLocaleString('id-ID', { minimumFractionDigits: 6, maximumFractionDigits: 8 })}`;
+  const maximumFractionDigits = Math.abs(value) >= 1000 ? 2 : Math.abs(value) >= 1 ? 4 : 8;
+  return `${value.toLocaleString('en-US', { maximumFractionDigits })} USDT`;
 }
 
 function coinSymbol(pair: string): string {
@@ -45,7 +45,7 @@ function coinSymbol(pair: string): string {
 }
 
 function displayPair(pair: string): string {
-  return `${coinSymbol(pair).toUpperCase()}/IDR`;
+  return `${coinSymbol(pair).toUpperCase()}/USDT`;
 }
 
 function agentCard(agent: AgentSummary) {
@@ -88,15 +88,11 @@ function agentCard(agent: AgentSummary) {
         ? 'positive'
         : 'negative';
 
-    statusLabel = `${pos.side.toUpperCase()} ${agent.openPairs[0]}`;
+    statusLabel = `${pos.side.toUpperCase()} ${displayPair(agent.openPairs[0])}`;
 
     statusDescription =
       pos.sizingNote ??
-      `Entry ${formatIdr(
-        pos.entryPrice
-      )}, stop ${formatIdr(
-        pos.stopPrice
-      )}.`;
+      `Entry ${formatCoinPrice(pos.entryPriceUsdt ?? pos.entryPrice)}, stop ${formatCoinPrice(pos.stopPriceUsdt ?? pos.stopPrice)}.`;
   } else if (
     agent.lastAction.startsWith('⚡ Signal:') ||
     agent.lastAction.startsWith('🔥 Signal:')
@@ -162,7 +158,7 @@ export default async function DeskPage() {
       const currentPrice = position.currentPrice ?? position.entryPrice;
       const marketValue = position.marketValue ?? position.size * currentPrice;
       const pnl = position.unrealizedPnlIdr ?? 0;
-      const entryNotional = position.entryPrice * position.size;
+      const entryNotional = position.entryValueIdr ?? position.entryPrice * position.size;
       return {
         agent,
         position,
@@ -287,7 +283,7 @@ export default async function DeskPage() {
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-accent">
-                        {candidate.pair.toUpperCase()}
+                        {displayPair(candidate.pair)}
                       </span>
 
                       <span className="text-ink-muted text-[11px]">
@@ -329,8 +325,8 @@ export default async function DeskPage() {
                   <td className="py-3 pr-3"><Link href={`/agent/${agent.slug}`} className="font-medium text-ink hover:text-accent">{agent.slug}</Link></td>
                   <td className="px-3"><Link href={`/pair/${coinSymbol(instrument)}`} className="font-semibold text-accent hover:underline">{displayPair(instrument)}</Link></td>
                   <td className="px-3 text-right">{position.size.toLocaleString('id-ID', { maximumFractionDigits: 8 })}</td>
-                  <td className="px-3 text-right">{formatCoinPrice(position.entryPrice)}</td>
-                  <td className="px-3 text-right text-ink">{formatCoinPrice(currentPrice)}</td>
+                  <td className="px-3 text-right">{formatCoinPrice(position.entryPriceUsdt ?? position.entryPrice)}</td>
+                  <td className="px-3 text-right text-ink">{formatCoinPrice(position.currentPriceUsdt ?? currentPrice)}</td>
                   <td className="px-3 text-right font-semibold text-ink">{formatIdr(marketValue)}</td>
                   <td className="px-3 text-right">{weightPct.toFixed(1)}%</td>
                   <td className={`py-3 pl-3 text-right font-semibold ${pnl >= 0 ? 'text-positive' : 'text-negative'}`}>{pnl >= 0 ? '+' : '-'}{formatIdr(Math.abs(pnl))}<span className="ml-1 font-normal text-ink-faint">({pnlPct >= 0 ? '+' : ''}{pnlPct.toFixed(2)}%)</span></td>

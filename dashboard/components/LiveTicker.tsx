@@ -6,10 +6,9 @@ import type { PriceTick } from '@/app/api/prices/route';
 
 const POLL_MS = 30_000;
 
-function formatIdr(value: number): string {
-  if (value >= 1000) return Math.round(value).toLocaleString('id-ID');
-  // Sub-Rp1 assets (e.g. PEPE) need decimal precision to be readable.
-  return value.toLocaleString('id-ID', { minimumFractionDigits: 6, maximumFractionDigits: 6 });
+function formatUsdt(value: number): string {
+  const maximumFractionDigits = value >= 1000 ? 2 : value >= 1 ? 4 : 8;
+  return value.toLocaleString('en-US', { maximumFractionDigits });
 }
 
 export function LiveTicker() {
@@ -51,7 +50,7 @@ export function LiveTicker() {
             className="flex items-center gap-2 font-mono text-xs hover:opacity-80"
           >
             <span className="font-semibold text-ink">{tick.symbol}</span>
-            <span className="text-ink-muted">Rp{formatIdr(tick.price)}</span>
+            <span className="text-ink-muted">{formatUsdt(tick.price)} USDT</span>
             <span className={tick.changePct >= 0 ? 'text-positive' : 'text-negative'}>
               {tick.changePct >= 0 ? '▲' : '▼'} {Math.abs(tick.changePct).toFixed(2)}%
             </span>

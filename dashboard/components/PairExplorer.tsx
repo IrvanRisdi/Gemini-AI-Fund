@@ -19,10 +19,10 @@ function formatMarketCap(value: number | null): string {
   return `$${value.toLocaleString('en-US')}`;
 }
 
-function formatIdr(value: number | null): string {
+function formatUsdt(value: number | null): string {
   if (value == null) return '—';
-  if (value >= 1000) return `Rp${Math.round(value).toLocaleString('id-ID')}`;
-  return `Rp${value.toLocaleString('id-ID', { minimumFractionDigits: 6, maximumFractionDigits: 6 })}`;
+  const maximumFractionDigits = value >= 1000 ? 2 : value >= 1 ? 4 : 8;
+  return `${value.toLocaleString('en-US', { maximumFractionDigits })} USDT`;
 }
 
 function formatCompactIdr(value: number | null): string {
@@ -30,14 +30,14 @@ function formatCompactIdr(value: number | null): string {
   if (value >= 1_000_000_000_000) return `Rp${(value / 1_000_000_000_000).toFixed(1)}T`;
   if (value >= 1_000_000_000) return `Rp${(value / 1_000_000_000).toFixed(1)}B`;
   if (value >= 1_000_000) return `Rp${(value / 1_000_000).toFixed(1)}Jt`;
-  return formatIdr(value);
+  return `Rp${Math.round(value).toLocaleString('id-ID')}`;
 }
 
 function sortValue(row: ExplorePairRow, key: SortKey): number | string | null {
   if (key === 'rank') return row.rank;
   if (key === 'symbol') return row.symbol;
   if (key === 'marketCap') return row.marketCapUsd;
-  if (key === 'price') return row.priceIdr;
+  if (key === 'price') return row.priceUsdt;
   if (key === 'volume') return row.volumeIdr;
   return row.globalChangePct24h;
 }
@@ -121,7 +121,7 @@ export function PairExplorer({ pairs, updatedAt, latestScan }: { pairs: ExploreP
 
   return <div className="flex flex-col gap-4">
     <section className="grid grid-cols-2 gap-2.5 lg:grid-cols-5">
-      <SummaryCard label="Universe Market" value={`${pairs.length} pair`} detail={`Indodax + eksternal · ${formatWibDateTime(updatedAt)}`} />
+      <SummaryCard label="Universe Market" value={`${pairs.length} pair`} detail={`Binance Spot USDT · ${formatWibDateTime(updatedAt)}`} />
       <SummaryCard label="Dipindai Agen" value={`${latestScan?.pairsScanned ?? 0} pair`} detail={`${market.uptrends} sedang uptrend 4H`} />
       <SummaryCard label="Market Breadth" value={`${market.gainers} naik / ${market.losers} turun`} detail="Berdasarkan perubahan global 24j" />
       <SummaryCard label="Top Gainer Global" value={market.topGainer ? `${market.topGainer.symbol.toUpperCase()} +${market.topGainer.globalChangePct24h?.toFixed(2)}%` : '—'} detail="Data CoinGecko · bukan sinyal trade" />
@@ -136,8 +136,8 @@ export function PairExplorer({ pairs, updatedAt, latestScan }: { pairs: ExploreP
     </div>
 
     <div className="overflow-x-auto rounded-xl border border-border bg-surface">
-      <table className="w-full min-w-[1120px] border-collapse"><thead><tr className="border-b border-border"><SortHeader label="#" sortKey="rank" active={sortKey} dir={sortDir} onClick={handleSort} /><SortHeader label="Pair" sortKey="symbol" active={sortKey} dir={sortDir} onClick={handleSort} /><th className="px-4 py-2.5 text-left font-mono text-[10px] font-medium tracking-wide text-ink-muted uppercase">Trend 4H</th><SortHeader label="Market Cap" sortKey="marketCap" active={sortKey} dir={sortDir} onClick={handleSort} /><SortHeader label="Harga IDR" sortKey="price" active={sortKey} dir={sortDir} align="right" onClick={handleSort} /><SortHeader label="Global 24j" sortKey="change" active={sortKey} dir={sortDir} align="right" onClick={handleSort} /><SortHeader label="Volume IDR" sortKey="volume" active={sortKey} dir={sortDir} align="right" onClick={handleSort} /><th className="px-4 py-2.5 text-right font-mono text-[10px] font-medium tracking-wide text-ink-muted uppercase">High / Low</th></tr></thead>
-        <tbody>{pageRows.map((pair, index) => { const diagnostic = diagnosticBySymbol.get(pair.symbol); return <tr key={pair.symbol} className={`border-b border-border last:border-0 hover:bg-surface-hover ${index % 2 === 1 ? 'bg-bg/40' : ''}`}><td className="px-4 py-2.5 font-mono text-xs text-ink-muted">{pair.rank ?? '—'}</td><td className="px-4 py-2.5"><div className="flex items-center gap-2"><button type="button" onClick={() => toggleWatchlist(pair.symbol)} aria-label={`${watchlist.includes(pair.symbol) ? 'Hapus' : 'Tambah'} ${pair.symbol.toUpperCase()} ${watchlist.includes(pair.symbol) ? 'dari' : 'ke'} watchlist`} className={`shrink-0 text-base leading-none transition-colors ${watchlist.includes(pair.symbol) ? 'text-warning' : 'text-ink-faint hover:text-warning'}`}>{watchlist.includes(pair.symbol) ? '★' : '☆'}</button><Link href={`/pair/${pair.symbol}`} className="block min-w-0"><span className="font-mono text-sm font-semibold text-ink hover:text-accent">{pair.symbol.toUpperCase()}{scannedSymbols.has(pair.symbol) && <span className="ml-1.5 rounded border border-accent/30 bg-accent/10 px-1 py-0.5 text-[9px] text-accent">SCAN</span>}{pair.venue === 'binance' && <span className="ml-1.5 rounded border border-warning/30 bg-warning/10 px-1 py-0.5 text-[9px] text-warning">BINANCE</span>}</span><span className="block truncate font-sans text-xs text-ink-muted">{pair.name}</span></Link></div></td><td className={`px-4 py-2.5 font-mono text-xs ${diagnostic?.status === 'uptrend' ? 'text-positive' : diagnostic?.status === 'downtrend' ? 'text-negative' : 'text-ink-muted'}`}>{diagnostic?.status === 'uptrend' ? '↑ Uptrend' : diagnostic?.status === 'downtrend' ? '↓ Downtrend' : diagnostic?.status === 'sideways' ? '→ Sideways' : '—'}</td><td className="px-4 py-2.5 font-mono text-xs text-ink-muted">{formatMarketCap(pair.marketCapUsd)}</td><td className="px-4 py-2.5 text-right font-mono text-xs text-ink">{formatIdr(pair.priceIdr)}</td><td className={`px-4 py-2.5 text-right font-mono text-xs ${pair.globalChangePct24h == null ? 'text-ink-muted' : pair.globalChangePct24h >= 0 ? 'text-positive' : 'text-negative'}`}>{pair.globalChangePct24h == null ? '—' : `${pair.globalChangePct24h >= 0 ? '+' : ''}${pair.globalChangePct24h.toFixed(2)}%`}</td><td className="px-4 py-2.5 text-right font-mono text-xs text-ink-muted">{formatCompactIdr(pair.volumeIdr)}</td><td className="px-4 py-2.5 text-right font-mono text-xs text-ink-muted">{formatIdr(pair.highIdr)} / {formatIdr(pair.lowIdr)}</td></tr>; })}</tbody>
+      <table className="w-full min-w-[1120px] border-collapse"><thead><tr className="border-b border-border"><SortHeader label="#" sortKey="rank" active={sortKey} dir={sortDir} onClick={handleSort} /><SortHeader label="Pair" sortKey="symbol" active={sortKey} dir={sortDir} onClick={handleSort} /><th className="px-4 py-2.5 text-left font-mono text-[10px] font-medium tracking-wide text-ink-muted uppercase">Trend 4H</th><SortHeader label="Market Cap" sortKey="marketCap" active={sortKey} dir={sortDir} onClick={handleSort} /><SortHeader label="Harga USDT" sortKey="price" active={sortKey} dir={sortDir} align="right" onClick={handleSort} /><SortHeader label="Binance 24j" sortKey="change" active={sortKey} dir={sortDir} align="right" onClick={handleSort} /><SortHeader label="Likuiditas IDR" sortKey="volume" active={sortKey} dir={sortDir} align="right" onClick={handleSort} /><th className="px-4 py-2.5 text-right font-mono text-[10px] font-medium tracking-wide text-ink-muted uppercase">High / Low USDT</th></tr></thead>
+        <tbody>{pageRows.map((pair, index) => { const diagnostic = diagnosticBySymbol.get(pair.symbol); return <tr key={pair.symbol} className={`border-b border-border last:border-0 hover:bg-surface-hover ${index % 2 === 1 ? 'bg-bg/40' : ''}`}><td className="px-4 py-2.5 font-mono text-xs text-ink-muted">{pair.rank ?? '—'}</td><td className="px-4 py-2.5"><div className="flex items-center gap-2"><button type="button" onClick={() => toggleWatchlist(pair.symbol)} aria-label={`${watchlist.includes(pair.symbol) ? 'Hapus' : 'Tambah'} ${pair.symbol.toUpperCase()} ${watchlist.includes(pair.symbol) ? 'dari' : 'ke'} watchlist`} className={`shrink-0 text-base leading-none transition-colors ${watchlist.includes(pair.symbol) ? 'text-warning' : 'text-ink-faint hover:text-warning'}`}>{watchlist.includes(pair.symbol) ? '★' : '☆'}</button><Link href={`/pair/${pair.symbol}`} className="block min-w-0"><span className="font-mono text-sm font-semibold text-ink hover:text-accent">{pair.symbol.toUpperCase()}/USDT{scannedSymbols.has(pair.symbol) && <span className="ml-1.5 rounded border border-accent/30 bg-accent/10 px-1 py-0.5 text-[9px] text-accent">SCAN</span>}</span><span className="block truncate font-sans text-xs text-ink-muted">{pair.name}</span></Link></div></td><td className={`px-4 py-2.5 font-mono text-xs ${diagnostic?.status === 'uptrend' ? 'text-positive' : diagnostic?.status === 'downtrend' ? 'text-negative' : 'text-ink-muted'}`}>{diagnostic?.status === 'uptrend' ? '↑ Uptrend' : diagnostic?.status === 'downtrend' ? '↓ Downtrend' : diagnostic?.status === 'sideways' ? '→ Sideways' : '—'}</td><td className="px-4 py-2.5 font-mono text-xs text-ink-muted">{formatMarketCap(pair.marketCapUsd)}</td><td className="px-4 py-2.5 text-right font-mono text-xs text-ink">{formatUsdt(pair.priceUsdt)}</td><td className={`px-4 py-2.5 text-right font-mono text-xs ${pair.globalChangePct24h == null ? 'text-ink-muted' : pair.globalChangePct24h >= 0 ? 'text-positive' : 'text-negative'}`}>{pair.globalChangePct24h == null ? '—' : `${pair.globalChangePct24h >= 0 ? '+' : ''}${pair.globalChangePct24h.toFixed(2)}%`}</td><td className="px-4 py-2.5 text-right font-mono text-xs text-ink-muted">{formatCompactIdr(pair.volumeIdr)}</td><td className="px-4 py-2.5 text-right font-mono text-xs text-ink-muted">{formatUsdt(pair.highUsdt)} / {formatUsdt(pair.lowUsdt)}</td></tr>; })}</tbody>
       </table>
     </div>
 

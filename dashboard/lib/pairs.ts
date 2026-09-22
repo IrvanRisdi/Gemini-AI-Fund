@@ -7,7 +7,7 @@ export interface PairMeta {
   indodaxId: string;
   /** CoinGecko coin id for the /coins/{id} public endpoint */
   coingeckoId: string;
-  /** Candle venue. Execution prices remain anchored to Indodax IDR. */
+  /** Market-data venue. Coin prices are quoted in USDT. */
   venue?: 'indodax' | 'binance';
   /** Native market symbol used by an external venue, e.g. ZECUSDT. */
   venueSymbol?: string;
@@ -24,8 +24,8 @@ export const PAIRS: PairMeta[] = [
   { symbol: 'pepe', name: 'Pepe', indodaxId: 'pepeidr', coingeckoId: 'pepe' },
   { symbol: 'sui', name: 'Sui', indodaxId: 'suiidr', coingeckoId: 'sui' },
   { symbol: 'bnb', name: 'BNB', indodaxId: 'bnbidr', coingeckoId: 'binancecoin' },
-  // ZEC is no longer present in Indodax's active public pair feed. Its Binance
-  // USDT candles are converted to synthetic IDR. It remains paper-trading only.
+  // ZEC is no longer present in Indodax's active public pair feed. Binance
+  // Spot supplies its native ZEC/USDT market data.
   { symbol: 'zec', name: 'Zcash', indodaxId: 'zecidr', coingeckoId: 'zcash', venue: 'binance', venueSymbol: 'ZECUSDT' },
 ];
 

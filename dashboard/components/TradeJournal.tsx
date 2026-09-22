@@ -20,6 +20,16 @@ function fmtPrice(value: number): string {
   return `Rp${value.toLocaleString('id-ID', { minimumFractionDigits: 6, maximumFractionDigits: 6 })}`;
 }
 
+function fmtUsdt(value: number): string {
+  const maximumFractionDigits = Math.abs(value) >= 1000 ? 2 : Math.abs(value) >= 1 ? 4 : 8;
+  return `${value.toLocaleString('en-US', { maximumFractionDigits })} USDT`;
+}
+
+function displayPair(pair: string): string {
+  const clean = pair.replace('/', '').replace('_', '').replace(/(?:idr|usdt)$/i, '');
+  return `${clean.toUpperCase()}/USDT`;
+}
+
 function fmtDate(iso: string): string {
   const datePart = new Date(iso).toLocaleString('id-ID', { day: '2-digit', month: 'short', timeZone: 'Asia/Jakarta' });
   return `${datePart} ${formatWibTime(iso)}`;
@@ -49,19 +59,21 @@ function PositionTable({ cycles, equity }: { cycles: PositionCycle[]; equity?: n
           {cycles.map((cycle, index) => {
             const isOpen = cycle.status === 'open';
             const pnl = isOpen ? cycle.unrealizedPnlIdr : cycle.realizedPnlIdr;
-            const entryNotional = cycle.entryPrice * cycle.size;
+            const entryNotional = cycle.entryValueIdr ?? cycle.entryPrice * cycle.size;
             const pnlPct = pnl != null && entryNotional !== 0 ? (pnl / entryNotional) * 100 : null;
             const exitOrCurrent = isOpen ? cycle.currentPrice : cycle.exitPrice;
-            const positionValue = exitOrCurrent != null ? cycle.size * exitOrCurrent : null;
+            const positionValue = cycle.positionValueIdr ?? (exitOrCurrent != null && cycle.quoteCurrency !== 'USDT' ? cycle.size * exitOrCurrent : null);
+            const entryUsdt = cycle.entryPriceUsdt ?? (cycle.quoteCurrency === 'USDT' ? cycle.entryPrice : null);
+            const exitOrCurrentUsdt = isOpen ? cycle.currentPriceUsdt : cycle.exitPriceUsdt;
             const weightPct = isOpen && positionValue != null && equity ? (positionValue / equity) * 100 : null;
 
             return (
               <tr key={`${cycle.instrument}-${cycle.openedAt}-${index}`} className="border-b border-border/60 last:border-0 hover:bg-surface-hover">
                 <td className="px-3 py-2.5"><StatBadge tone={isOpen ? 'positive' : 'neutral'}>{isOpen ? 'TERBUKA' : 'SELESAI'}</StatBadge></td>
-                <td className="px-3 py-2.5 font-semibold text-ink">{cycle.instrument}</td>
+                <td className="px-3 py-2.5 font-semibold text-ink">{displayPair(cycle.instrument)}</td>
                 <td className="px-3 py-2.5"><StatBadge tone={SIDE_TONE[cycle.side]}>{SIDE_LABEL[cycle.side]}</StatBadge></td>
-                <td className="px-3 py-2.5 text-right text-ink">{fmtPrice(cycle.entryPrice)}</td>
-                <td className="px-3 py-2.5 text-right text-ink">{exitOrCurrent != null ? fmtPrice(exitOrCurrent) : <span className="text-ink-faint">—</span>}</td>
+                <td className="px-3 py-2.5 text-right text-ink">{entryUsdt != null ? fmtUsdt(entryUsdt) : <span title="Data historis sebelum migrasi USDT">{fmtPrice(cycle.entryPrice)} · legacy</span>}</td>
+                <td className="px-3 py-2.5 text-right text-ink">{exitOrCurrentUsdt != null ? fmtUsdt(exitOrCurrentUsdt) : exitOrCurrent != null ? <span title="Data historis sebelum migrasi USDT">{fmtPrice(exitOrCurrent)} · legacy</span> : <span className="text-ink-faint">—</span>}</td>
                 <td className="px-3 py-2.5 text-right text-ink-muted">{cycle.size.toLocaleString('id-ID', { maximumFractionDigits: 8 })}</td>
                 <td className="px-3 py-2.5 text-right font-semibold text-ink">{positionValue != null ? <>{fmtIdr(positionValue)}{weightPct != null ? <span className="ml-1 font-normal text-ink-faint">({weightPct.toFixed(1)}%)</span> : null}</> : <span className="text-ink-faint">—</span>}</td>
                 <td className="px-3 py-2.5 whitespace-nowrap text-ink-muted">{fmtDate(cycle.closedAt ?? cycle.openedAt)}</td>
@@ -90,7 +102,7 @@ function PendingTable({ orders }: { orders: PendingOrder[] }) {
           <th className="px-3 py-2.5 font-medium uppercase">Pair</th><th className="px-3 py-2.5 font-medium uppercase">Tipe</th><th className="px-3 py-2.5 text-right font-medium uppercase">Zona Entry</th><th className="px-3 py-2.5 text-right font-medium uppercase">Stop</th><th className="px-3 py-2.5 text-right font-medium uppercase">Target</th><th className="px-3 py-2.5 font-medium uppercase">Konfirmasi</th><th className="px-3 py-2.5 font-medium uppercase">Berakhir</th>
         </tr></thead>
         <tbody>{orders.map((order) => <tr key={order.id} className="border-b border-border/60 last:border-0 hover:bg-surface-hover">
-          <td className="px-3 py-2.5 font-semibold text-ink">{order.pair}</td><td className="px-3 py-2.5"><StatBadge tone="warning">{order.type === 'limit' ? 'PULLBACK' : 'BREAKOUT'}</StatBadge></td><td className="px-3 py-2.5 text-right text-ink">{fmtPrice(order.entryLow)}–{fmtPrice(order.entryHigh)}</td><td className="px-3 py-2.5 text-right text-negative">{fmtPrice(order.stopPrice)}</td><td className="px-3 py-2.5 text-right text-positive">{fmtPrice(order.targetPrice)}</td><td className="max-w-64 px-3 py-2.5 text-ink-muted">{order.confirmations.join(' · ') || '—'}</td><td className="px-3 py-2.5 whitespace-nowrap text-ink-muted">{fmtDate(order.expiresAt)}</td>
+          <td className="px-3 py-2.5 font-semibold text-ink">{displayPair(order.pair)}</td><td className="px-3 py-2.5"><StatBadge tone="warning">{order.type === 'limit' ? 'PULLBACK' : 'BREAKOUT'}</StatBadge></td><td className="px-3 py-2.5 text-right text-ink">{order.quoteCurrency === 'USDT' ? `${fmtUsdt(order.entryLow)}–${fmtUsdt(order.entryHigh)}` : `${fmtPrice(order.entryLow)}–${fmtPrice(order.entryHigh)} · legacy`}</td><td className="px-3 py-2.5 text-right text-negative">{order.quoteCurrency === 'USDT' ? fmtUsdt(order.stopPrice) : `${fmtPrice(order.stopPrice)} · legacy`}</td><td className="px-3 py-2.5 text-right text-positive">{order.quoteCurrency === 'USDT' ? fmtUsdt(order.targetPrice) : `${fmtPrice(order.targetPrice)} · legacy`}</td><td className="max-w-64 px-3 py-2.5 text-ink-muted">{order.confirmations.join(' · ') || '—'}</td><td className="px-3 py-2.5 whitespace-nowrap text-ink-muted">{fmtDate(order.expiresAt)}</td>
         </tr>)}</tbody>
       </table>
     </div>

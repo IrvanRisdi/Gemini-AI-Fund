@@ -99,5 +99,5 @@ export async function discoverTradingUniverse(pinnedPairs: string[] = []): Promi
 
 export function displayPair(pair: string): string {
   const normalized = normalizePair(pair);
-  return `${normalized.replace(/idr$/, '').toUpperCase()}/IDR`;
+  return `${normalized.replace(/idr$/, '').toUpperCase()}/USDT`;
 }

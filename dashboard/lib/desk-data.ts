@@ -1,12 +1,10 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { fetchBulkCoinPrices } from './coin-market';
+import { fetchCoinMarketSnapshot, idrPriceKey, usdtPriceKey } from './coin-market';
 
-
-function normalizeIndodaxKey(rawPair: string): string {
-  const clean = rawPair.replace('/', '').toLowerCase();
-  return clean.endsWith('idr') ? clean.replace(/idr$/, '_idr') : `${clean}_idr`;
+function displayUsdtPair(pair: string): string {
+  return `${pair.replace('/', '').replace('_', '').replace(/(?:idr|usdt)$/i, '').toUpperCase()}/USDT`;
 }
 
 function getDeskDir(): string {
@@ -29,6 +27,9 @@ export interface LedgerTrade {
   type: 'open' | 'close' | 'add';
   size: number;
   price: number;
+  priceCurrency?: 'IDR' | 'USDT';
+  priceIdr?: number;
+  fxRate?: number;
   realizedPnlIdr?: number;
   feeIdr?: number;
   campaignId?: string;
@@ -42,6 +43,14 @@ export interface LedgerPosition {
   side: 'long';
   size: number;
   entryPrice: number;
+  quoteCurrency?: 'IDR' | 'USDT';
+  fxRateAtEntry?: number;
+  costBasisIdr?: number;
+  entryPriceUsdt?: number | null;
+  currentPriceUsdt?: number | null;
+  stopPriceUsdt?: number | null;
+  targetPriceUsdt?: number | null;
+  entryValueIdr?: number;
   currentPrice?: number;
   marketValue?: number;
   unrealizedPnlIdr?: number;
@@ -59,6 +68,8 @@ export interface PendingOrder {
   campaignId: string;
   pair: string;
   side: 'long';
+  quoteCurrency?: 'IDR' | 'USDT';
+  fxRateAtSignal?: number;
   type: 'limit' | 'stop';
   entryLow: number;
   entryHigh: number;
@@ -109,6 +120,11 @@ export interface LatestScanCandidate {
   pair: string;
   agent: string;
   reason: string;
+  quoteCurrency?: 'USDT';
+  entryLow?: number;
+  entryHigh?: number;
+  stopPrice?: number;
+  targetPrice?: number;
   data?: Record<string, number>;
   validationStatus?: 'validated' | 'research';
   strategyVersion?: string;
@@ -220,11 +236,11 @@ export async function getLatestCoinScan(): Promise<LatestScan | null> {
 }
 
 export async function getDeskSnapshot(): Promise<DeskSnapshot> {
-  const [ledger, state, scan, prices] = await Promise.all([
+  const [ledger, state, scan, market] = await Promise.all([
     readJson<PaperLedger>('paper-ledger.json'),
     readJson<DeskState>('state.json'),
     readJson<LatestScan>('latest-scan.json'),
-    fetchBulkCoinPrices().catch(() => ({} as Record<string, number>)),
+    fetchCoinMarketSnapshot().catch(() => ({ pricesUsdt: {} as Record<string, number>, pricesIdr: {} as Record<string, number>, usdtIdr: 0 })),
   ]);
 
   const defaultStartingBalance = DEFAULT_STARTING_BALANCE;
@@ -234,7 +250,7 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     const agents: AgentSummary[] = DEFAULT_AGENTS.map((slug) => {
       const agentCandidates = scan?.candidates?.filter((c) => c.agent === slug) ?? [];
       const lastAction = agentCandidates.length > 0
-        ? `⚡ Signal: ${agentCandidates.map((c) => `${c.pair.toUpperCase()} (${c.reason})`).join(' | ')}`
+        ? `⚡ Signal: ${agentCandidates.map((c) => `${displayUsdtPair(c.pair)} (${c.reason})`).join(' | ')}`
         : 'Active — awaiting next 15-min scan cycle';
 
       return {
@@ -284,24 +300,46 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     const startingBal = ledger.starting_balance_per_agent || defaultStartingBalance;
     const feeRate = ledger.fee_rate ?? 0.003;
     const cash = book?.balance?.IDR ?? startingBal;
-    // Hitung Floating PnL secara Real-Time berdasarkan harga Indodax saat ini
+    // Harga pasar native USDT; konversi hanya untuk pembukuan IDR.
     let unrealizedPnl = 0;
     let openPositionValue = 0;
     const rawPositions = book?.positions ?? {};
     const positionsList: LedgerPosition[] = [];
 
     for (const [pair, pos] of Object.entries(rawPositions)) {
-      const tickerKey = normalizeIndodaxKey(pair);
-      const currentPrice = prices[tickerKey] ?? pos.entryPrice;
+      const quoteCurrency = pos.quoteCurrency ?? 'IDR';
+      const liveUsdt = market.pricesUsdt[usdtPriceKey(pair)] ?? null;
+      const currentPrice = quoteCurrency === 'USDT'
+        ? liveUsdt ?? pos.entryPrice
+        : market.pricesIdr[idrPriceKey(pair)] ?? pos.entryPrice;
+      const entryFx = pos.fxRateAtEntry ?? market.usdtIdr;
+      const currentFx = market.usdtIdr || entryFx || 1;
+      const quoteMultiplier = quoteCurrency === 'USDT' ? currentFx : 1;
+      const entryValueIdr = pos.costBasisIdr ?? pos.entryPrice * pos.size * (quoteCurrency === 'USDT' ? entryFx : 1);
+      const currentValueIdr = currentPrice * pos.size * quoteMultiplier;
       const grossPnl = pos.side === 'long'
-        ? (currentPrice - pos.entryPrice) * pos.size
-        : (pos.entryPrice - currentPrice) * pos.size;
-      const entryAndEstimatedExitFee = (pos.entryPrice + currentPrice) * pos.size * feeRate;
+        ? currentValueIdr - entryValueIdr
+        : entryValueIdr - currentValueIdr;
+      const entryAndEstimatedExitFee = (entryValueIdr + currentValueIdr) * feeRate;
       const posPnl = grossPnl - entryAndEstimatedExitFee;
-      const marketValue = pos.size * currentPrice;
+      const marketValue = currentValueIdr;
       unrealizedPnl += posPnl;
       openPositionValue += marketValue;
-      positionsList.push({ ...pos, instrument: pair, currentPrice, marketValue, unrealizedPnlIdr: posPnl });
+      const entryPriceUsdt = quoteCurrency === 'USDT' ? pos.entryPrice : entryFx ? pos.entryPrice / entryFx : null;
+      const currentPriceUsdt = liveUsdt ?? (quoteCurrency === 'USDT' ? currentPrice : currentFx ? currentPrice / currentFx : null);
+      positionsList.push({
+        ...pos,
+        quoteCurrency,
+        instrument: pair,
+        currentPrice,
+        entryPriceUsdt,
+        currentPriceUsdt,
+        stopPriceUsdt: quoteCurrency === 'USDT' ? pos.stopPrice : currentFx ? pos.stopPrice / currentFx : null,
+        targetPriceUsdt: pos.targetPrice == null ? null : quoteCurrency === 'USDT' ? pos.targetPrice : currentFx ? pos.targetPrice / currentFx : null,
+        entryValueIdr,
+        marketValue,
+        unrealizedPnlIdr: posPnl,
+      });
     }
 
     // Ekuitas = Kas + NILAI PENUH posisi terbuka (bukan cuma floating P&L-nya
@@ -329,7 +367,7 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
     const agentCandidates = scan?.candidates?.filter((c) => c.agent === slug) ?? [];
     let lastAction = stateAgent?.last_action ?? 'Active';
     if (agentCandidates.length > 0) {
-      lastAction = `⚡ Signal: ${agentCandidates.map((c) => `${c.pair.toUpperCase()} — ${c.reason}`).join(' | ')}`;
+      lastAction = `⚡ Signal: ${agentCandidates.map((c) => `${displayUsdtPair(c.pair)} — ${c.reason}`).join(' | ')}`;
     }
 
     return {
@@ -410,6 +448,12 @@ export interface PositionCycle {
   side: 'long' | 'short';
   status: 'open' | 'closed';
   entryPrice: number;
+  quoteCurrency?: 'IDR' | 'USDT';
+  entryPriceUsdt?: number | null;
+  exitPriceUsdt?: number | null;
+  currentPriceUsdt?: number | null;
+  entryValueIdr?: number | null;
+  positionValueIdr?: number | null;
   size: number;
   exitPrice: number | null;
   currentPrice: number | null;
@@ -443,7 +487,8 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     interface Building {
       side: 'long' | 'short';
       openedAt: string;
-      legs: { size: number; price: number }[];
+      quoteCurrency: 'IDR' | 'USDT';
+      legs: { size: number; price: number; priceIdr?: number; fxRate?: number }[];
       entryFeesIdr: number;
       strategyVersion?: string;
     }
@@ -453,21 +498,28 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     for (const t of chronological) {
       const key = t.instrument;
       if (t.type === 'open') {
-        openByInstrument.set(key, { side: t.side, openedAt: t.timestamp, legs: [{ size: t.size, price: t.price }], entryFeesIdr: t.feeIdr ?? 0, strategyVersion: t.strategyVersion });
+        openByInstrument.set(key, { side: t.side, openedAt: t.timestamp, quoteCurrency: t.priceCurrency ?? 'IDR', legs: [{ size: t.size, price: t.price, priceIdr: t.priceIdr, fxRate: t.fxRate }], entryFeesIdr: t.feeIdr ?? 0, strategyVersion: t.strategyVersion });
       } else if (t.type === 'add') {
         const building = openByInstrument.get(key);
-        building?.legs.push({ size: t.size, price: t.price });
+        building?.legs.push({ size: t.size, price: t.price, priceIdr: t.priceIdr, fxRate: t.fxRate });
         if (building) building.entryFeesIdr += t.feeIdr ?? 0;
       } else if (t.type === 'close') {
         const building = openByInstrument.get(key);
         if (!building) continue;
         const totalSize = building.legs.reduce((sum, l) => sum + l.size, 0);
         const weightedEntry = building.legs.reduce((sum, l) => sum + l.size * l.price, 0) / (totalSize || 1);
+        const entryValueIdr = building.legs.reduce((sum, l) => sum + l.size * (l.priceIdr ?? l.price * (building.quoteCurrency === 'USDT' ? l.fxRate ?? 0 : 1)), 0);
         cycles.push({
           instrument: key,
           side: building.side,
           status: 'closed',
           entryPrice: weightedEntry,
+          quoteCurrency: building.quoteCurrency,
+          entryPriceUsdt: building.quoteCurrency === 'USDT' ? weightedEntry : null,
+          exitPriceUsdt: (t.priceCurrency ?? 'IDR') === 'USDT' ? t.price : null,
+          currentPriceUsdt: null,
+          entryValueIdr,
+          positionValueIdr: t.priceIdr != null ? totalSize * t.priceIdr : building.quoteCurrency === 'IDR' ? totalSize * t.price : null,
           size: totalSize,
           exitPrice: t.price,
           currentPrice: null,
@@ -488,7 +540,9 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     }
 
     const stillOpen = [...openByInstrument.entries()];
-    const prices = (stillOpen.length > 0 ? await fetchBulkCoinPrices().catch(() => ({})) : {}) as Record<string, number>;
+    const market = stillOpen.length > 0
+      ? await fetchCoinMarketSnapshot().catch(() => ({ pricesUsdt: {} as Record<string, number>, pricesIdr: {} as Record<string, number>, usdtIdr: 0 }))
+      : { pricesUsdt: {} as Record<string, number>, pricesIdr: {} as Record<string, number>, usdtIdr: 0 };
 
     let openPositionValue = 0;
     let unrealizedPnlIdr = 0;
@@ -496,17 +550,15 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     for (const [instrument, building] of stillOpen) {
       const totalSize = building.legs.reduce((sum, l) => sum + l.size, 0);
       const weightedEntry = building.legs.reduce((sum, l) => sum + l.size * l.price, 0) / (totalSize || 1);
-      const tickerKey = normalizeIndodaxKey(instrument);
-      const currentPrice = prices[tickerKey] ?? null;
-      const positionValue = currentPrice != null ? totalSize * currentPrice : null;
-      const grossUnrealized =
-        currentPrice != null
-          ? building.side === 'long'
-            ? totalSize * (currentPrice - weightedEntry)
-            : totalSize * (weightedEntry - currentPrice)
-          : null;
+      const liveUsdt = market.pricesUsdt[usdtPriceKey(instrument)] ?? null;
+      const currentPrice = building.quoteCurrency === 'USDT' ? liveUsdt : market.pricesIdr[idrPriceKey(instrument)] ?? null;
+      const entryValueIdr = building.legs.reduce((sum, l) => sum + l.size * (l.priceIdr ?? l.price * (building.quoteCurrency === 'USDT' ? l.fxRate ?? market.usdtIdr : 1)), 0);
+      const positionValue = currentPrice != null ? totalSize * currentPrice * (building.quoteCurrency === 'USDT' ? market.usdtIdr : 1) : null;
+      const grossUnrealized = currentPrice != null && positionValue != null
+        ? building.side === 'long' ? positionValue - entryValueIdr : entryValueIdr - positionValue
+        : null;
       const unrealized = currentPrice != null && grossUnrealized != null
-        ? grossUnrealized - building.entryFeesIdr - currentPrice * totalSize * feeRate
+        ? grossUnrealized - building.entryFeesIdr - positionValue! * feeRate
         : null;
 
       if (positionValue != null) openPositionValue += positionValue;
@@ -517,6 +569,12 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
         side: building.side,
         status: 'open',
         entryPrice: weightedEntry,
+        quoteCurrency: building.quoteCurrency,
+        entryPriceUsdt: building.quoteCurrency === 'USDT' ? weightedEntry : market.usdtIdr ? weightedEntry / market.usdtIdr : null,
+        currentPriceUsdt: liveUsdt,
+        exitPriceUsdt: null,
+        entryValueIdr,
+        positionValueIdr: positionValue,
         size: totalSize,
         exitPrice: null,
         currentPrice,
@@ -537,7 +595,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     const realizedPnlIdr = cycles
       .filter((cycle) => cycle.status === 'closed' && !cycle.maintenance)
       .reduce((sum, cycle) => sum + (cycle.realizedPnlIdr ?? 0), 0);
-    const recoveryCycles = cycles.filter((cycle) => cycle.status === 'closed' && !cycle.maintenance && cycle.strategyVersion === 'recovery-v3');
+    const recoveryCycles = cycles.filter((cycle) => cycle.status === 'closed' && !cycle.maintenance && cycle.strategyVersion?.startsWith('recovery-v'));
     const recoveryWins = recoveryCycles.filter((cycle) => (cycle.realizedPnlIdr ?? 0) > 0).length;
 
     return {

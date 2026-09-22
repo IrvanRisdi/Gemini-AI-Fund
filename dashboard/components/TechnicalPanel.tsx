@@ -2,8 +2,8 @@ import { StatBadge, type BadgeTone } from './StatBadge';
 import type { TechnicalSnapshot } from '@/lib/technical';
 
 function fmt(value: number): string {
-  if (Math.abs(value) >= 1000) return Math.round(value).toLocaleString('id-ID');
-  return value.toLocaleString('id-ID', { maximumFractionDigits: 6 });
+  const maximumFractionDigits = Math.abs(value) >= 1000 ? 2 : Math.abs(value) >= 1 ? 4 : 8;
+  return value.toLocaleString('en-US', { maximumFractionDigits });
 }
 
 function Metric({ label, value, tone }: { label: string; value: string; tone?: BadgeTone }) {
@@ -39,23 +39,23 @@ export function TechnicalPanel({ snapshot, timeframe }: { snapshot: TechnicalSna
       <div className="rounded-lg border border-accent-bg bg-accent-bg/40 p-3">
         <p className="font-mono text-[10px] tracking-wide text-accent uppercase">Kesimpulan teknis</p>
         <p className="mt-1 font-sans text-sm leading-relaxed text-ink">
-          Bias {timeframe} saat ini <span className="font-semibold">{bias}</span>: {momentum}, dan {volume}. Pantau resistance Rp{fmt(snapshot.resistance20)}; skenario ini melemah bila harga ditutup di bawah support Rp{fmt(snapshot.support20)}.
+          Bias {timeframe} saat ini <span className="font-semibold">{bias}</span>: {momentum}, dan {volume}. Pantau resistance {fmt(snapshot.resistance20)} USDT; skenario ini melemah bila harga ditutup di bawah support {fmt(snapshot.support20)} USDT.
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
         <Metric label="RSI(14)" value={snapshot.rsi14.toFixed(1)} tone={rsiTone} />
         <Metric label="ADX(14)" value={snapshot.adx14.toFixed(1)} tone={adxTone} />
-        <Metric label="ATR(14)" value={fmt(snapshot.atr14)} />
-        <Metric label="EMA(9)" value={fmt(snapshot.ema9)} />
-        <Metric label="EMA(21)" value={fmt(snapshot.ema21)} />
+        <Metric label="ATR(14)" value={`${fmt(snapshot.atr14)} USDT`} />
+        <Metric label="EMA(9)" value={`${fmt(snapshot.ema9)} USDT`} />
+        <Metric label="EMA(21)" value={`${fmt(snapshot.ema21)} USDT`} />
         <Metric label="Vol Ratio" value={`${snapshot.volRatio.toFixed(2)}x`} tone={snapshot.volRatio > 1.5 ? 'warning' : undefined} />
-        <Metric label="BB Upper" value={fmt(snapshot.bbUpper)} />
-        <Metric label="BB Mid" value={fmt(snapshot.bbMid)} />
-        <Metric label="BB Lower" value={fmt(snapshot.bbLower)} />
-        <Metric label="Resistance(20)" value={fmt(snapshot.resistance20)} tone="negative" />
-        <Metric label="Support(20)" value={fmt(snapshot.support20)} tone="positive" />
-        <Metric label="Close" value={fmt(snapshot.close)} />
+        <Metric label="BB Upper" value={`${fmt(snapshot.bbUpper)} USDT`} />
+        <Metric label="BB Mid" value={`${fmt(snapshot.bbMid)} USDT`} />
+        <Metric label="BB Lower" value={`${fmt(snapshot.bbLower)} USDT`} />
+        <Metric label="Resistance(20)" value={`${fmt(snapshot.resistance20)} USDT`} tone="negative" />
+        <Metric label="Support(20)" value={`${fmt(snapshot.support20)} USDT`} tone="positive" />
+        <Metric label="Close" value={`${fmt(snapshot.close)} USDT`} />
       </div>
     </div>
   );

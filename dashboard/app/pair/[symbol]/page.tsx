@@ -43,7 +43,8 @@ export default async function PairPage({
   const { tf } = await searchParams;
   const timeframe: Timeframe = tf === '1h' || tf === '4h' || tf === '1d' ? tf : '4h';
   const timeframeMeta = TIMEFRAMES[timeframe];
-  // Fast path: featured desk pairs. Fallback: active Indodax IDR pairs.
+  // Fast path: featured desk pairs. Fallback: Binance-supported bases that
+  // also exist in the local discovery list.
   const pair = getPair(symbol) ?? (await findPairBySymbol(symbol));
   if (!pair) notFound();
 
@@ -61,7 +62,7 @@ export default async function PairPage({
     return (
       <main className="mx-auto max-w-6xl px-6 py-10">
         <header className="mb-6">
-          <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">{pair.indodaxId.toUpperCase()} · Binance Spot USDT → IDR sintetis</p>
+          <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">{pair.symbol.toUpperCase()}/USDT · Binance Spot</p>
           <h1 className="mt-1 font-sans text-3xl font-semibold text-ink">{pair.name}</h1>
         </header>
         <div className="rounded-xl border border-border bg-surface p-5 text-sm text-ink-muted">
@@ -97,12 +98,12 @@ export default async function PairPage({
     <main className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">{pair.indodaxId.toUpperCase()} · Binance Spot USDT → IDR sintetis</p>
+          <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">{pair.symbol.toUpperCase()}/USDT · Binance Spot</p>
           <h1 className="mt-1 font-sans text-3xl font-semibold text-ink">{pair.name}</h1>
         </div>
         <div className="text-right">
           <p className="font-mono text-2xl font-semibold text-ink">
-            Rp{last.close >= 1000 ? Math.round(last.close).toLocaleString('id-ID') : last.close.toLocaleString('id-ID', { maximumFractionDigits: 6 })}
+            {last.close.toLocaleString('en-US', { maximumFractionDigits: last.close >= 1000 ? 2 : last.close >= 1 ? 4 : 8 })} USDT
           </p>
           <StatBadge tone={changePct >= 0 ? 'positive' : 'negative'}>
             {changePct >= 0 ? '+' : ''}
@@ -112,7 +113,7 @@ export default async function PairPage({
       </header>
 
       <div className="mb-6 rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 font-sans text-xs leading-relaxed text-ink-muted">
-        Candle berasal dari Binance Spot REST API dan dikonversi dengan kurs USDT/IDR. Harga eksekusi dan valuasi paper trading tetap mengikuti last price Indodax IDR bila pair tersedia.
+        Candle, indikator, dan trading plan memakai harga native Binance Spot USDT. Konversi USDT/IDR hanya dilakukan pada lapisan pembukuan untuk menghitung kas, nilai posisi, equity, fee, risiko, dan P&amp;L dalam rupiah.
       </div>
 
       <section className="rounded-xl border border-border bg-surface p-5">

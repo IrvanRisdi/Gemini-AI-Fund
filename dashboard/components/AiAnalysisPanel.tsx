@@ -20,11 +20,11 @@ function buildSummary(
   plan: TradingPlan
 ): { summary: string; structure: string; levels: string } {
   const direction = composite.bias === 'bullish' ? 'cenderung naik' : composite.bias === 'bearish' ? 'cenderung turun' : 'belum memiliki arah dominan';
-  const summary = `${name} (${symbol.toUpperCase()}/IDR) ${direction}. EMA menunjukkan tren ${t.trend}, RSI berada di ${t.rsi14.toFixed(1)}, dan ${t.trending ? 'tren memiliki kekuatan yang cukup' : 'pasar masih cenderung bergerak dalam range'}.`;
+  const summary = `${name} (${symbol.toUpperCase()}/USDT) ${direction}. EMA menunjukkan tren ${t.trend}, RSI berada di ${t.rsi14.toFixed(1)}, dan ${t.trending ? 'tren memiliki kekuatan yang cukup' : 'pasar masih cenderung bergerak dalam range'}.`;
   const structure = breakout.state === 'no-breakout'
     ? `Belum ada breakout yang jelas. Struktur SMC terbaca ${smc.structure} pada zona ${smc.zone}.`
-    : `Struktur terakhir: ${breakout.state.replaceAll('-', ' ')} di sekitar Rp${fmt(breakout.level)}. SMC terbaca ${smc.structure} pada zona ${smc.zone}.`;
-  const levels = `Level terdekat: Fibonacci ${fib.nearestLevel.label} di Rp${fmt(fib.nearestLevel.price)}. Support Rp${fmt(t.support20)} dan resistance Rp${fmt(t.resistance20)}. ${plan.reasoning}`;
+    : `Struktur terakhir: ${breakout.state.replaceAll('-', ' ')} di sekitar ${fmt(breakout.level)} USDT. SMC terbaca ${smc.structure} pada zona ${smc.zone}.`;
+  const levels = `Level terdekat: Fibonacci ${fib.nearestLevel.label} di ${fmt(fib.nearestLevel.price)} USDT. Support ${fmt(t.support20)} USDT dan resistance ${fmt(t.resistance20)} USDT. ${plan.reasoning}`;
   return { summary, structure, levels };
 }
 

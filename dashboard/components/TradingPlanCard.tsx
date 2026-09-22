@@ -2,8 +2,8 @@ import { StatBadge } from './StatBadge';
 import type { TradingPlan } from '@/lib/analysis-score';
 
 function fmt(value: number): string {
-  if (Math.abs(value) >= 1000) return Math.round(value).toLocaleString('id-ID');
-  return value.toLocaleString('id-ID', { maximumFractionDigits: 6 });
+  const maximumFractionDigits = Math.abs(value) >= 1000 ? 2 : Math.abs(value) >= 1 ? 4 : 8;
+  return `${value.toLocaleString('en-US', { maximumFractionDigits })} USDT`;
 }
 
 export function TradingPlanCard({ plan }: { plan: TradingPlan }) {

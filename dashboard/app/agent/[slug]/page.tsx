@@ -104,7 +104,7 @@ export default async function AgentPage({ params }: { params: Promise<{ slug: st
         <section className="mb-6 rounded-lg border border-border bg-surface px-3 py-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <span className="block font-mono text-[10px] tracking-wide text-ink-muted uppercase">Recovery-v3 · performa terpisah</span>
+              <span className="block font-mono text-[10px] tracking-wide text-ink-muted uppercase">Recovery strategy · performa terpisah</span>
               <p className="mt-1 font-sans text-xs text-ink-muted">Histori lama tetap disimpan, tetapi tidak dipakai untuk menilai aturan yang baru.</p>
             </div>
             <div className="flex gap-4 font-mono text-xs text-ink">

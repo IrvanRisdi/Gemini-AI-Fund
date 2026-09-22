@@ -10,8 +10,8 @@ const PADDING_TOP = 16;
 const PADDING_BOTTOM = 24;
 
 function formatPrice(value: number): string {
-  if (value >= 1000) return Math.round(value).toLocaleString('id-ID');
-  return value.toLocaleString('id-ID', { minimumFractionDigits: 6, maximumFractionDigits: 6 });
+  const maximumFractionDigits = value >= 1000 ? 2 : value >= 1 ? 4 : 8;
+  return value.toLocaleString('en-US', { maximumFractionDigits });
 }
 
 function formatTime(ts: number, timeframe: string): string {
@@ -114,24 +114,24 @@ export function PriceChart({ candles, timeframe }: { candles: OHLCV[]; timeframe
       </svg>
 
       <div className="mt-1 flex justify-between font-mono text-[10px] text-ink-faint">
-        <span>Rp{formatPrice(minPrice)}</span>
-        <span>Rp{formatPrice(maxPrice)}</span>
+        <span>{formatPrice(minPrice)} USDT</span>
+        <span>{formatPrice(maxPrice)} USDT</span>
       </div>
 
       {hovered && (
         <div className="pointer-events-none absolute top-2 right-2 rounded-lg border border-border bg-bg/95 px-3 py-2 font-mono text-[11px] leading-relaxed text-ink shadow-lg">
           <div className="text-ink-muted">{formatTime(hovered.candle.timestamp, timeframe)}</div>
           <div>
-            O <span className="text-ink">Rp{formatPrice(hovered.candle.open)}</span>
+            O <span className="text-ink">{formatPrice(hovered.candle.open)} USDT</span>
           </div>
           <div>
-            H <span className="text-positive">Rp{formatPrice(hovered.candle.high)}</span>
+            H <span className="text-positive">{formatPrice(hovered.candle.high)} USDT</span>
           </div>
           <div>
-            L <span className="text-negative">Rp{formatPrice(hovered.candle.low)}</span>
+            L <span className="text-negative">{formatPrice(hovered.candle.low)} USDT</span>
           </div>
           <div>
-            C <span className="text-ink">Rp{formatPrice(hovered.candle.close)}</span>
+            C <span className="text-ink">{formatPrice(hovered.candle.close)} USDT</span>
           </div>
         </div>
       )}

@@ -19,7 +19,7 @@ export default async function ExplorePage() {
           Tambahkan pair ke watchlist agar riset Anda tetap fokus—Explore tidak membuka atau mengubah posisi paper trading.
         </p>
         <p className="mt-2 font-mono text-[10px] text-ink-faint">
-          Candle analisis: Binance Spot USDT yang dikonversi ke IDR · Harga eksekusi paper: Indodax IDR · Market cap serta perubahan global 24 jam: CoinGecko.
+          Harga, candle, dan perubahan 24 jam: Binance Spot USDT · Likuiditas seleksi serta pembukuan kas, posisi, equity, fee, risiko, dan P&amp;L: IDR.
         </p>
       </header>
 

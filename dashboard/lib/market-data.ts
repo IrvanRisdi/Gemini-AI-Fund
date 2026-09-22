@@ -1,14 +1,15 @@
 import type { PairMeta } from './pairs';
+import { fetchBinance24hStats, fetchBinanceSpotBases } from './binance';
 
 export interface ExplorePairRow extends PairMeta {
   rank: number | null;
   marketCapUsd: number | null;
-  priceIdr: number | null;
-  /** Global CoinGecko move, explicitly kept separate from Indodax-local data. */
+  priceUsdt: number | null;
+  /** Binance Spot 24-hour move; CoinGecko is only a graceful fallback. */
   globalChangePct24h: number | null;
   volumeIdr: number | null;
-  highIdr: number | null;
-  lowIdr: number | null;
+  highUsdt: number | null;
+  lowUsdt: number | null;
 }
 
 interface CoinGeckoMarketEntry {
@@ -106,31 +107,35 @@ async function fetchMarketData(coingeckoIds: string[]): Promise<Map<string, Coin
 }
 
 /**
- * Enriches the base pair list with rank, USD market cap, and IDR price —
+ * Enriches the pair list with Binance USDT price and global market metadata —
  * sorted by CoinGecko market cap rank ascending. Pairs CoinGecko has no
  * rank for (thin/unlisted) sort to the bottom, alphabetically by symbol.
  * Degrades gracefully: if CoinGecko is unreachable, rank/marketCap come
  * back null for everything but the page still renders with symbol/name/price.
  */
 export async function fetchExplorePairs(pairs: PairMeta[]): Promise<ExplorePairRow[]> {
-  const [tickerStats, marketMap] = await Promise.all([fetchExploreTickerStats(), fetchMarketData(pairs.map((p) => p.coingeckoId))]);
+  const [tickerStats, marketMap, binanceStats, supportedBases] = await Promise.all([
+    fetchExploreTickerStats(),
+    fetchMarketData(pairs.map((p) => p.coingeckoId)),
+    fetchBinance24hStats().catch(() => new Map()),
+    fetchBinanceSpotBases(),
+  ]);
 
-  const rows: ExplorePairRow[] = pairs.map((p) => {
+  const rows: ExplorePairRow[] = pairs.filter((p) => supportedBases?.has(p.symbol) ?? binanceStats.has(p.symbol)).map((p) => {
     const market = marketMap.get(p.coingeckoId);
     const ticker = tickerStats[`${p.symbol}_idr`];
-    const usdToIdr = tickerStats.usdt_idr?.priceIdr ?? null;
-    const externalPriceIdr = market?.current_price != null && usdToIdr != null ? market.current_price * usdToIdr : null;
+    const binance = binanceStats.get(p.symbol);
     return {
       ...p,
       name: market?.name ?? p.name,
       rank: market?.market_cap_rank ?? null,
       marketCapUsd: market?.market_cap ?? null,
-      priceIdr: ticker?.priceIdr ?? (p.venue === 'binance' ? externalPriceIdr : null),
+      priceUsdt: binance?.lastPrice ?? market?.current_price ?? null,
       // Do not compare CoinGecko's global volume with local Indodax turnover.
       volumeIdr: ticker?.volumeIdr ?? null,
-      highIdr: ticker?.highIdr ?? null,
-      lowIdr: ticker?.lowIdr ?? null,
-      globalChangePct24h: market?.price_change_percentage_24h ?? null,
+      highUsdt: binance?.highPrice ?? null,
+      lowUsdt: binance?.lowPrice ?? null,
+      globalChangePct24h: binance?.priceChangePct ?? market?.price_change_percentage_24h ?? null,
     };
   });
 

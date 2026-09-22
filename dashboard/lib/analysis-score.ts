@@ -212,7 +212,7 @@ export function buildTradingPlan(
         return {
           bias,
           verdict: 'wait',
-          reasoning: `Resistance Rp${target1.toLocaleString('id-ID')} terlalu dekat dibanding level invalidasi. Tidak ada entry yang memberikan rasio risiko/imbal hasil minimum 1:1,5; tunggu struktur harga baru.`,
+          reasoning: `Resistance ${target1.toLocaleString('en-US')} USDT terlalu dekat dibanding level invalidasi. Tidak ada entry yang memberikan rasio risiko/imbal hasil minimum 1:1,5; tunggu struktur harga baru.`,
         };
       }
       entryHigh = maxEntryForMinRr;
@@ -255,7 +255,7 @@ export function buildTradingPlan(
       return {
         bias,
         verdict: 'wait',
-        reasoning: `Support Rp${target1.toLocaleString('id-ID')} terlalu dekat dibanding level invalidasi. Tidak ada entry yang memberikan rasio risiko/imbal hasil minimum 1:1,5; tunggu struktur harga baru.`,
+        reasoning: `Support ${target1.toLocaleString('en-US')} USDT terlalu dekat dibanding level invalidasi. Tidak ada entry yang memberikan rasio risiko/imbal hasil minimum 1:1,5; tunggu struktur harga baru.`,
       };
     }
     entryLow = minEntryForMinRr;

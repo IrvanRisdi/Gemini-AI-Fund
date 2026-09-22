@@ -9,11 +9,13 @@ const DESK_DIR = path.resolve(process.cwd(), '.desk');
 const BRIEFINGS_DIR = path.join(DESK_DIR, 'briefings');
 const PRIMARY_AGENTS = ['breakout-specialist', 'mean-reversion-trader', 'smc-trader', 'wyckoff-trader', 'aggressive-breakout-trader'];
 
-type AgentBook = { balance?: { IDR?: number }; positions?: Record<string, { quantity?: number; entry_price?: number; current_price?: number; notional?: number }>; pendingOrders?: Array<{ pair?: string; orderType?: string; entry?: number; stop?: number; target?: number }> };
+type AgentBook = { balance?: { IDR?: number }; positions?: Record<string, { size?: number; entryPrice?: number; quoteCurrency?: 'IDR' | 'USDT'; fxRateAtEntry?: number; costBasisIdr?: number; notional?: number }>; pendingOrders?: Array<{ pair?: string; status?: string; type?: string; quoteCurrency?: 'IDR' | 'USDT'; entryLow?: number; entryHigh?: number; stopPrice?: number; targetPrice?: number }> };
 type Ledger = { mode?: string; last_cycle?: string; total_starting_capital?: number; agents?: Record<string, AgentBook> };
-type Scan = { timestamp?: string; pairsScanned?: number; candidates?: Array<{ agent?: string; pair?: string; orderType?: string; entry?: number; stop?: number; target?: number }>; errors?: unknown[] };
+type Scan = { timestamp?: string; pairsScanned?: number; candidates?: Array<{ agent?: string; pair?: string; type?: string; quoteCurrency?: 'USDT'; entryLow?: number; entryHigh?: number; stopPrice?: number; targetPrice?: number }>; errors?: unknown[] };
 
 function formatIdr(value: number) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value); }
+function formatUsdt(value: number) { return `${value.toLocaleString('en-US', { maximumFractionDigits: value >= 1000 ? 2 : value >= 1 ? 4 : 8 })} USDT`; }
+function displayPair(pair: string) { return `${pair.replace('/', '').replace('_', '').replace(/(?:idr|usdt)$/i, '').toUpperCase()}/USDT`; }
 function getCurrentSession(): 'ASIA_OPEN' | 'US_OPEN' { return new Date().getUTCHours() >= 12 ? 'US_OPEN' : 'ASIA_OPEN'; }
 function readJson<T>(filename: string, fallback: T): T { try { return JSON.parse(fs.readFileSync(path.join(DESK_DIR, filename), 'utf8')) as T; } catch { return fallback; } }
 
@@ -22,9 +24,9 @@ function buildFacts(ledger: Ledger, scan: Scan) {
   const agentRows = PRIMARY_AGENTS.map((agent) => {
     const book = agents[agent] ?? {};
     const positions = Object.values(book.positions ?? {});
-    const pending = book.pendingOrders ?? [];
+    const pending = (book.pendingOrders ?? []).filter((order) => order.status === 'pending');
     const cash = book.balance?.IDR ?? 0;
-    const exposure = positions.reduce((sum, p) => sum + (p.notional ?? ((p.quantity ?? 0) * (p.current_price ?? p.entry_price ?? 0))), 0);
+    const exposure = positions.reduce((sum, p) => sum + (p.notional ?? p.costBasisIdr ?? (p.size ?? 0) * (p.entryPrice ?? 0) * (p.quoteCurrency === 'USDT' ? p.fxRateAtEntry ?? 0 : 1)), 0);
     return { agent, cash, exposure, positions: positions.length, pending: pending.length };
   });
   const openPositions = agentRows.reduce((sum, row) => sum + row.positions, 0);
@@ -41,7 +43,7 @@ function buildReportTemplate(session: string, ledger: Ledger, scan: Scan) {
   const facts = buildFacts(ledger, scan);
   const label = session === 'US_OPEN' ? 'US Open' : 'Asia Open';
   const rows = facts.agentRows.map((r) => `| ${r.agent} | ${formatIdr(r.cash)} | ${formatIdr(r.exposure)} | ${r.positions} | ${r.pending} |`).join('\n');
-  const candidates = (scan.candidates ?? []).slice(0, 8).map((c) => `| ${c.agent ?? '-'} | ${c.pair ?? '-'} | ${c.orderType ?? 'pending'} | ${c.entry ? formatIdr(c.entry) : '-'} | ${c.stop ? formatIdr(c.stop) : '-'} | ${c.target ? formatIdr(c.target) : '-'} |`).join('\n') || '| - | - | - | - | - | - |';
+  const candidates = (scan.candidates ?? []).slice(0, 8).map((c) => `| ${c.agent ?? '-'} | ${c.pair ? displayPair(c.pair) : '-'} | ${c.type ?? 'pending'} | ${c.entryLow != null && c.entryHigh != null ? `${formatUsdt(c.entryLow)}–${formatUsdt(c.entryHigh)}` : '-'} | ${c.stopPrice != null ? formatUsdt(c.stopPrice) : '-'} | ${c.targetPrice != null ? formatUsdt(c.targetPrice) : '-'} |`).join('\n') || '| - | - | - | - | - | - |';
   return `# Evaluasi Sesi Pasar — ${label}
 
 > Laporan keputusan paper trading. Semua angka berasal dari ledger dan hasil scan; bukan ajakan beli atau jual.
@@ -103,7 +105,7 @@ Kandidat scan belum otomatis menjadi transaksi. Executor menolak order non-long/
 - Satu kampanye aktif per agen/pair; breakout dapat pyramid pada +0,5R, +1R, dan +1,5R.
 - Stop dirancang pada rentang 3–5% harga. Risk budget equity adaptif: 3% normal, 2% pada drawdown ≥5%, dan 1% pada drawdown ≥10%; fee simulasi 0,3% per sisi.
 - Jumlah kampanye turun otomatis dari 4 menjadi 3/2 ketika agen masuk recovery mode.
-- Hanya strategi `validated` yang dapat membuat order; Mean Reversion, SMC, dan Wyckoff berada dalam shadow mode sampai lolos validasi lanjutan.
+- Pada fase paper trading, strategi `research` juga boleh membuat order eksperimen; labelnya tetap dipisahkan dari strategi `validated`.
 - Target minimum dihitung setelah fee: 1,5R bersih untuk strategi umum dan 2,5R untuk kampanye breakout bertahap.
 - Jika data scan error, tidak ada order baru sampai siklus bersih berikutnya.
 

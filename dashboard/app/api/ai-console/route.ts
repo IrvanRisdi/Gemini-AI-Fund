@@ -22,10 +22,19 @@ function formatIdr(value: number): string {
   return `Rp${Math.round(value).toLocaleString('id-ID')}`;
 }
 
+function formatUsdt(value: number): string {
+  const maximumFractionDigits = Math.abs(value) >= 1000 ? 2 : Math.abs(value) >= 1 ? 4 : 8;
+  return `${value.toLocaleString('en-US', { maximumFractionDigits })} USDT`;
+}
+
+function displayUsdtPair(pair: string): string {
+  return `${pair.replace('/', '').replace('_', '').replace(/(?:idr|usdt)$/i, '').toUpperCase()}/USDT`;
+}
+
 function buildDeskContext(snapshot: Awaited<ReturnType<typeof getDeskSnapshot>>): string {
   const signals = snapshot.latestScanCandidates?.length
     ? snapshot.latestScanCandidates
-        .map((signal) => `- ${signal.pair.toUpperCase()} | ${signal.agent} | ${signal.reason}`)
+        .map((signal) => `- ${displayUsdtPair(signal.pair)} | ${signal.agent} | ${signal.reason}`)
         .join('\n')
     : '- Tidak ada sinyal pada siklus terakhir.';
 
@@ -35,7 +44,10 @@ function buildDeskContext(snapshot: Awaited<ReturnType<typeof getDeskSnapshot>>)
         ? agent.openPositions
             .map((position, index) => {
               const pair = agent.openPairs[index] ?? 'PAIR TIDAK DIKETAHUI';
-              return `${position.side.toUpperCase()} ${pair}, entry ${formatIdr(position.entryPrice)}, stop ${formatIdr(position.stopPrice)}${position.targetPrice ? `, target ${formatIdr(position.targetPrice)}` : ''}`;
+              const entry = position.entryPriceUsdt ?? position.entryPrice;
+              const stop = position.stopPriceUsdt ?? position.stopPrice;
+              const target = position.targetPriceUsdt ?? position.targetPrice;
+              return `${position.side.toUpperCase()} ${displayUsdtPair(pair)}, entry ${formatUsdt(entry)}, stop ${formatUsdt(stop)}${target != null ? `, target ${formatUsdt(target)}` : ''}, nilai posisi ${formatIdr(position.marketValue ?? 0)}`;
             })
             .join('; ')
         : 'FLAT';
@@ -246,7 +258,7 @@ ${stockResponseFormat}
 KONTEKS SAHAM TERSIMPAN
 ${context}
 `.trim() : `
-Anda adalah Gemini Desk Analyst untuk Gemini AI-Fund, sebuah dashboard paper-trading kripto IDR.
+Anda adalah Gemini Desk Analyst untuk Gemini AI-Fund, sebuah dashboard paper-trading kripto dengan harga pasar Binance USDT dan pembukuan kas, posisi, equity, fee, risiko, serta P&L dalam IDR.
 Jawab hanya berdasarkan konteks desk di bawah. Jangan mengarang harga terkini, berita, posisi, performa, atau konfirmasi agent yang tidak ada di data.
 Jika informasi tidak tersedia atau stale, katakan dengan eksplisit dan jelaskan data tambahan yang diperlukan.
 Semua waktu harus ditulis dalam WIB. Selalu bedakan fakta desk, inferensi, dan asumsi.
