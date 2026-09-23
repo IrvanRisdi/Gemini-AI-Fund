@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sqlite3
 import sys
 from datetime import datetime
@@ -210,6 +211,46 @@ def import_state(db: sqlite3.Connection, source: Path = STATE_PATH) -> dict:
     return {"status": "RESTORED", "path": str(source), "rows": restored}
 
 
+def restore_daily_close_references(db: sqlite3.Connection, charts_dir: Path = CHARTS_DIR) -> int:
+    """Seed prior-close references from published charts on a fresh runner.
+
+    Candle tables are intentionally not in compact state. This migration also
+    corrects legacy bar-to-bar screener changes without another provider call.
+    """
+    restored = 0
+    for instrument in db.execute("""SELECT symbol,last_price,market_data_as_of,daily_close_date
+      FROM instruments WHERE status='ACTIVE' AND daily_close_date IS NULL""").fetchall():
+        target = charts_dir / f"{instrument['symbol']}.json"
+        try:
+            payload = json.loads(target.read_text(encoding="utf-8"))
+            candles = payload["timeframes"]["1d"]["candles"]
+            if payload.get("symbol") != instrument["symbol"] or not candles:
+                continue
+            dated = []
+            for candle in candles:
+                candle_date = datetime.fromtimestamp(candle[0] / 1000, JAKARTA).date().isoformat()
+                close = float(candle[4])
+                if math.isfinite(close) and close > 0:
+                    dated.append((candle_date, close))
+            if not dated:
+                continue
+        except (OSError, ValueError, TypeError, KeyError, IndexError, json.JSONDecodeError):
+            continue
+        latest_date, latest_close = dated[-1]
+        db.execute("""UPDATE instruments SET daily_close_price=?,daily_close_date=?
+          WHERE symbol=?""", (latest_close, latest_date, instrument["symbol"]))
+        price, as_of = instrument["last_price"], instrument["market_data_as_of"]
+        if price is not None and as_of:
+            previous = next((close for date, close in reversed(dated)
+                             if engine.is_prior_trading_session(date, as_of[:10])), None)
+            change = (float(price) - previous) / previous * 100 if previous else None
+            db.execute("UPDATE instruments SET change_pct=? WHERE symbol=?",
+                       (change, instrument["symbol"]))
+        restored += 1
+    db.commit()
+    return restored
+
+
 def publish_dashboard(db: sqlite3.Connection, target: Path = DASHBOARD_PATH) -> dict:
     target.parent.mkdir(parents=True, exist_ok=True)
     agents = rows(
@@ -264,7 +305,9 @@ def prepare() -> dict:
     try:
         engine.ensure_runtime(db)
         engine.sync_universe(db, engine.load_universe())
-        return import_state(db)
+        result = import_state(db)
+        result["daily_close_references_restored"] = restore_daily_close_references(db)
+        return result
     finally:
         db.close()
 

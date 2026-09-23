@@ -480,7 +480,8 @@ def init_db() -> None:
     CREATE TABLE IF NOT EXISTS instruments (
       symbol TEXT PRIMARY KEY, name TEXT NOT NULL, sector TEXT, subsector TEXT,
       status TEXT NOT NULL DEFAULT 'ACTIVE', last_price REAL, change_pct REAL,
-      evaluation_score INTEGER, evaluation_status TEXT, market_data_as_of TEXT
+      evaluation_score INTEGER, evaluation_status TEXT, market_data_as_of TEXT,
+      daily_close_price REAL, daily_close_date TEXT, market_data_timeframe TEXT
     );
     CREATE TABLE IF NOT EXISTS agents (
       id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT,

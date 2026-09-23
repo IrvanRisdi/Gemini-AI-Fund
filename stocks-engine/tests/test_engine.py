@@ -29,7 +29,7 @@ class EngineFeatureTests(unittest.TestCase):
     def setUp(self):
         self.db = sqlite3.connect(":memory:")
         self.db.row_factory = sqlite3.Row
-        self.db.execute("CREATE TABLE instruments(symbol TEXT PRIMARY KEY,last_price REAL,change_pct REAL,market_data_as_of TEXT)")
+        self.db.execute("CREATE TABLE instruments(symbol TEXT PRIMARY KEY,last_price REAL,change_pct REAL,market_data_as_of TEXT,daily_close_price REAL,daily_close_date TEXT,market_data_timeframe TEXT)")
         self.db.execute("CREATE TABLE provider_usage(provider TEXT NOT NULL, usage_date TEXT NOT NULL, requests_used INTEGER NOT NULL, request_limit INTEGER, PRIMARY KEY(provider,usage_date))")
         self.db.execute("INSERT INTO instruments(symbol) VALUES('TEST')")
         init_engine_schema(self.db)
@@ -42,6 +42,50 @@ class EngineFeatureTests(unittest.TestCase):
         row = self.db.execute("SELECT * FROM market_candles ORDER BY candle_at DESC LIMIT 1").fetchone()
         self.assertEqual(row["source"], "yahoo")
         self.assertEqual(row["data_status"], "DELAYED")
+
+    def test_intraday_change_uses_previous_session_close_not_previous_bar(self):
+        payload = yahoo_fixture(3)
+        payload["chart"]["result"][0]["meta"] = {"previousClose": 950}
+        engine.ingest_yahoo(self.db, "TEST", "5m", payload)
+        instrument = self.db.execute("SELECT last_price,change_pct FROM instruments WHERE symbol='TEST'").fetchone()
+        latest = payload["chart"]["result"][0]["indicators"]["quote"][0]["close"][-1]
+        self.assertEqual(instrument["last_price"], latest)
+        self.assertAlmostEqual(instrument["change_pct"], (latest - 950) / 950 * 100)
+
+    def test_intraday_change_falls_back_to_persisted_daily_close(self):
+        self.db.execute("UPDATE instruments SET daily_close_price=900,daily_close_date='2026-08-21' WHERE symbol='TEST'")
+        engine.ingest_yahoo(self.db, "TEST", "5m", yahoo_fixture(3))
+        change = self.db.execute("SELECT change_pct FROM instruments WHERE symbol='TEST'").fetchone()[0]
+        self.assertAlmostEqual(change, (1029 - 900) / 900 * 100)
+
+    def test_intraday_without_prior_close_does_not_show_false_zero(self):
+        engine.ingest_yahoo(self.db, "TEST", "5m", yahoo_fixture(3))
+        self.assertIsNone(self.db.execute("SELECT change_pct FROM instruments WHERE symbol='TEST'").fetchone()[0])
+
+    def test_stale_intraday_payload_cannot_roll_back_newer_price(self):
+        self.db.execute("UPDATE instruments SET last_price=1200,change_pct=20,market_data_as_of='2026-08-24T15:00:00+07:00' WHERE symbol='TEST'")
+        engine.ingest_yahoo(self.db, "TEST", "5m", yahoo_fixture(3))
+        result = self.db.execute("SELECT last_price,change_pct FROM instruments WHERE symbol='TEST'").fetchone()
+        self.assertEqual((result["last_price"], result["change_pct"]), (1200, 20))
+
+    def test_postclose_daily_price_is_not_replaced_by_same_day_intraday(self):
+        self.db.execute("""UPDATE instruments SET last_price=1050,change_pct=5,
+          market_data_as_of='2026-08-24T09:00:00+07:00',market_data_timeframe='1d'
+          WHERE symbol='TEST'""")
+        engine.ingest_yahoo(self.db, "TEST", "5m", yahoo_fixture(3))
+        result = self.db.execute("SELECT last_price,change_pct FROM instruments WHERE symbol='TEST'").fetchone()
+        self.assertEqual((result["last_price"], result["change_pct"]), (1050, 5))
+
+    def test_daily_change_and_close_reference_use_previous_daily_candle(self):
+        payload = yahoo_fixture(3)
+        payload["chart"]["result"][0]["timestamp"] = [
+            int(datetime(2026, 8, day, 9, tzinfo=engine.JAKARTA).timestamp())
+            for day in (20, 21, 24)
+        ]
+        engine.ingest_yahoo(self.db, "TEST", "1d", payload)
+        result = self.db.execute("SELECT change_pct,daily_close_price,daily_close_date FROM instruments WHERE symbol='TEST'").fetchone()
+        self.assertAlmostEqual(result["change_pct"], (1029 - 1002) / 1002 * 100)
+        self.assertEqual((result["daily_close_price"], result["daily_close_date"]), (1029, "2026-08-24"))
 
     def test_yahoo_index_symbol_is_not_given_jk_suffix(self):
         with patch.object(providers, "get_json", return_value={}) as request:

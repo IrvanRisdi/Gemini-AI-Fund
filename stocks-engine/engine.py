@@ -13,7 +13,7 @@ import shutil
 import time
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, time as clock_time, timedelta
+from datetime import date, datetime, time as clock_time, timedelta
 from pathlib import Path
 from statistics import mean
 from zoneinfo import ZoneInfo
@@ -83,6 +83,10 @@ def log_event(db, level: str, component: str, event: str, details=None) -> None:
 def ensure_runtime(db) -> None:
     init_engine_schema(db)
     migrations = {
+        "instruments": {
+            "daily_close_price": "REAL", "daily_close_date": "TEXT",
+            "market_data_timeframe": "TEXT",
+        },
         "paper_orders": {
             "timeframe": "TEXT NOT NULL DEFAULT '5m'",
             "strategy_version": "TEXT NOT NULL DEFAULT '2.0'",
@@ -156,6 +160,24 @@ def exchange_holidays(path: Path = HOLIDAYS_PATH) -> set[str]:
         return set()
     payload = json.loads(path.read_text(encoding="utf-8"))
     return set(payload.get("holidays", []))
+
+
+def is_prior_trading_session(prior_date: str, current_date: str) -> bool:
+    """Reject an old daily reference if another trading session intervened."""
+    try:
+        day = date.fromisoformat(prior_date)
+        current = date.fromisoformat(current_date)
+    except (TypeError, ValueError):
+        return False
+    if day >= current:
+        return False
+    holidays = exchange_holidays()
+    day += timedelta(days=1)
+    while day < current:
+        if day.weekday() < 5 and day.isoformat() not in holidays:
+            return False
+        day += timedelta(days=1)
+    return True
 
 
 def market_phase(moment: datetime | None = None) -> str:
@@ -251,10 +273,45 @@ def ingest_yahoo(db, symbol: str, timeframe: str, payload: dict, collected_at: s
            row["close"], row["volume"] or 0, "yahoo", "DELAYED", collected_at))
     if rows:
         last = rows[-1]
-        previous = rows[-2]["close"] if len(rows) > 1 else last["close"]
-        change = (last["close"] - previous) / previous * 100 if previous else 0
-        db.execute("UPDATE instruments SET last_price=?,change_pct=?,market_data_as_of=? WHERE symbol=?",
-                   (last["close"], change, last["candle_at"], symbol.upper()))
+        instrument = db.execute("""SELECT market_data_as_of,market_data_timeframe,daily_close_price,daily_close_date
+          FROM instruments WHERE symbol=?""", (symbol.upper(),)).fetchone()
+        last_date = datetime.fromisoformat(last["candle_at"]).date().isoformat()
+        current_as_of = instrument["market_data_as_of"] if instrument else None
+        if timeframe == "1d":
+            previous = rows[-2]["close"] if len(rows) > 1 else None
+            change = (last["close"] - previous) / previous * 100 if previous and previous > 0 else None
+            db.execute("""UPDATE instruments SET daily_close_price=?,daily_close_date=?
+              WHERE symbol=? AND (daily_close_date IS NULL OR daily_close_date<=?)""",
+              (last["close"], last_date, symbol.upper(), last_date))
+            # A daily bar is timestamped at the session open. Do not replace a
+            # fresher intraday quote until the daily collection is post-close.
+            collected = datetime.fromisoformat(collected_at).astimezone(JAKARTA)
+            same_day_intraday = current_as_of and current_as_of[:10] == last_date
+            if (not current_as_of or last_date > current_as_of[:10]
+                    or (same_day_intraday and collected.date().isoformat() == last_date
+                        and collected.time() >= clock_time(15, 50))):
+                db.execute("""UPDATE instruments SET last_price=?,change_pct=?,market_data_as_of=?,
+                  market_data_timeframe='1d' WHERE symbol=?""",
+                  (last["close"], change, last["candle_at"], symbol.upper()))
+        elif timeframe == "5m":
+            result = ((payload.get("chart") or {}).get("result") or [{}])[0] or {}
+            raw_previous = (result.get("meta") or {}).get("previousClose")
+            try:
+                previous = float(raw_previous)
+                if not math.isfinite(previous) or previous <= 0:
+                    previous = None
+            except (TypeError, ValueError):
+                previous = None
+            if previous is None and instrument and is_prior_trading_session(instrument["daily_close_date"], last_date):
+                previous = instrument["daily_close_price"]
+            change = (last["close"] - previous) / previous * 100 if previous and previous > 0 else None
+            # An old Yahoo response must not roll back the displayed price.
+            finalized_today = (instrument and instrument["market_data_timeframe"] == "1d"
+                               and current_as_of and current_as_of[:10] == last_date)
+            if not finalized_today and (not current_as_of or last["candle_at"] >= current_as_of):
+                db.execute("""UPDATE instruments SET last_price=?,change_pct=?,market_data_as_of=?,
+                  market_data_timeframe='5m' WHERE symbol=?""",
+                  (last["close"], change, last["candle_at"], symbol.upper()))
     db.commit()
     return len(rows)
 
