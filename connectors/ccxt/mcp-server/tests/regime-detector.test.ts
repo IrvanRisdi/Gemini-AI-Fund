@@ -78,12 +78,15 @@ function generateRangingBars(count: number, center = 100, amplitude = 5): Bar[] 
   return bars;
 }
 
-/** Volatile: large random swings with high amplitude */
+/** Volatile: large alternating swings with high amplitude */
 function generateVolatileBars(count: number, startPrice = 100): Bar[] {
   const bars: Bar[] = [];
   let price = startPrice;
   for (let i = 0; i < count; i++) {
-    const swing = (Math.random() - 0.5) * 30; // large random movements
+    // Deterministic paired swings keep the sample highly volatile without a
+    // random directional drift that can occasionally classify as trending.
+    const magnitude = 12 + (Math.floor(i / 2) % 5) * 2;
+    const swing = (i % 2 === 0 ? 1 : -1) * magnitude;
     const open = price;
     price += swing;
     if (price < 10) price = 10; // floor to avoid negative prices
@@ -93,7 +96,7 @@ function generateVolatileBars(count: number, startPrice = 100): Bar[] {
     bars.push({
       timestamp: 1700000000000 + i * 86400000,
       open, high, low, close,
-      volume: 1000 + Math.random() * 3000, // high volume variance too
+      volume: 1000 + (i % 7) * 500, // deterministic high volume variance
     });
   }
   return bars;
