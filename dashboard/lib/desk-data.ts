@@ -185,6 +185,20 @@ export interface DeskSnapshot {
   latestScanCandidates?: LatestScanCandidate[];
 }
 
+export interface CoinEquityHistoryPoint {
+  date: string;
+  capturedAt: string;
+  kind: 'baseline' | 'snapshot';
+  totalEquity: number;
+  agents: Record<string, { equity: number }>;
+}
+
+interface CoinEquityHistoryFile {
+  version: 1;
+  timezone: 'Asia/Jakarta';
+  points: CoinEquityHistoryPoint[];
+}
+
 export const DEFAULT_AGENTS = [
   'mean-reversion-trader',
   'smc-trader',
@@ -233,6 +247,37 @@ export async function getLatestCoinScan(): Promise<LatestScan | null> {
   } catch {
     return null;
   }
+}
+
+export async function getCoinEquityHistory(): Promise<CoinEquityHistoryPoint[]> {
+  const history = await readJson<CoinEquityHistoryFile>('equity-history.json');
+  if (!history?.points?.length) return [];
+  return history.points
+    .filter((point) => point.date && Number.isFinite(point.totalEquity))
+    .sort((left, right) => left.date.localeCompare(right.date));
+}
+
+function jakartaDate(iso: string): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date(iso));
+  const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+/** Merge the live mark-to-market point without persisting from a web request. */
+export function withCurrentEquityPoint(history: CoinEquityHistoryPoint[], snapshot: DeskSnapshot): CoinEquityHistoryPoint[] {
+  const date = jakartaDate(snapshot.lastCycle);
+  const current: CoinEquityHistoryPoint = {
+    date,
+    capturedAt: snapshot.lastCycle,
+    kind: 'snapshot',
+    totalEquity: snapshot.totalEquity,
+    agents: Object.fromEntries(snapshot.agents.map((agent) => [agent.slug, { equity: agent.equity }])),
+  };
+  const points = history.filter((point) => !(point.date === date && point.kind === 'snapshot'));
+  points.push(current);
+  return points.sort((left, right) => left.date.localeCompare(right.date));
 }
 
 export async function getDeskSnapshot(): Promise<DeskSnapshot> {

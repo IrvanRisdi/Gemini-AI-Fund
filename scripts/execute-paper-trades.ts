@@ -12,6 +12,7 @@ const DESK = path.join(process.cwd(), '.desk');
 const LEDGER = path.join(DESK, 'paper-ledger.json');
 const SCAN = path.join(DESK, 'latest-scan.json');
 const STATE = path.join(DESK, 'state.json');
+const EQUITY_HISTORY = path.join(DESK, 'equity-history.json');
 const COIN_STRATEGY_VERSION = 'recovery-v4-usdt';
 const DEFAULT_MAX_NOTIONAL_PER_PAIR = 0.50;
 const BREAKOUT_INITIAL_ALLOCATION = 0.20;
@@ -27,9 +28,11 @@ type Pending = { id: string; campaignId: string; agent?: string; pair: string; s
 type Position = { side: 'long'; quoteCurrency?: QuoteCurrency; fxRateAtEntry?: number; costBasisIdr?: number; size: number; entryPrice: number; initialEntryPrice?: number; stopPrice: number; targetPrice: number; opened: string; campaignId: string; leg: number; initialRiskPerUnit: number; sizingNote: string; strategyVersion?: string; };
 type Trade = { timestamp: string; instrument: string; side: 'long'; type: 'open' | 'close' | 'add'; size: number; price: number; priceCurrency?: QuoteCurrency; priceIdr?: number; fxRate?: number; realizedPnlIdr?: number; reason: string; campaignId: string; confirmations?: string[]; feeIdr?: number; maintenance?: boolean; strategyVersion?: string };
 type Book = { balance: { IDR: number }; positions: Record<string, Position>; pendingOrders: Pending[]; trades: Trade[] };
-type Ledger = { last_cycle: string; agents: Record<string, Book> };
+type Ledger = { created?: string; last_cycle: string; starting_balance_per_agent?: number; agents: Record<string, Book> };
 type Candidate = Omit<Pending, 'campaignId' | 'fxRateAtSignal' | 'riskReservedIdr' | 'notionalReservedIdr' | 'createdAt' | 'status'> & { agent: string; score: number; quoteCurrency: 'USDT'; validationStatus: 'validated' | 'research' };
 type AllocationContext = { campaignId?: string; agent?: string; allocationPct?: number };
+type EquityHistoryPoint = { date: string; capturedAt: string; kind: 'baseline' | 'snapshot'; totalEquity: number; agents: Record<string, { equity: number }> };
+type EquityHistory = { version: 1; timezone: 'Asia/Jakarta'; points: EquityHistoryPoint[] };
 
 function read<T>(file: string): T { return JSON.parse(fs.readFileSync(file, 'utf8')) as T; }
 function write(file: string, value: unknown) { fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n'); }
@@ -51,6 +54,53 @@ function accountEquity(book: Book, pricesUsdt: Record<string, number>, usdtIdr: 
     const market = currentQuotePrice(pair, position.quoteCurrency, pricesUsdt, usdtIdr) || position.entryPrice;
     return total + position.size * market * quoteMultiplier(position.quoteCurrency, usdtIdr);
   }, 0);
+}
+
+function jakartaDate(iso: string) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date(iso));
+  const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+function updateDailyEquityHistory(ledger: Ledger, pricesUsdt: Record<string, number>, usdtIdr: number, timestamp: string) {
+  let history: EquityHistory = { version: 1, timezone: 'Asia/Jakarta', points: [] };
+  try {
+    history = read<EquityHistory>(EQUITY_HISTORY);
+    if (!Array.isArray(history.points)) history.points = [];
+  } catch {
+    // The collector starts from a verified starting-capital baseline.
+  }
+
+  const agents = Object.fromEntries(Object.entries(ledger.agents).map(([slug, book]) => [
+    slug,
+    { equity: Math.round(accountEquity(book, pricesUsdt, usdtIdr) * 100) / 100 },
+  ]));
+  const totalEquity = Math.round(Object.values(agents).reduce((sum, item) => sum + item.equity, 0) * 100) / 100;
+  const date = jakartaDate(timestamp);
+
+  if (history.points.length === 0 && ledger.created && ledger.starting_balance_per_agent) {
+    const baselineDate = jakartaDate(ledger.created);
+    if (baselineDate !== date) {
+      const baselineAgents = Object.fromEntries(Object.keys(ledger.agents).map((slug) => [slug, { equity: ledger.starting_balance_per_agent! }]));
+      history.points.push({
+        date: baselineDate,
+        capturedAt: ledger.created,
+        kind: 'baseline',
+        totalEquity: ledger.starting_balance_per_agent * Object.keys(baselineAgents).length,
+        agents: baselineAgents,
+      });
+    }
+  }
+
+  const point: EquityHistoryPoint = { date, capturedAt: timestamp, kind: 'snapshot', totalEquity, agents };
+  const existingIndex = history.points.findIndex((item) => item.date === date && item.kind === 'snapshot');
+  if (existingIndex >= 0) history.points[existingIndex] = point;
+  else history.points.push(point);
+  history.points.sort((left, right) => left.date.localeCompare(right.date));
+  history.points = history.points.slice(-400);
+  write(EQUITY_HISTORY, history);
 }
 function activeCampaigns(book: Book) { return Object.keys(book.positions).length + book.pendingOrders.filter((order) => order.status === 'pending').length; }
 function reservedCash(book: Book, excludeId?: string) { return book.pendingOrders.filter((order) => order.status === 'pending' && order.id !== excludeId).reduce((total, order) => total + (order.notionalReservedIdr ?? 0), 0); }
@@ -277,7 +327,9 @@ async function main() {
       if (OWNERS.has(agent) && scan.universe?.length) state.agents[agent].assets_covered = scan.universe.map((item) => displayPair(item.pair));
     }
   }
-  ledger.last_cycle = timestamp; write(LEDGER, ledger); write(STATE, state); console.log(`[Spot paper] cycle ${timestamp} complete`);
+  ledger.last_cycle = timestamp;
+  updateDailyEquityHistory(ledger, pricesUsdt, usdtIdr, timestamp);
+  write(LEDGER, ledger); write(STATE, state); console.log(`[Spot paper] cycle ${timestamp} complete`);
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });
 

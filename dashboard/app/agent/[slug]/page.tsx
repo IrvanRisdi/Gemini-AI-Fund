@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation';
-import { getAgentBookBreakdown, getAgentMeta, getFullBriefing, listBriefingSlugs } from '@/lib/desk-data';
+import { getAgentBookBreakdown, getAgentMeta, getCoinEquityHistory, getFullBriefing, listBriefingSlugs } from '@/lib/desk-data';
 import { renderBriefingMarkdown } from '@/lib/markdown';
 import { StatBadge } from '@/components/StatBadge';
 import { TradeJournal } from '@/components/TradeJournal';
+import { AgentEquityHistory } from '@/components/CoinEquityHistory';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,13 +24,27 @@ export default async function AgentPage({ params }: { params: Promise<{ slug: st
   const slugs = await listBriefingSlugs();
   if (!slugs.includes(slug)) notFound();
 
-  const [meta, briefing, book] = await Promise.all([getAgentMeta(slug), getFullBriefing(slug), getAgentBookBreakdown(slug)]);
+  const [meta, briefing, book, storedEquityHistory] = await Promise.all([getAgentMeta(slug), getFullBriefing(slug), getAgentBookBreakdown(slug), getCoinEquityHistory()]);
     // Kas + NILAI PENUH posisi terbuka, bukan cuma floating P&L-nya -- lihat fix yang sama di desk-data.ts untuk alasan lengkapnya.
   const totalEquity = book.cash + book.openPositionValue;
   const startingBalance = meta.startingBalance ?? 0;
   const realizedPct = startingBalance ? (book.realizedPnlIdr / startingBalance) * 100 : 0;
   const unrealizedPct = startingBalance ? (book.unrealizedPnlIdr / startingBalance) * 100 : 0;
   const openCount = book.cycles.filter((c) => c.status === 'open').length;
+  const now = new Date();
+  const dateParts = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now);
+  const datePart = (type: Intl.DateTimeFormatPartTypes) => dateParts.find((part) => part.type === type)?.value ?? '';
+  const today = `${datePart('year')}-${datePart('month')}-${datePart('day')}`;
+  const storedToday = storedEquityHistory.find((point) => point.date === today && point.kind === 'snapshot');
+  const equityHistory = storedEquityHistory.filter((point) => !(point.date === today && point.kind === 'snapshot'));
+  equityHistory.push({
+    date: today,
+    capturedAt: now.toISOString(),
+    kind: 'snapshot',
+    totalEquity: storedToday?.totalEquity ?? totalEquity,
+    agents: { ...(storedToday?.agents ?? {}), [slug]: { equity: totalEquity } },
+  });
+  equityHistory.sort((left, right) => left.date.localeCompare(right.date));
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
@@ -117,6 +132,8 @@ export default async function AgentPage({ params }: { params: Promise<{ slug: st
           </div>
         </section></>
       )}
+
+      {meta.hasBook ? <AgentEquityHistory points={equityHistory} slug={slug} startingEquity={startingBalance} /> : null}
 
       {(book.cycles.length > 0 || book.pendingOrders.length > 0) && (
         <section className="mb-6">

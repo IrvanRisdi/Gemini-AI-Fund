@@ -2,10 +2,13 @@ import Link from 'next/link';
 import { DataCard, type DataCardBadge } from '@/components/DataCard';
 import { AiConsole } from '@/components/AiConsole';
 import { LiveTicker } from '@/components/LiveTicker';
+import { CoinEquityHistory } from '@/components/CoinEquityHistory';
 import { StatBadge } from '@/components/StatBadge';
 import {
   getDeskSnapshot,
+  getCoinEquityHistory,
   listBriefingSlugs,
+  withCurrentEquityPoint,
   type AgentSummary,
 } from '@/lib/desk-data';
 import type { BadgeTone } from '@/components/StatBadge';
@@ -137,11 +140,14 @@ function agentCard(agent: AgentSummary) {
 }
 
 export default async function DeskPage() {
-  const [snapshot, allBriefingSlugs] =
+  const [snapshot, allBriefingSlugs, storedEquityHistory] =
     await Promise.all([
       getDeskSnapshot(),
       listBriefingSlugs(),
+      getCoinEquityHistory(),
     ]);
+  const equityHistory = withCurrentEquityPoint(storedEquityHistory, snapshot);
+  const startingByAgent = Object.fromEntries(snapshot.agents.map((agent) => [agent.slug, agent.startingBalance]));
 
   const deskPnl =
     snapshot.totalEquity -
@@ -305,6 +311,13 @@ export default async function DeskPage() {
       <section className="grid grid-cols-1 gap-3.5 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {snapshot.agents.map(agentCard)}
       </section>
+
+      <CoinEquityHistory
+        points={equityHistory}
+        agentSlugs={snapshot.agents.map((agent) => agent.slug)}
+        startingTotal={snapshot.startingTotal}
+        startingByAgent={startingByAgent}
+      />
 
       <section className="mt-6 sm:mt-8 rounded-xl border border-border bg-surface p-4 sm:p-5" aria-labelledby="coin-open-positions">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
