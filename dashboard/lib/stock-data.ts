@@ -28,7 +28,11 @@ async function readLocal<T>(file: string): Promise<T> {
 
 async function readSnapshot<T>(file: string): Promise<T> {
   if (process.env.NODE_ENV !== 'production') { try { return await readLocal<T>(file); } catch { /* remote fallback */ } }
-  const response = await fetch(`${RAW_BASE}/${file}`, { next: { revalidate: 60 } });
+  // GitHub's raw branch URL can remain cached after paper-data advances. A
+  // minute-scoped URL keeps Vercel's shared fetch cache bounded while forcing
+  // the origin to resolve the current branch at least once each minute.
+  const revision = Math.floor(Date.now() / 60_000);
+  const response = await fetch(`${RAW_BASE}/${file}?v=${revision}`, { next: { revalidate: 60 } });
   if (!response.ok) return readLocal<T>(file);
   return response.json() as Promise<T>;
 }
