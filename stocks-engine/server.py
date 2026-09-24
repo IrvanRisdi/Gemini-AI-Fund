@@ -481,7 +481,8 @@ def init_db() -> None:
       symbol TEXT PRIMARY KEY, name TEXT NOT NULL, sector TEXT, subsector TEXT,
       status TEXT NOT NULL DEFAULT 'ACTIVE', last_price REAL, change_pct REAL,
       evaluation_score INTEGER, evaluation_status TEXT, market_data_as_of TEXT,
-      daily_close_price REAL, daily_close_date TEXT, market_data_timeframe TEXT
+      daily_close_price REAL, daily_close_date TEXT, market_data_timeframe TEXT,
+      yahoo_status TEXT, yahoo_retry_after TEXT
     );
     CREATE TABLE IF NOT EXISTS agents (
       id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT,
@@ -508,6 +509,7 @@ def init_db() -> None:
       fill_id TEXT, opened_at TEXT, entry_candle_at TEXT,
       last_managed_candle_at TEXT, buy_fees REAL NOT NULL DEFAULT 0,
       initial_risk REAL, strategy_version TEXT NOT NULL DEFAULT '2.0',
+      ruleset_version TEXT,
       FOREIGN KEY(agent_id) REFERENCES agents(id), FOREIGN KEY(symbol) REFERENCES instruments(symbol)
     );
     CREATE TABLE IF NOT EXISTS reports (
@@ -531,6 +533,7 @@ def init_db() -> None:
       setup TEXT, exit_reason TEXT, notes TEXT,
       buy_fees REAL NOT NULL DEFAULT 0, sell_fees REAL NOT NULL DEFAULT 0,
       initial_risk REAL, strategy_version TEXT NOT NULL DEFAULT '2.0',
+      ruleset_version TEXT,
       FOREIGN KEY(agent_id) REFERENCES agents(id), FOREIGN KEY(symbol) REFERENCES instruments(symbol)
     );
     """)

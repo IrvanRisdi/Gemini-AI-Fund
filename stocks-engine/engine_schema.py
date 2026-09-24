@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS agent_proposals (
   stop_price REAL, target_price REAL, equity_risk_pct REAL, risk_reward REAL,
   lots INTEGER, status TEXT NOT NULL, created_at TEXT NOT NULL, valid_until TEXT,
   data_status TEXT NOT NULL, strategy_version TEXT NOT NULL DEFAULT '1.0',
+  ruleset_version TEXT,
   FOREIGN KEY(run_id) REFERENCES engine_runs(id)
 );
 CREATE INDEX IF NOT EXISTS idx_proposals_symbol ON agent_proposals(symbol,created_at DESC);
@@ -38,7 +39,7 @@ CREATE TABLE IF NOT EXISTS paper_orders (
   lots INTEGER NOT NULL, limit_price REAL NOT NULL, stop_price REAL,
   target_price REAL, status TEXT NOT NULL, created_at TEXT NOT NULL,
   expires_at TEXT, source_candle_at TEXT NOT NULL, timeframe TEXT NOT NULL DEFAULT '5m',
-  strategy_version TEXT NOT NULL DEFAULT '2.0',
+  strategy_version TEXT NOT NULL DEFAULT '2.0', ruleset_version TEXT,
   FOREIGN KEY(proposal_id) REFERENCES agent_proposals(id)
 );
 CREATE INDEX IF NOT EXISTS idx_orders_open ON paper_orders(status,symbol);

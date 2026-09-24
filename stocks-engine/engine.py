@@ -30,6 +30,7 @@ HOLIDAYS_PATH = ROOT / "data" / "idx_holidays.json"
 BUY_FEE = 0.0015
 SELL_FEE = 0.0025
 STRATEGY_VERSION = "2.0"
+RULESET_VERSION = "2026-09-24.1"
 MIN_NET_RISK_REWARD = 1.5
 AGENT_MAX_ORDER_ALLOCATION_PCT = {
     "scalping": 10, "open-low": 15, "swing": 20,
@@ -86,19 +87,24 @@ def ensure_runtime(db) -> None:
         "instruments": {
             "daily_close_price": "REAL", "daily_close_date": "TEXT",
             "market_data_timeframe": "TEXT",
+            "yahoo_status": "TEXT", "yahoo_retry_after": "TEXT",
         },
+        "agent_proposals": {"ruleset_version": "TEXT"},
         "paper_orders": {
             "timeframe": "TEXT NOT NULL DEFAULT '5m'",
             "strategy_version": "TEXT NOT NULL DEFAULT '2.0'",
+            "ruleset_version": "TEXT",
         },
         "positions": {
             "fill_id": "TEXT", "opened_at": "TEXT", "entry_candle_at": "TEXT",
             "last_managed_candle_at": "TEXT", "buy_fees": "REAL NOT NULL DEFAULT 0",
             "initial_risk": "REAL", "strategy_version": "TEXT NOT NULL DEFAULT '2.0'",
+            "ruleset_version": "TEXT",
         },
         "trade_journal": {
             "buy_fees": "REAL NOT NULL DEFAULT 0", "sell_fees": "REAL NOT NULL DEFAULT 0",
             "initial_risk": "REAL", "strategy_version": "TEXT NOT NULL DEFAULT '2.0'",
+            "ruleset_version": "TEXT",
         },
     }
     for table, columns in migrations.items():
@@ -140,7 +146,10 @@ def sync_universe(db, universe: list[dict]) -> None:
     for row in universe:
         db.execute("""INSERT INTO instruments(symbol,name,sector,subsector,status)
           VALUES(?,?,?,?,?) ON CONFLICT(symbol) DO UPDATE SET
-          name=excluded.name,sector=excluded.sector,subsector=excluded.subsector,status=excluded.status""",
+          name=excluded.name,
+          sector=COALESCE(NULLIF(excluded.sector,''),instruments.sector),
+          subsector=COALESCE(NULLIF(excluded.subsector,''),instruments.subsector),
+          status=excluded.status""",
           (row["symbol"].upper(), row.get("name") or row["symbol"], row.get("sector"),
            row.get("subsector"), row.get("status", "ACTIVE")))
     db.commit()
@@ -320,13 +329,21 @@ def collect_yahoo(db, universe: list[dict], timeframe: str, range_: str) -> tupl
     client, ok, errors = YahooClient(), 0, []
     for item in universe:
         symbol = item["symbol"].upper()
+        cached = db.execute("SELECT yahoo_status,yahoo_retry_after FROM instruments WHERE symbol=?", (symbol,)).fetchone()
+        if cached and cached["yahoo_status"] == "NOT_FOUND" and cached["yahoo_retry_after"] and cached["yahoo_retry_after"] > now_wib().date().isoformat():
+            errors.append({"symbol": symbol, "error": "Yahoo symbol unavailable (cached 404)"})
+            continue
         try:
             payload = client.chart(symbol, timeframe, range_)
             count = ingest_yahoo(db, symbol, timeframe, payload)
+            db.execute("UPDATE instruments SET yahoo_status='AVAILABLE',yahoo_retry_after=NULL WHERE symbol=?", (symbol,))
             ok += 1
             log_event(db, "INFO", "collector", "symbol_collected", {"symbol": symbol, "candles": count})
         except (ProviderError, ValueError, IndexError) as exc:
             errors.append({"symbol": symbol, "error": str(exc)})
+            if "404" in str(exc):
+                retry_after = (now_wib().date() + timedelta(days=30)).isoformat()
+                db.execute("UPDATE instruments SET yahoo_status='NOT_FOUND',yahoo_retry_after=? WHERE symbol=?", (retry_after, symbol))
             log_event(db, "ERROR", "collector", "symbol_failed", errors[-1])
         db.commit()
     return ok, errors
@@ -651,13 +668,20 @@ def local_liquidity_shortlist(staged: list[tuple[str, dict]], arjum_symbols: set
 
     # Challengers capture emerging momentum outside the top-ADV core without
     # lowering the absolute liquidity and ATR safety gates.
-    challengers = [item for item in eligible if item[0] not in core_symbols]
-    challengers.sort(key=lambda item: (
+    challenger_pool = [item for item in eligible if item[0] not in core_symbols]
+    challenger_pool.sort(key=lambda item: (
         item[3],
         float(item[1].get("relative_volume") or 0),
         item[2],
     ), reverse=True)
-    challengers = challengers[:settings.challenger_universe_limit]
+    # Reserve a few challenger slots for actual retests. They still must pass
+    # the same ADV/ATR gates, so this is discovery, not a liquidity bypass.
+    reserve_limit = min(5, settings.challenger_universe_limit)
+    retest_challengers = [item for item in challenger_pool if item[1].get("retest_confirmed")
+        and float(item[1].get("relative_volume") or 0) >= 1.25][:reserve_limit]
+    reserved_symbols = {item[0] for item in retest_challengers}
+    challengers = retest_challengers + [item for item in challenger_pool if item[0] not in reserved_symbols][
+        :max(0, settings.challenger_universe_limit - len(retest_challengers))]
     discovery_pool = [(symbol, features) for symbol, features, _, _ in core + challengers]
 
     technical = []
@@ -668,7 +692,13 @@ def local_liquidity_shortlist(staged: list[tuple[str, dict]], arjum_symbols: set
         if score > 10:
             technical.append((symbol, features, score))
     technical.sort(key=lambda item: item[2], reverse=True)
-    return discovery_pool, [(symbol, features) for symbol, features, _ in technical[:settings.technical_candidate_limit]]
+    retest_candidates = [item for item in technical if item[1].get("retest_confirmed")
+        and float(item[1].get("relative_volume") or 0) >= 1.25][:min(5, settings.technical_candidate_limit)]
+    retest_symbols = {item[0] for item in retest_candidates}
+    remaining = [item for item in technical if item[0] not in retest_symbols][
+        :max(0, settings.technical_candidate_limit - len(retest_candidates))]
+    selected = sorted(retest_candidates + remaining, key=lambda item: item[2], reverse=True)
+    return discovery_pool, [(symbol, features) for symbol, features, _ in selected]
 
 
 def candle_rows(db, symbol: str, timeframe: str, limit: int = 120) -> list[dict]:
@@ -688,7 +718,55 @@ class Proposal:
     target: float | None = None; risk_pct: float = 0; status: str = "WAITING"
 
 
-def evaluate_agents(features: dict, fundamental_quality: int | None, timeframe: str = "5m") -> list[Proposal]:
+def fundamental_entry_blockers(snapshot: dict | None, today: date | None = None) -> list[str]:
+    if not snapshot or snapshot.get("status") != "AVAILABLE":
+        return ["laporan fundamental belum tersedia"]
+    blockers = []
+    coverage = set(snapshot.get("coverage") or [])
+    missing = {"INCOME_STATEMENT", "BALANCE_SHEET", "CASH_FLOW_REPORT"} - coverage
+    if missing:
+        blockers.append("laporan belum lengkap: " + ", ".join(sorted(missing)))
+    period = str(snapshot.get("period_end") or "")
+    try:
+        year, quarter = period.split("-Q")
+        period_date = date(int(year), int(quarter) * 3, 1)
+        # End of the stated quarter, not the day the API was fetched.
+        period_date = (period_date + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        if ((today or now_wib().date()) - period_date).days > 210:
+            blockers.append(f"laporan {period} melewati batas usia 210 hari")
+    except (ValueError, TypeError):
+        blockers.append("periode laporan tidak valid")
+    if snapshot.get("quality_score") is None or float(snapshot["quality_score"]) < 70:
+        blockers.append("quality score di bawah 70")
+    if snapshot.get("roe") is None or float(snapshot["roe"]) <= 0:
+        blockers.append("ROE tidak positif atau tidak tersedia")
+    if snapshot.get("operating_cash_flow") is None or float(snapshot["operating_cash_flow"]) <= 0:
+        blockers.append("arus kas operasi tidak positif atau tidak tersedia")
+    return blockers
+
+
+def breakout_entry_blockers(features: dict) -> list[str]:
+    close = float(features["close"])
+    ema20, ema50 = features.get("ema20"), features.get("ema50")
+    blockers = []
+    if not (ema20 and ema50 and close > ema20 > ema50):
+        blockers.append("trend EMA20/50 belum bullish")
+    if not features.get("retest_confirmed"):
+        blockers.append("retest resistance belum terkonfirmasi")
+    rvol = float(features.get("relative_volume") or 0)
+    if rvol < 1.5:
+        blockers.append(f"RVOL {rvol:.2f}x < 1,50x")
+    rsi_value = float(features.get("rsi14") or 0)
+    if not 50 <= rsi_value <= 68:
+        blockers.append(f"RSI {rsi_value:.1f} di luar 50–68")
+    change = float(features.get("change_pct") or 0)
+    if not 0 < change <= 5:
+        blockers.append(f"perubahan harian {change:.2f}% di luar 0–5%")
+    return blockers
+
+
+def evaluate_agents(features: dict, fundamental_quality: int | None, timeframe: str = "5m",
+                    fundamental_snapshot: dict | None = None) -> list[Proposal]:
     f = features
     close = float(features["close"])
     volatility = float(features.get("atr14") or close * .03)
@@ -728,23 +806,25 @@ def evaluate_agents(features: dict, fundamental_quality: int | None, timeframe: 
         "Trend Daily EMA20/50, RSI sehat, RVOL ≥1,25x, dan harga belum terlalu jauh dari EMA20." if swing_ok else "Setup swing recovery belum memenuhi trend, RSI, volume, atau anti-chasing.",
         "5–15 hari", close if swing_ok else None, close-1.8*volatility if swing_ok else None, close+3.6*volatility if swing_ok else None, 2 if swing_ok else 0, "ACTIONABLE" if swing_ok else "WAITING"))
     quality = int(fundamental_quality) if isinstance(fundamental_quality, (int, float)) and not isinstance(fundamental_quality, bool) else None
+    fundamental_blockers = fundamental_entry_blockers(fundamental_snapshot) if fundamental_snapshot is not None else []
     fundamental_timing = bool(quality is not None and quality >= 60 and f.get("ema20") and
         close >= f["ema20"] * .95 and close <= f["ema20"] * 1.10 and (f.get("rsi14") or 100) <= 70)
     if quality is None:
         fundamental = Proposal("fundamental", "WATCH", None,
             "DATA NOT AVAILABLE; menunggu snapshot fundamental tervalidasi.", "3–6 bulan", status="INCOMPLETE")
-    elif fundamental_timing:
+    elif fundamental_timing and not fundamental_blockers:
         fundamental = Proposal("fundamental", "ACCUMULATE", min(85, max(60, quality)),
             "Cicilan 1/3: quality score dan timing harga lolos; penambahan berikutnya menunggu evaluasi baru.",
             "3–6 bulan · tranche 1/3", close, close-2.25*volatility, close+4*volatility, 1, "ACTIONABLE")
     else:
         fundamental = Proposal("fundamental", "WATCH", min(80, max(40, quality)),
-            "Fundamental tersedia, tetapi quality minimum atau timing entry belum lolos.", "3–6 bulan", status="WAITING")
+            "Entry ditahan: " + ("; ".join(fundamental_blockers) if fundamental_blockers else "quality minimum atau timing harga belum lolos"),
+            "3–6 bulan", status="WAITING")
     proposals.append(fundamental)
-    breakout_ok = bool(trend and f.get("retest_confirmed") and f["relative_volume"] >= 1.5
-                       and 50 <= (f.get("rsi14") or 0) <= 68 and 0 < float(f.get("change_pct") or 0) <= 5)
+    breakout_blockers = breakout_entry_blockers(f)
+    breakout_ok = not breakout_blockers
     proposals.append(Proposal("breakout-retest", "BUY" if breakout_ok else "WAIT", 86 if breakout_ok else 45,
-        "Breakout Daily telah retest, trend EMA mendukung, RVOL ≥1,5x, dan RSI sehat." if breakout_ok else "Menunggu breakout-retest lengkap; volume lemah atau struktur parsial ditolak.",
+        "Breakout Daily telah retest, trend EMA mendukung, RVOL ≥1,5x, dan RSI sehat." if breakout_ok else "Belum entry: " + "; ".join(breakout_blockers),
         "2–10 hari", close if breakout_ok else None,
         min((f.get("breakout_level") or close)-server.tick_size(close), close-1.2*volatility) if breakout_ok else None,
         close+3.6*volatility if breakout_ok else None, 2 if breakout_ok else 0, "ACTIONABLE" if breakout_ok else "WAITING"))
@@ -782,6 +862,23 @@ def recovery_risk_factor(equity: float, starting_equity: float) -> float:
     return 1.0
 
 
+def market_regime_risk_factor(db, agent_id: str, today: date | None = None) -> float:
+    """Reduce only new multi-day long exposure when the last IHSG close is bearish."""
+    if agent_id not in {"swing", "fundamental", "breakout-retest"}:
+        return 1.0
+    row = db.execute("SELECT report_date,snapshot_json FROM reports ORDER BY report_date DESC LIMIT 1").fetchone()
+    current = (today or now_wib().date()).isoformat()
+    if not row or not (row["report_date"] == current or is_prior_trading_session(row["report_date"], current)):
+        return 1.0
+    try:
+        ihsg = json.loads(row["snapshot_json"]).get("ihsg") or {}
+    except (TypeError, ValueError):
+        return 1.0
+    if ihsg.get("status") == "DATA_NOT_AVAILABLE" or ihsg.get("trend") != "BEARISH":
+        return 1.0
+    return .85 if agent_id == "fundamental" else .75
+
+
 def cooldown_active(db, agent_id: str, symbol: str, moment: datetime | None = None) -> bool:
     row = db.execute("SELECT until_at FROM agent_cooldowns WHERE agent_id=? AND symbol=?", (agent_id, symbol)).fetchone()
     return bool(row and row["until_at"] > iso(moment))
@@ -809,6 +906,10 @@ def persist_proposal(db, run_id: str, symbol: str, proposal: Proposal, data_stat
         agent_capital = db.execute("SELECT equity,starting_equity FROM agents WHERE id=?", (proposal.agent_id,)).fetchone()
         equity = float(agent_capital["equity"])
         effective_risk_pct *= recovery_risk_factor(equity, float(agent_capital["starting_equity"]))
+        regime_factor = market_regime_risk_factor(db, proposal.agent_id)
+        effective_risk_pct *= regime_factor
+        if regime_factor < 1:
+            proposal.rationale += f" Risiko posisi baru dikurangi ke {regime_factor:.0%} karena IHSG Daily bearish."
         max_order_allocation = AGENT_MAX_ORDER_ALLOCATION_PCT.get(proposal.agent_id, 20)
         sizing = server.risk_size(equity, entry, stop, effective_risk_pct, max_order_allocation)
         lots = sizing["lots"]
@@ -823,11 +924,11 @@ def persist_proposal(db, run_id: str, symbol: str, proposal: Proposal, data_stat
                    else iso(created_at+timedelta(days=3))) if entry else None
     db.execute("""INSERT INTO agent_proposals
       (id,run_id,agent_id,symbol,action,confidence,horizon,rationale,entry_low,entry_high,
-       stop_price,target_price,equity_risk_pct,risk_reward,lots,status,created_at,valid_until,data_status,strategy_version)
-      VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+       stop_price,target_price,equity_risk_pct,risk_reward,lots,status,created_at,valid_until,data_status,strategy_version,ruleset_version)
+      VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
       (proposal_id, run_id, proposal.agent_id, symbol, proposal.action, proposal.confidence,
        proposal.horizon, proposal.rationale, entry, entry, stop, target, effective_risk_pct,
-       round(rr, 2) if rr is not None else None, lots, final_status, created, valid_until, data_status, STRATEGY_VERSION))
+       round(rr, 2) if rr is not None else None, lots, final_status, created, valid_until, data_status, STRATEGY_VERSION,RULESET_VERSION))
     db.execute("""INSERT INTO decisions(agent_id,symbol,action,confidence,rationale,entry_low,
       entry_high,stop_price,target_price,equity_risk_pct,risk_reward,status,evaluated_at)
       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)""",
@@ -859,11 +960,11 @@ def persist_proposal(db, run_id: str, symbol: str, proposal: Proposal, data_stat
             order_id = f"ord-{uuid.uuid4().hex[:18]}"
             db.execute("""INSERT INTO paper_orders
               (id,proposal_id,agent_id,symbol,side,order_type,lots,limit_price,stop_price,target_price,
-               status,created_at,expires_at,source_candle_at,timeframe,strategy_version)
-              VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+               status,created_at,expires_at,source_candle_at,timeframe,strategy_version,ruleset_version)
+              VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
               (order_id, proposal_id, proposal.agent_id, symbol, "BUY", "LIMIT", lots, entry,
                stop, target, "PENDING", created, valid_until, features_candle(db, run_id, symbol),
-               timeframe, STRATEGY_VERSION))
+               timeframe, STRATEGY_VERSION,RULESET_VERSION))
             order_created = True
         elif not capacity_ok:
             db.execute("UPDATE agent_proposals SET status='REJECTED_PORTFOLIO_CAP' WHERE id=?", (proposal_id,))
@@ -928,11 +1029,11 @@ def process_pending_orders(db, timeframe: str) -> int:
             initial_risk = (price*(1+BUY_FEE)-order["stop_price"]*(1-SELL_FEE))*shares
             db.execute("""INSERT INTO positions
               (agent_id,symbol,lots,entry_price,last_price,stop_price,target_price,status,fill_id,
-               opened_at,entry_candle_at,last_managed_candle_at,buy_fees,initial_risk,strategy_version)
-              VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+               opened_at,entry_candle_at,last_managed_candle_at,buy_fees,initial_risk,strategy_version,ruleset_version)
+              VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
               (order["agent_id"],order["symbol"],order["lots"],price,candle["close"],
                order["stop_price"],order["target_price"],"OPEN",fill_id,candle["candle_at"],
-               candle["candle_at"],candle["candle_at"],fees,initial_risk,STRATEGY_VERSION))
+               candle["candle_at"],candle["candle_at"],fees,initial_risk,STRATEGY_VERSION,order["ruleset_version"]))
             fills += 1
             break
     db.commit(); return fills
@@ -995,13 +1096,13 @@ def manage_positions(db, timeframe: str) -> int:
                            "timestamp entry asli tidak tersedia" if position_version != STRATEGY_VERSION else "")
             db.execute("""INSERT INTO trade_journal
               (agent_id,symbol,opened_at,closed_at,lots,entry_price,exit_price,gross_pnl,fees,
-               net_pnl,r_multiple,setup,exit_reason,notes,buy_fees,sell_fees,initial_risk,strategy_version)
-              VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+               net_pnl,r_multiple,setup,exit_reason,notes,buy_fees,sell_fees,initial_risk,strategy_version,ruleset_version)
+              VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
               (position["agent_id"],position["symbol"],journal_opened_at,candle["candle_at"],
                position["lots"],position["entry_price"],exit_price,gross_pnl,
                float(position["buy_fees"] or 0)+sell_fees,net_pnl,r_multiple,"engine-paper-v2",
                reason,"Yahoo delayed; stop diprioritaskan bila urutan intrabar ambigu"+legacy_note,
-               float(position["buy_fees"] or 0),sell_fees,initial_risk,position_version))
+               float(position["buy_fees"] or 0),sell_fees,initial_risk,position_version,position["ruleset_version"]))
             exit_at = datetime.fromisoformat(candle["candle_at"])
             cooldown_until = (add_idx_trading_minutes(exit_at, 120) if position["agent_id"] in {"scalping","open-low"}
                               else exit_at+timedelta(days=1))
@@ -1252,7 +1353,7 @@ def run_engine(timeframe: str="5m", range_: str="5d", collect: bool=True, force:
             fundamental = server.fundamental_snapshot(db, symbol, float(features["close"]), instrument["sector"] if instrument else "")
             evaluated = evaluate_agents(features,
                 fundamental.get("quality_score") if fundamental.get("status") == "AVAILABLE" else None,
-                timeframe)
+                timeframe, fundamental)
             for proposal in evaluated:
                 _, created=persist_proposal(db,run_id,symbol,proposal,"DELAYED",timeframe)
                 proposal_count += 1; order_count += int(created)

@@ -272,7 +272,7 @@ def publish_dashboard(db: sqlite3.Connection, target: Path = DASHBOARD_PATH) -> 
     screener = rows(
         db,
         """SELECT symbol,name,sector,subsector,last_price,change_pct,evaluation_score,
-        evaluation_status,market_data_as_of FROM instruments
+        evaluation_status,market_data_as_of,yahoo_status,yahoo_retry_after FROM instruments
         WHERE status='ACTIVE' ORDER BY COALESCE(evaluation_score,0) DESC,symbol""",
     )
     for item in screener:

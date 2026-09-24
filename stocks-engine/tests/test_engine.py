@@ -29,7 +29,7 @@ class EngineFeatureTests(unittest.TestCase):
     def setUp(self):
         self.db = sqlite3.connect(":memory:")
         self.db.row_factory = sqlite3.Row
-        self.db.execute("CREATE TABLE instruments(symbol TEXT PRIMARY KEY,last_price REAL,change_pct REAL,market_data_as_of TEXT,daily_close_price REAL,daily_close_date TEXT,market_data_timeframe TEXT)")
+        self.db.execute("CREATE TABLE instruments(symbol TEXT PRIMARY KEY,name TEXT,sector TEXT,subsector TEXT,status TEXT,last_price REAL,change_pct REAL,market_data_as_of TEXT,daily_close_price REAL,daily_close_date TEXT,market_data_timeframe TEXT,yahoo_status TEXT,yahoo_retry_after TEXT)")
         self.db.execute("CREATE TABLE provider_usage(provider TEXT NOT NULL, usage_date TEXT NOT NULL, requests_used INTEGER NOT NULL, request_limit INTEGER, PRIMARY KEY(provider,usage_date))")
         self.db.execute("INSERT INTO instruments(symbol) VALUES('TEST')")
         init_engine_schema(self.db)
@@ -42,6 +42,21 @@ class EngineFeatureTests(unittest.TestCase):
         row = self.db.execute("SELECT * FROM market_candles ORDER BY candle_at DESC LIMIT 1").fetchone()
         self.assertEqual(row["source"], "yahoo")
         self.assertEqual(row["data_status"], "DELAYED")
+
+    def test_yahoo_404_is_cached_without_removing_idx_symbol(self):
+        with patch.object(engine.YahooClient, "chart", side_effect=providers.ProviderError("HTTP Error 404: Not Found")) as chart:
+            first = engine.collect_yahoo(self.db, [{"symbol":"TEST"}], "1d", "1y")
+            second = engine.collect_yahoo(self.db, [{"symbol":"TEST"}], "1d", "1y")
+        self.assertEqual(chart.call_count, 1)
+        self.assertEqual(len(first[1]), 1)
+        self.assertIn("cached 404", second[1][0]["error"])
+        self.assertEqual(self.db.execute("SELECT yahoo_status FROM instruments WHERE symbol='TEST'").fetchone()[0], "NOT_FOUND")
+
+    def test_blank_universe_sector_does_not_erase_enrichment(self):
+        self.db.execute("UPDATE instruments SET sector='Energy',subsector='Oil & Gas' WHERE symbol='TEST'")
+        engine.sync_universe(self.db, [{"symbol":"TEST","name":"Test Tbk","sector":"","subsector":"","status":"ACTIVE"}])
+        row = self.db.execute("SELECT sector,subsector FROM instruments WHERE symbol='TEST'").fetchone()
+        self.assertEqual(tuple(row), ("Energy", "Oil & Gas"))
 
     def test_intraday_change_uses_previous_session_close_not_previous_bar(self):
         payload = yahoo_fixture(3)
@@ -121,6 +136,46 @@ class EngineFeatureTests(unittest.TestCase):
         self.assertLess(proposal.stop, proposal.entry)
         self.assertGreater(proposal.target, proposal.entry)
         self.assertIn("1/3", proposal.rationale)
+
+    def test_fundamental_guard_rejects_missing_and_negative_cash_flow(self):
+        complete = {"status":"AVAILABLE", "period_end":"2026-Q2", "quality_score":80,
+            "coverage":["INCOME_STATEMENT","BALANCE_SHEET","CASH_FLOW_REPORT"],
+            "roe":14, "operating_cash_flow":100}
+        self.assertEqual(engine.fundamental_entry_blockers(complete, datetime(2026,9,24).date()), [])
+        self.assertTrue(any("arus kas" in reason for reason in engine.fundamental_entry_blockers(
+            {**complete, "operating_cash_flow":-1}, datetime(2026,9,24).date())))
+        self.assertTrue(any("laporan belum lengkap" in reason for reason in engine.fundamental_entry_blockers(
+            {**complete, "coverage":["INCOME_STATEMENT"]}, datetime(2026,9,24).date())))
+        self.assertTrue(any("210 hari" in reason for reason in engine.fundamental_entry_blockers(
+            {**complete, "period_end":"2025-Q4"}, datetime(2026,9,24).date())))
+
+    def test_fundamental_guard_turns_accumulate_into_explained_watch(self):
+        features = engine.feature_set(engine.yahoo_rows(yahoo_fixture()))
+        features["ema20"] = features["close"] * .98
+        features["rsi14"] = 60
+        snapshot = {"status":"AVAILABLE", "period_end":"2026-Q2", "quality_score":80,
+            "coverage":["INCOME_STATEMENT","BALANCE_SHEET","CASH_FLOW_REPORT"],
+            "roe":10, "operating_cash_flow":-100}
+        proposal = next(p for p in engine.evaluate_agents(features, 80, "1d", snapshot) if p.agent_id == "fundamental")
+        self.assertEqual((proposal.action, proposal.status), ("WATCH", "WAITING"))
+        self.assertIn("arus kas", proposal.rationale)
+
+    def test_breakout_wait_explains_failed_gates(self):
+        features = engine.feature_set(engine.yahoo_rows(yahoo_fixture()))
+        features.update({"retest_confirmed":False,"relative_volume":0.7,"rsi14":72})
+        proposal = next(p for p in engine.evaluate_agents(features, None, "1d") if p.agent_id == "breakout-retest")
+        self.assertEqual(proposal.action, "WAIT")
+        self.assertIn("RVOL 0.70x", proposal.rationale)
+        self.assertIn("retest", proposal.rationale)
+
+    def test_bearish_ihsg_reduces_only_new_multiday_risk(self):
+        self.db.execute("CREATE TABLE reports(report_date TEXT PRIMARY KEY,snapshot_json TEXT)")
+        self.db.execute("INSERT INTO reports VALUES(?,?)", ("2026-09-23", '{"ihsg":{"status":"AVAILABLE","trend":"BEARISH"}}'))
+        today = datetime(2026, 9, 24).date()
+        self.assertEqual(engine.market_regime_risk_factor(self.db, "swing", today), .75)
+        self.assertEqual(engine.market_regime_risk_factor(self.db, "fundamental", today), .85)
+        self.assertEqual(engine.market_regime_risk_factor(self.db, "scalping", today), 1)
+        self.assertEqual(engine.market_regime_risk_factor(self.db, "swing", datetime(2026, 9, 28).date()), 1)
 
     def test_expired_pending_orders_release_capacity(self):
         self.db.execute("""INSERT INTO paper_orders
@@ -343,6 +398,18 @@ class EngineFeatureTests(unittest.TestCase):
         self.assertEqual([symbol for symbol, _ in pool], ["CORE", "CHALLENGER"])
         self.assertIn("CHALLENGER", [symbol for symbol, _ in candidates])
 
+    def test_liquid_retest_has_reserved_discovery_and_candidate_slot(self):
+        base = {"atr_pct":2,"relative_volume":2,"retest_confirmed":False}
+        staged = [("CORE",dict(base,average_daily_value=1_000_000_000,test_score=90)),
+                  ("MOMENTUM",dict(base,average_daily_value=800_000_000,test_score=80)),
+                  ("RETEST",dict(base,average_daily_value=400_000_000,test_score=25,retest_confirmed=True))]
+        fake_settings = SimpleNamespace(liquidity_min_adv=250_000_000, liquid_universe_limit=1,
+                                        challenger_universe_limit=1, technical_candidate_limit=1)
+        with patch.object(engine, "settings", fake_settings), patch.object(engine, "technical_score", side_effect=lambda f: f["test_score"]):
+            pool, candidates = engine.local_liquidity_shortlist(staged, set())
+        self.assertEqual([symbol for symbol, _ in pool], ["CORE", "RETEST"])
+        self.assertEqual([symbol for symbol, _ in candidates], ["RETEST"])
+
 
 class PaperExecutionV2Tests(unittest.TestCase):
     def setUp(self):
@@ -354,13 +421,13 @@ class PaperExecutionV2Tests(unittest.TestCase):
             id INTEGER PRIMARY KEY AUTOINCREMENT,agent_id TEXT,symbol TEXT,lots INTEGER,
             entry_price REAL,last_price REAL,stop_price REAL,target_price REAL,status TEXT,
             fill_id TEXT,opened_at TEXT,entry_candle_at TEXT,last_managed_candle_at TEXT,
-            buy_fees REAL DEFAULT 0,initial_risk REAL,strategy_version TEXT DEFAULT '2.0');
+            buy_fees REAL DEFAULT 0,initial_risk REAL,strategy_version TEXT DEFAULT '2.0',ruleset_version TEXT);
           CREATE TABLE trade_journal(
             id INTEGER PRIMARY KEY AUTOINCREMENT,agent_id TEXT,symbol TEXT,opened_at TEXT NOT NULL,
             closed_at TEXT,side TEXT DEFAULT 'LONG',lots INTEGER,entry_price REAL,exit_price REAL,
             gross_pnl REAL,fees REAL DEFAULT 0,net_pnl REAL,r_multiple REAL,setup TEXT,
             exit_reason TEXT,notes TEXT,buy_fees REAL DEFAULT 0,sell_fees REAL DEFAULT 0,
-            initial_risk REAL,strategy_version TEXT DEFAULT '2.0');
+            initial_risk REAL,strategy_version TEXT DEFAULT '2.0',ruleset_version TEXT);
           CREATE TABLE equity_history(agent_id TEXT,equity_date TEXT,equity REAL,cash REAL,drawdown_pct REAL,PRIMARY KEY(agent_id,equity_date));
         """)
         init_engine_schema(self.db)

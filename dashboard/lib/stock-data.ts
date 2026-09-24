@@ -4,13 +4,14 @@ import path from 'node:path';
 export type Row = Record<string, unknown>;
 export type StockAgent = { id: string; name: string; description: string; starting_equity: number; equity: number; pnl_pct: number; display_win_rate: number | null; status: string };
 export type StockPosition = { id: number; agent_id: string; agent_name: string; symbol: string; lots: number; entry_price: number; last_price: number; stop_price?: number | null; target_price?: number | null; market_value: number; unrealized_pnl: number; pnl_pct: number };
-export type StockScreenerRow = { symbol: string; name: string; sector?: string | null; subsector?: string | null; last_price?: number | null; change_pct?: number | null; evaluation_score?: number | null; evaluation_status?: string | null; market_data_as_of?: string | null; intraday_rank?: number | null; is_intraday: boolean };
+export type StockScreenerRow = { symbol: string; name: string; sector?: string | null; subsector?: string | null; last_price?: number | null; change_pct?: number | null; evaluation_score?: number | null; evaluation_status?: string | null; market_data_as_of?: string | null; yahoo_status?: string | null; yahoo_retry_after?: string | null; intraday_rank?: number | null; is_intraday: boolean };
 export type StockDashboard = { schema_version: number; generated_at: string; source_mode: string; paper_only: boolean; market_phase: string; latest_run: { status: string; started_at: string; completed_at?: string | null; symbols_ok: number; symbols_failed: number } | null; provider_usage: { requests_used: number; request_limit: number }; agents: StockAgent[]; positions: StockPosition[]; intraday_symbols: string[]; screener: StockScreenerRow[]; latest_report?: Row | null };
 export type RuntimeState = { schema_version: number; exported_at: string; paper_only: boolean; tables: Record<string, Row[]> };
 export type CompactCandle = [timestamp: number, open: number, high: number, low: number, close: number, volume: number];
 export type StockChartSnapshot = { schema_version: number; symbol: string; generated_at: string; timeframes: Partial<Record<'5m' | '1d', { as_of: string; source: string; data_status: string; candles: CompactCandle[] }>> };
 
 const RAW_BASE = 'https://raw.githubusercontent.com/IrvanRisdi/Gemini-AI-Fund/paper-data/stocks-engine/.stock-desk';
+const CURRENT_RULESET = '2026-09-24.1';
 const STRATEGIES: Record<string, { objective: string; timeframes: string; entry_rules: string[]; exit_rules: string[]; no_trade: string[] }> = {
   swing: { objective: 'Menangkap tren menengah pada saham likuid tanpa mengejar harga yang sudah terlalu jauh.', timeframes: 'Daily untuk setup · Weekly untuk regime', entry_rules: ['Close di atas EMA20 dan EMA50', 'RSI 52–66 dan relative volume minimum 1,25×', 'Jarak harga maksimum 8% di atas EMA20'], exit_rules: ['Stop di bawah swing low atau ATR struktural', 'Target sekitar 2R sebelum penyesuaian tick/fee', 'Tanpa averaging down'], no_trade: ['Data stale', 'Harga terlalu jauh dari EMA20', 'IHSG risk-off ekstrem'] },
   scalping: { objective: 'Menangkap momentum intraday 5 menit yang masih memiliki edge setelah biaya.', timeframes: '5m · delayed-paper', entry_rules: ['EMA20 di atas EMA50 dan harga di atas keduanya', 'RVOL minimal 2× dan RSI 55–66', 'Momentum 15m 0,35–1,25% dan jarak VWAP 0,15–0,80%'], exit_rules: ['Stop berbasis ATR/tick; risiko equity 1%', 'Target minimal 1,5R setelah fee', 'Tanpa time stop; posisi ditutup pada akhir sesi'], no_trade: ['Candle stale', 'Di luar sesi kontinu IDX', 'Volume atau edge setelah biaya tidak memadai'] },
@@ -62,7 +63,21 @@ export async function getStockAgent(agentId: string) {
   const wins = closed.filter((row) => n(row.net_pnl) > 0);
   const losses = closed.filter((row) => n(row.net_pnl) < 0);
   const history = table(state, 'equity_history').filter((row) => s(row.agent_id) === agentId).sort((a, b) => s(a.equity_date).localeCompare(s(b.equity_date)));
-  return { ...agent, pnl_pct: n(agent.starting_equity) ? (n(agent.equity) - n(agent.starting_equity)) / n(agent.starting_equity) * 100 : 0, positions: namedPositions(state, agentId), pending_orders: table(state, 'paper_orders').filter((row) => s(row.agent_id) === agentId && s(row.status) === 'PENDING').sort(byDateDesc('created_at')), decisions, equity_history: history, trade_journal: journal, strategy: STRATEGIES[agentId], performance: { closed_trades: closed.length, wins: wins.length, win_rate: closed.length ? wins.length / closed.length * 100 : null, net_pnl: closed.reduce((sum, row) => sum + n(row.net_pnl), 0), profit_factor: losses.length ? wins.reduce((sum, row) => sum + n(row.net_pnl), 0) / Math.abs(losses.reduce((sum, row) => sum + n(row.net_pnl), 0)) : null, avg_r: closed.length ? closed.reduce((sum, row) => sum + n(row.r_multiple), 0) / closed.length : null, max_drawdown_pct: Math.min(0, ...history.map((row) => n(row.drawdown_pct))) } };
+  const positions = namedPositions(state, agentId);
+  const pendingOrders = table(state, 'paper_orders').filter((row) => s(row.agent_id) === agentId && s(row.status) === 'PENDING').sort(byDateDesc('created_at'));
+  const cohort = closed.filter((row) => s(row.ruleset_version) === CURRENT_RULESET);
+  const ledger = table(state, 'agent_ledgers').find((row) => s(row.agent_id) === agentId);
+  const openBuyFees = positions.reduce((sum, row) => sum + n((row as unknown as Row).buy_fees), 0);
+  const expectedEquity = n(agent.starting_equity) + n(ledger?.realized_pnl) + positions.reduce((sum, row) => sum + row.unrealized_pnl, 0) - openBuyFees;
+  const reconciliationGap = n(agent.equity) - expectedEquity;
+  return { ...agent, pnl_pct: n(agent.starting_equity) ? (n(agent.equity) - n(agent.starting_equity)) / n(agent.starting_equity) * 100 : 0, positions, pending_orders: pendingOrders, decisions, equity_history: history, trade_journal: journal, strategy: STRATEGIES[agentId],
+    diagnostics: { ruleset: CURRENT_RULESET, closed_current: cohort.length, wins_current: cohort.filter((row) => n(row.net_pnl) > 0).length,
+      net_current: cohort.reduce((sum, row) => sum + n(row.net_pnl), 0), gross_current: cohort.reduce((sum, row) => sum + n(row.gross_pnl), 0),
+      fees_current: cohort.reduce((sum, row) => sum + n(row.fees), 0), gross_v2: closed.reduce((sum, row) => sum + n(row.gross_pnl), 0),
+      fees_v2: closed.reduce((sum, row) => sum + n(row.fees), 0), legacy_closed: journal.filter((row) => s(row.strategy_version) !== '2.0').length,
+      prior_v2_closed: closed.length - cohort.length, open_current: positions.filter((row) => s((row as unknown as Row).ruleset_version) === CURRENT_RULESET).length,
+      reconciliation_gap: reconciliationGap },
+    performance: { closed_trades: closed.length, wins: wins.length, win_rate: closed.length ? wins.length / closed.length * 100 : null, net_pnl: closed.reduce((sum, row) => sum + n(row.net_pnl), 0), profit_factor: losses.length ? wins.reduce((sum, row) => sum + n(row.net_pnl), 0) / Math.abs(losses.reduce((sum, row) => sum + n(row.net_pnl), 0)) : null, avg_r: closed.length ? closed.reduce((sum, row) => sum + n(row.r_multiple), 0) / closed.length : null, max_drawdown_pct: Math.min(0, ...history.map((row) => n(row.drawdown_pct))) } };
 }
 
 export async function getStockWorkspace(symbolInput: string) {
