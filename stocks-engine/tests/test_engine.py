@@ -9,6 +9,7 @@ from pathlib import Path
 import engine
 import jobs
 import providers
+import server
 from engine_schema import init_engine_schema
 
 
@@ -167,6 +168,52 @@ class EngineFeatureTests(unittest.TestCase):
         self.assertEqual(proposal.action, "WAIT")
         self.assertIn("RVOL 0.70x", proposal.rationale)
         self.assertIn("retest", proposal.rationale)
+
+    def test_breakout_retest_is_valid_through_fifth_session_only(self):
+        start = datetime(2026, 6, 1, 9, tzinfo=engine.JAKARTA)
+        rows = []
+        for index in range(57):
+            close = 105 if index == 50 else (103 if index >= 51 else 100)
+            rows.append({"candle_at": (start + timedelta(days=index)).isoformat(),
+                "open": close - 1, "high": 106 if index == 50 else close + 1,
+                "low": 101.5 if index >= 51 else close - 2,
+                "close": close, "volume": 1_000_000})
+        fifth = engine.feature_set(rows[:56])
+        sixth = engine.feature_set(rows[:57])
+        self.assertTrue(fifth["retest_confirmed"])
+        self.assertEqual(fifth["retest_age_sessions"], 5)
+        self.assertFalse(sixth["retest_confirmed"])
+
+    def test_breakout_v3_does_not_require_positive_daily_change(self):
+        features = engine.feature_set(engine.yahoo_rows(yahoo_fixture()))
+        features.update({"ema20":100,"ema50":90,"close":110,"retest_confirmed":True,
+            "retest_age_sessions":4,"breakout_level":105,"relative_volume":1.1,
+            "rsi14":60,"change_pct":-1})
+        proposal = next(p for p in engine.evaluate_agents(features, None, "1d") if p.agent_id == "breakout-retest")
+        self.assertEqual((proposal.action,proposal.status), ("BUY","ACTIONABLE"))
+        self.assertIn("ke-4", proposal.rationale)
+        self.assertAlmostEqual(proposal.target - proposal.entry, 2 * (proposal.entry - proposal.stop))
+
+    def test_breakout_v3_persists_next_open_order_with_own_ruleset(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "paper.db"
+            with patch.object(server, "DB_PATH", target), patch.object(server, "settings", SimpleNamespace(demo_mode=False)):
+                server.init_db()
+                db = server.connect()
+            try:
+                engine.ensure_runtime(db)
+                engine.sync_universe(db, [{"symbol":"NEXT","name":"Next Tbk","status":"ACTIVE"}])
+                db.execute("INSERT INTO engine_runs(id,run_type,started_at,status,timeframe) VALUES('run-test','eod','2026-09-24T16:30:00+07:00','RUNNING','1d')")
+                db.execute("""INSERT INTO feature_snapshots VALUES('run-test','NEXT','1d','2026-09-24T16:30:00+07:00',?)""",
+                           ('{"candle_at":"2026-09-24T09:00:00+07:00"}',))
+                proposal = engine.Proposal("breakout-retest","BUY",86,"test","2–10 hari",100,95,110,2,"ACTIONABLE")
+                with patch.object(engine, "settings", SimpleNamespace(demo_mode=False,allow_delayed_paper=True)):
+                    _, created = engine.persist_proposal(db, "run-test", "NEXT", proposal, "DELAYED", "1d")
+                self.assertTrue(created)
+                order = db.execute("SELECT order_type,ruleset_version FROM paper_orders WHERE symbol='NEXT'").fetchone()
+                self.assertEqual(tuple(order), ("NEXT_OPEN", engine.BREAKOUT_RULESET_VERSION))
+            finally:
+                db.close()
 
     def test_bearish_ihsg_reduces_only_new_multiday_risk(self):
         self.db.execute("CREATE TABLE reports(report_date TEXT PRIMARY KEY,snapshot_json TEXT)")
@@ -447,6 +494,52 @@ class PaperExecutionV2Tests(unittest.TestCase):
           (symbol,timeframe,candle_at,open,high,low,close,volume,source,data_status,collected_at)
           VALUES('TEST','5m',?,?,?,?,?,1000000,'yahoo','DELAYED','2026-08-24T10:30:00+07:00')""",
           (at, close, high, low, close))
+
+    def breakout_next_open_order(self):
+        self.db.execute("INSERT INTO agents VALUES('breakout-retest',100000000,100000000,0,0)")
+        self.db.execute("INSERT INTO agent_ledgers(agent_id,cash,updated_at) VALUES('breakout-retest',100000000,'2026-08-24T16:30:00+07:00')")
+        self.db.execute("""INSERT INTO agent_proposals
+          (id,run_id,agent_id,symbol,action,rationale,equity_risk_pct,status,created_at,data_status,strategy_version,ruleset_version)
+          VALUES('pb','rb','breakout-retest','NEXT','BUY','test',2,'ACTIONABLE','2026-08-24T16:30:00+07:00','DELAYED','2.0',?)""",
+          (engine.BREAKOUT_RULESET_VERSION,))
+        self.db.execute("""INSERT INTO paper_orders
+          (id,proposal_id,agent_id,symbol,side,order_type,lots,limit_price,stop_price,target_price,
+           status,created_at,expires_at,source_candle_at,timeframe,strategy_version,ruleset_version)
+          VALUES('on','pb','breakout-retest','NEXT','BUY','NEXT_OPEN',10,100,95,110,
+          'PENDING','2026-08-24T16:30:00+07:00','2026-08-27T16:30:00+07:00',
+          '2026-08-24T09:00:00+07:00','1d','2.0',?)""",
+          (engine.BREAKOUT_RULESET_VERSION,))
+
+    def test_breakout_next_open_fills_with_resized_plan(self):
+        self.breakout_next_open_order()
+        self.db.execute("""INSERT INTO market_candles
+          (symbol,timeframe,candle_at,open,high,low,close,volume,source,data_status,collected_at)
+          VALUES('NEXT','5m','2026-08-26T09:00:00+07:00',101,103,100,102,1000000,'yahoo','DELAYED','2026-08-26T09:10:00+07:00')""")
+        with patch.object(engine, "expire_pending_orders", return_value=0):
+            self.assertEqual(engine.process_pending_orders(self.db, '5m'), 1)
+        order = self.db.execute("SELECT * FROM paper_orders WHERE id='on'").fetchone()
+        position = self.db.execute("SELECT * FROM positions WHERE symbol='NEXT'").fetchone()
+        self.assertEqual((order["status"], position["entry_price"], position["lots"]), ("FILLED", 102, 10))
+        self.assertGreaterEqual(position["target_price"], 116)
+        self.assertEqual(position["ruleset_version"], engine.BREAKOUT_RULESET_VERSION)
+
+    def test_breakout_next_open_rejects_gap_chasing(self):
+        self.breakout_next_open_order()
+        self.db.execute("""INSERT INTO market_candles
+          (symbol,timeframe,candle_at,open,high,low,close,volume,source,data_status,collected_at)
+          VALUES('NEXT','5m','2026-08-26T09:00:00+07:00',103,104,102,103,1000000,'yahoo','DELAYED','2026-08-26T09:10:00+07:00')""")
+        with patch.object(engine, "expire_pending_orders", return_value=0):
+            self.assertEqual(engine.process_pending_orders(self.db, '5m'), 0)
+        self.assertEqual(self.db.execute("SELECT status FROM paper_orders WHERE id='on'").fetchone()[0], "REJECTED_GAP_CHASE")
+
+    def test_breakout_next_open_requires_observed_trade_at_fill_price(self):
+        self.breakout_next_open_order()
+        self.db.execute("""INSERT INTO market_candles
+          (symbol,timeframe,candle_at,open,high,low,close,volume,source,data_status,collected_at)
+          VALUES('NEXT','5m','2026-08-26T09:00:00+07:00',101,101,101,101,1000000,'yahoo','DELAYED','2026-08-26T09:10:00+07:00')""")
+        with patch.object(engine, "expire_pending_orders", return_value=0):
+            self.assertEqual(engine.process_pending_orders(self.db, '5m'), 0)
+        self.assertEqual(self.db.execute("SELECT status FROM paper_orders WHERE id='on'").fetchone()[0], "REJECTED_NO_PRINT_AT_FILL")
 
     def test_fill_never_uses_candle_before_decision_time(self):
         self.candle('2026-08-24T09:05:00+07:00')

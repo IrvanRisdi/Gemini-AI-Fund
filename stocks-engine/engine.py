@@ -31,6 +31,7 @@ BUY_FEE = 0.0015
 SELL_FEE = 0.0025
 STRATEGY_VERSION = "2.0"
 RULESET_VERSION = "2026-09-24.1"
+BREAKOUT_RULESET_VERSION = "2026-09-24.2"
 MIN_NET_RISK_REWARD = 1.5
 AGENT_MAX_ORDER_ALLOCATION_PCT = {
     "scalping": 10, "open-low": 15, "swing": 20,
@@ -594,11 +595,20 @@ def feature_set(rows: list[dict]) -> dict | None:
     prior_breakout_level = None
     previous_breakout = False
     retest_confirmed = False
+    retest_age_sessions = None
     if len(rows) >= 22:
         prior_breakout_level = max(r["high"] for r in rows[-22:-2])
         previous_breakout = previous["close"] > prior_breakout_level
-        retest_confirmed = bool(previous_breakout and latest["low"] <= prior_breakout_level * 1.02
-                                and latest["close"] >= prior_breakout_level and latest["close"] > latest["open"])
+        for age in range(1, min(5, len(rows) - 21) + 1):
+            breakout_index = len(rows) - age - 1
+            level = max(row["high"] for row in rows[breakout_index-20:breakout_index])
+            breakout_candle = rows[breakout_index]
+            if (breakout_candle["close"] > level and latest["low"] <= level * 1.02
+                    and latest["close"] >= level):
+                prior_breakout_level = level
+                retest_confirmed = True
+                retest_age_sessions = age
+                break
     return {
         "candle_at": latest["candle_at"], "open": latest["open"], "high": latest["high"],
         "low": latest["low"], "close": latest["close"], "volume": latest["volume"],
@@ -618,7 +628,7 @@ def feature_set(rows: list[dict]) -> dict | None:
         "open_is_low": abs(session_open-session_low) <= server.tick_size(session_open),
         "session_trading_minutes": session_trading_minutes,
         "previous_breakout": previous_breakout, "breakout_level": prior_breakout_level,
-        "retest_confirmed": retest_confirmed,
+        "retest_confirmed": retest_confirmed, "retest_age_sessions": retest_age_sessions,
     }
 
 
@@ -752,16 +762,16 @@ def breakout_entry_blockers(features: dict) -> list[str]:
     if not (ema20 and ema50 and close > ema20 > ema50):
         blockers.append("trend EMA20/50 belum bullish")
     if not features.get("retest_confirmed"):
-        blockers.append("retest resistance belum terkonfirmasi")
+        blockers.append("retest resistance belum terkonfirmasi dalam 5 sesi")
     rvol = float(features.get("relative_volume") or 0)
-    if rvol < 1.5:
-        blockers.append(f"RVOL {rvol:.2f}x < 1,50x")
+    if rvol < 1.0:
+        blockers.append(f"RVOL {rvol:.2f}x < 1,00x")
     rsi_value = float(features.get("rsi14") or 0)
-    if not 50 <= rsi_value <= 68:
-        blockers.append(f"RSI {rsi_value:.1f} di luar 50–68")
+    if not 48 <= rsi_value <= 72:
+        blockers.append(f"RSI {rsi_value:.1f} di luar 48–72")
     change = float(features.get("change_pct") or 0)
-    if not 0 < change <= 5:
-        blockers.append(f"perubahan harian {change:.2f}% di luar 0–5%")
+    if not -2 < change <= 6:
+        blockers.append(f"perubahan harian {change:.2f}% di luar −2–6%")
     return blockers
 
 
@@ -823,11 +833,12 @@ def evaluate_agents(features: dict, fundamental_quality: int | None, timeframe: 
     proposals.append(fundamental)
     breakout_blockers = breakout_entry_blockers(f)
     breakout_ok = not breakout_blockers
+    breakout_stop = min((f.get("breakout_level") or close)-server.tick_size(close), close-1.2*volatility) if breakout_ok else None
+    breakout_target = close+2*(close-breakout_stop) if breakout_stop is not None else None
     proposals.append(Proposal("breakout-retest", "BUY" if breakout_ok else "WAIT", 86 if breakout_ok else 45,
-        "Breakout Daily telah retest, trend EMA mendukung, RVOL ≥1,5x, dan RSI sehat." if breakout_ok else "Belum entry: " + "; ".join(breakout_blockers),
+        f"Breakout Daily retest pada sesi ke-{f.get('retest_age_sessions')} dari 5; tren EMA, RVOL ≥1x, dan RSI 48–72 lolos. Entry pembukaan sesi berikutnya hanya bila gap tidak lebih dari 2%." if breakout_ok else "Belum entry: " + "; ".join(breakout_blockers),
         "2–10 hari", close if breakout_ok else None,
-        min((f.get("breakout_level") or close)-server.tick_size(close), close-1.2*volatility) if breakout_ok else None,
-        close+3.6*volatility if breakout_ok else None, 2 if breakout_ok else 0, "ACTIONABLE" if breakout_ok else "WAITING"))
+        breakout_stop, breakout_target, 2 if breakout_ok else 0, "ACTIONABLE" if breakout_ok else "WAITING"))
     return proposals
 
 
@@ -894,6 +905,10 @@ def portfolio_usage(db, agent_id: str) -> tuple[float, float]:
     return float(pending["notional"] + opened["notional"]), float(pending["risk"] + opened["risk"])
 
 
+def agent_ruleset_version(agent_id: str) -> str:
+    return BREAKOUT_RULESET_VERSION if agent_id == "breakout-retest" else RULESET_VERSION
+
+
 def persist_proposal(db, run_id: str, symbol: str, proposal: Proposal, data_status: str,
                      timeframe: str = "5m") -> tuple[str, bool]:
     proposal_id = f"prop-{uuid.uuid4().hex[:18]}"
@@ -920,6 +935,7 @@ def persist_proposal(db, run_id: str, symbol: str, proposal: Proposal, data_stat
         rr, lots, final_status = None, None, proposal.status
     created_at = now_wib()
     created = iso(created_at)
+    ruleset = agent_ruleset_version(proposal.agent_id)
     valid_until = (iso(add_idx_trading_minutes(created_at, 45)) if timeframe == "5m"
                    else iso(created_at+timedelta(days=3))) if entry else None
     db.execute("""INSERT INTO agent_proposals
@@ -928,7 +944,7 @@ def persist_proposal(db, run_id: str, symbol: str, proposal: Proposal, data_stat
       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
       (proposal_id, run_id, proposal.agent_id, symbol, proposal.action, proposal.confidence,
        proposal.horizon, proposal.rationale, entry, entry, stop, target, effective_risk_pct,
-       round(rr, 2) if rr is not None else None, lots, final_status, created, valid_until, data_status, STRATEGY_VERSION,RULESET_VERSION))
+       round(rr, 2) if rr is not None else None, lots, final_status, created, valid_until, data_status, STRATEGY_VERSION,ruleset))
     db.execute("""INSERT INTO decisions(agent_id,symbol,action,confidence,rationale,entry_low,
       entry_high,stop_price,target_price,equity_risk_pct,risk_reward,status,evaluated_at)
       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)""",
@@ -962,9 +978,10 @@ def persist_proposal(db, run_id: str, symbol: str, proposal: Proposal, data_stat
               (id,proposal_id,agent_id,symbol,side,order_type,lots,limit_price,stop_price,target_price,
                status,created_at,expires_at,source_candle_at,timeframe,strategy_version,ruleset_version)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-              (order_id, proposal_id, proposal.agent_id, symbol, "BUY", "LIMIT", lots, entry,
+              (order_id, proposal_id, proposal.agent_id, symbol, "BUY",
+               "NEXT_OPEN" if proposal.agent_id == "breakout-retest" else "LIMIT", lots, entry,
                stop, target, "PENDING", created, valid_until, features_candle(db, run_id, symbol),
-               timeframe, STRATEGY_VERSION,RULESET_VERSION))
+               timeframe, STRATEGY_VERSION,ruleset))
             order_created = True
         elif not capacity_ok:
             db.execute("UPDATE agent_proposals SET status='REJECTED_PORTFOLIO_CAP' WHERE id=?", (proposal_id,))
@@ -1013,26 +1030,57 @@ def process_pending_orders(db, timeframe: str) -> int:
         for candle in candles:
             if not is_idx_trading_timestamp(candle["candle_at"]):
                 continue
+            if float(candle["volume"] or 0) <= 0:
+                continue
             if order["expires_at"] and candle["candle_at"] > order["expires_at"]:
                 db.execute("UPDATE paper_orders SET status='EXPIRED' WHERE id=?", (order["id"],)); break
-            if not (candle["low"] <= order["limit_price"] <= candle["high"]):
-                continue
-            price, shares = order["limit_price"], order["lots"]*100
+            lots, stop, target = int(order["lots"]), float(order["stop_price"]), float(order["target_price"])
+            if order["order_type"] == "NEXT_OPEN":
+                if not is_prior_trading_session(order["created_at"][:10], candle["candle_at"][:10]):
+                    db.execute("UPDATE paper_orders SET status='EXPIRED_NEXT_OPEN' WHERE id=?", (order["id"],)); break
+                if datetime.fromisoformat(candle["candle_at"]).astimezone(JAKARTA).time() > clock_time(9, 10):
+                    db.execute("UPDATE paper_orders SET status='EXPIRED_MISSED_OPEN' WHERE id=?", (order["id"],)); break
+                opening_price = float(candle["open"])
+                if opening_price > float(order["limit_price"]) * 1.02:
+                    db.execute("UPDATE paper_orders SET status='REJECTED_GAP_CHASE' WHERE id=?", (order["id"],)); break
+                if opening_price <= stop:
+                    db.execute("UPDATE paper_orders SET status='REJECTED_GAP_STOP' WHERE id=?", (order["id"],)); break
+                # Delayed-data paper fill: first eligible 5m candle open plus
+                # conservative slippage, never the already-known signal close.
+                price = round_up_to_tick(opening_price * 1.001)
+                if price > float(candle["high"]):
+                    db.execute("UPDATE paper_orders SET status='REJECTED_NO_PRINT_AT_FILL' WHERE id=?", (order["id"],)); break
+                target = max(target, round_up_to_tick(price + 2 * (price - stop)),
+                             minimum_target_for_net_rr(price, stop))
+                proposal = db.execute("SELECT equity_risk_pct FROM agent_proposals WHERE id=?", (order["proposal_id"],)).fetchone()
+                capital = db.execute("SELECT equity FROM agents WHERE id=?", (order["agent_id"],)).fetchone()
+                if not proposal or not capital:
+                    db.execute("UPDATE paper_orders SET status='REJECTED_MISSING_PLAN' WHERE id=?", (order["id"],)); break
+                lots = min(lots, server.risk_size(float(capital["equity"]), price, stop,
+                    float(proposal["equity_risk_pct"] or 0),
+                    AGENT_MAX_ORDER_ALLOCATION_PCT.get(order["agent_id"], 20))["lots"])
+                if lots <= 0:
+                    db.execute("UPDATE paper_orders SET status='REJECTED_BY_RISK' WHERE id=?", (order["id"],)); break
+            else:
+                if not (candle["low"] <= order["limit_price"] <= candle["high"]):
+                    continue
+                price = float(order["limit_price"])
+            shares = lots * 100
             gross, fees = price*shares, price*shares*BUY_FEE
             ledger = db.execute("SELECT cash FROM agent_ledgers WHERE agent_id=?", (order["agent_id"],)).fetchone()
             if not ledger or ledger["cash"] < gross+fees:
                 db.execute("UPDATE paper_orders SET status='REJECTED_CASH' WHERE id=?", (order["id"],)); break
             fill_id = f"fill-{uuid.uuid4().hex[:18]}"
-            db.execute("INSERT INTO paper_fills VALUES(?,?,?,?,?,?,?,?)", (fill_id,order["id"],candle["candle_at"],price,order["lots"],gross,fees,candle["data_status"]))
-            db.execute("UPDATE paper_orders SET status='FILLED' WHERE id=?", (order["id"],))
+            db.execute("INSERT INTO paper_fills VALUES(?,?,?,?,?,?,?,?)", (fill_id,order["id"],candle["candle_at"],price,lots,gross,fees,candle["data_status"]))
+            db.execute("UPDATE paper_orders SET status='FILLED',lots=?,target_price=? WHERE id=?", (lots,target,order["id"]))
             db.execute("UPDATE agent_ledgers SET cash=cash-?,fees_paid=fees_paid+?,updated_at=? WHERE agent_id=?", (gross+fees,fees,iso(),order["agent_id"]))
-            initial_risk = (price*(1+BUY_FEE)-order["stop_price"]*(1-SELL_FEE))*shares
+            initial_risk = (price*(1+BUY_FEE)-stop*(1-SELL_FEE))*shares
             db.execute("""INSERT INTO positions
               (agent_id,symbol,lots,entry_price,last_price,stop_price,target_price,status,fill_id,
                opened_at,entry_candle_at,last_managed_candle_at,buy_fees,initial_risk,strategy_version,ruleset_version)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-              (order["agent_id"],order["symbol"],order["lots"],price,candle["close"],
-               order["stop_price"],order["target_price"],"OPEN",fill_id,candle["candle_at"],
+              (order["agent_id"],order["symbol"],lots,price,candle["close"],
+               stop,target,"OPEN",fill_id,candle["candle_at"],
                candle["candle_at"],candle["candle_at"],fees,initial_risk,STRATEGY_VERSION,order["ruleset_version"]))
             fills += 1
             break

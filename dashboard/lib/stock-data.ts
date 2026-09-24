@@ -17,7 +17,7 @@ const STRATEGIES: Record<string, { objective: string; timeframes: string; entry_
   scalping: { objective: 'Menangkap momentum intraday 5 menit yang masih memiliki edge setelah biaya.', timeframes: '5m · delayed-paper', entry_rules: ['EMA20 di atas EMA50 dan harga di atas keduanya', 'RVOL minimal 2× dan RSI 55–66', 'Momentum 15m 0,35–1,25% dan jarak VWAP 0,15–0,80%'], exit_rules: ['Stop berbasis ATR/tick; risiko equity 1%', 'Target minimal 1,5R setelah fee', 'Tanpa time stop; posisi ditutup pada akhir sesi'], no_trade: ['Candle stale', 'Di luar sesi kontinu IDX', 'Volume atau edge setelah biaya tidak memadai'] },
   'open-low': { objective: 'Mencari kekuatan pembukaan ketika open bertahan sebagai low sesi.', timeframes: '5m · 45 menit aktif pertama', entry_rules: ['Low maksimal satu tick di bawah open', 'RVOL minimal 1,75×; RSI 55–70; close di atas VWAP', 'Kenaikan dari open 0,30–2,50% dan momentum tidak berlebihan'], exit_rules: ['Stop satu tick di bawah open; risiko equity 1,5%', 'Target minimal 1,5R bersih', 'Keluar akhir sesi; tanpa averaging down'], no_trade: ['Di luar 45 menit pertama', 'Belum aktif diperdagangkan', 'Candle stale atau lonjakan berlebihan'] },
   fundamental: { objective: 'Mengakumulasi emiten berkualitas pada valuasi wajar untuk beberapa bulan.', timeframes: 'Quarterly · Weekly/Daily timing', entry_rules: ['Quality dan health gate lolos', 'Valuasi memiliki margin of safety', 'Tidak ada red flag arus kas'], exit_rules: ['Thesis fundamental rusak', 'Valuasi melewati fair range', 'Trailing protection saat event risk'], no_trade: ['Laporan tidak lengkap', 'Restatement belum diproses', 'Model sektor tidak sesuai'] },
-  'breakout-retest': { objective: 'Membeli breakout valid setelah resistance diuji dan bertahan sebagai support.', timeframes: 'Daily setup dan retest', entry_rules: ['Close sebelumnya melewati resistance dan candle berikutnya retest valid', 'Trend EMA20/50, RVOL minimal 1,5×, RSI 50–68', 'Kenaikan harian tidak melebihi 5%'], exit_rules: ['Stop di bawah retest low; risiko equity 2%', 'Target minimal 1,5R bersih', 'Plan kedaluwarsa bila level lama terlewati'], no_trade: ['Deep retest', 'Harga/RSI terlalu panas', 'Breakout tanpa volume'] },
+  'breakout-retest': { objective: 'Membeli retest resistance setelah breakout valid, tanpa mengejar gap pembukaan.', timeframes: 'Daily breakout · retest maksimal 5 sesi · entry pembukaan sesi berikutnya', entry_rules: ['Close breakout melewati high 20 sesi; retest dalam 1–5 sesi menutup di atas level', 'Close > EMA20 > EMA50; RVOL minimal 1×; RSI 48–72', 'Perubahan harian >−2% hingga +6%; gap pembukaan maksimal +2%'], exit_rules: ['Stop di bawah level retest atau 1,2 ATR', 'Target sekurangnya 2R kotor dan minimal 1,5R setelah fee', 'Keluar bila stop, target, atau plan kadaluarsa'], no_trade: ['Retest melewati 5 sesi', 'Gap pembukaan >2% atau di bawah stop', 'Data tidak lengkap atau volume di bawah rata-rata'] },
 };
 
 async function readLocal<T>(file: string): Promise<T> {
@@ -65,17 +65,18 @@ export async function getStockAgent(agentId: string) {
   const history = table(state, 'equity_history').filter((row) => s(row.agent_id) === agentId).sort((a, b) => s(a.equity_date).localeCompare(s(b.equity_date)));
   const positions = namedPositions(state, agentId);
   const pendingOrders = table(state, 'paper_orders').filter((row) => s(row.agent_id) === agentId && s(row.status) === 'PENDING').sort(byDateDesc('created_at'));
-  const cohort = closed.filter((row) => s(row.ruleset_version) === CURRENT_RULESET);
+  const currentRuleset = agentId === 'breakout-retest' ? '2026-09-24.2' : CURRENT_RULESET;
+  const cohort = closed.filter((row) => s(row.ruleset_version) === currentRuleset);
   const ledger = table(state, 'agent_ledgers').find((row) => s(row.agent_id) === agentId);
   const openBuyFees = positions.reduce((sum, row) => sum + n((row as unknown as Row).buy_fees), 0);
   const expectedEquity = n(agent.starting_equity) + n(ledger?.realized_pnl) + positions.reduce((sum, row) => sum + row.unrealized_pnl, 0) - openBuyFees;
   const reconciliationGap = n(agent.equity) - expectedEquity;
   return { ...agent, pnl_pct: n(agent.starting_equity) ? (n(agent.equity) - n(agent.starting_equity)) / n(agent.starting_equity) * 100 : 0, positions, pending_orders: pendingOrders, decisions, equity_history: history, trade_journal: journal, strategy: STRATEGIES[agentId],
-    diagnostics: { ruleset: CURRENT_RULESET, closed_current: cohort.length, wins_current: cohort.filter((row) => n(row.net_pnl) > 0).length,
+    diagnostics: { ruleset: currentRuleset, closed_current: cohort.length, wins_current: cohort.filter((row) => n(row.net_pnl) > 0).length,
       net_current: cohort.reduce((sum, row) => sum + n(row.net_pnl), 0), gross_current: cohort.reduce((sum, row) => sum + n(row.gross_pnl), 0),
       fees_current: cohort.reduce((sum, row) => sum + n(row.fees), 0), gross_v2: closed.reduce((sum, row) => sum + n(row.gross_pnl), 0),
       fees_v2: closed.reduce((sum, row) => sum + n(row.fees), 0), legacy_closed: journal.filter((row) => s(row.strategy_version) !== '2.0').length,
-      prior_v2_closed: closed.length - cohort.length, open_current: positions.filter((row) => s((row as unknown as Row).ruleset_version) === CURRENT_RULESET).length,
+      prior_v2_closed: closed.length - cohort.length, open_current: positions.filter((row) => s((row as unknown as Row).ruleset_version) === currentRuleset).length,
       reconciliation_gap: reconciliationGap },
     performance: { closed_trades: closed.length, wins: wins.length, win_rate: closed.length ? wins.length / closed.length * 100 : null, net_pnl: closed.reduce((sum, row) => sum + n(row.net_pnl), 0), profit_factor: losses.length ? wins.reduce((sum, row) => sum + n(row.net_pnl), 0) / Math.abs(losses.reduce((sum, row) => sum + n(row.net_pnl), 0)) : null, avg_r: closed.length ? closed.reduce((sum, row) => sum + n(row.r_multiple), 0) / closed.length : null, max_drawdown_pct: Math.min(0, ...history.map((row) => n(row.drawdown_pct))) } };
 }
