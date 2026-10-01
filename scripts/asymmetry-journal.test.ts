@@ -6,10 +6,10 @@ import { validNetPlan } from './trading-math.ts';
 const NOW = new Date('2026-10-01T04:00:00Z');
 const OPTIONS = { now: NOW, strategyVersion: 'recovery-v4-usdt' };
 
-// Levels mirror the journal report of 2026-10-01.
+// Levels mirror the hand-written journal report of 2026-10-01.
 function feed(overrides: Partial<JournalFeed> = {}): JournalFeed {
   return {
-    version: 1, source: 'jurnal-asimetri-kripto', reportDate: '2026-10-01', generatedAt: '2026-10-01T01:27:00Z',
+    version: 1, source: 'asymmetry-screen', reportDate: '2026-10-01', generatedAt: '2026-10-01T01:27:00Z',
     btcFilter: { greenAbove: 76000, redBelow: 75000 },
     assets: [
       { ticker: 'AERO', score: 7, verdict: 'Kandidat utama', setups: [
@@ -65,7 +65,7 @@ test('blocks new entries unless the journal BTC filter is green', () => {
 });
 
 test('blocks a stale feed and reports a missing feed as unavailable', () => {
-  const stale = journalCandidates(feed({ generatedAt: '2026-09-26T01:00:00Z' }), { ...OPTIONS, pricesUsdt: PRICES });
+  const stale = journalCandidates(feed({ generatedAt: '2026-09-28T01:00:00Z' }), { ...OPTIONS, pricesUsdt: PRICES });
   assert.equal(stale.status, 'blocked');
   assert.match(stale.reason, /kedaluwarsa/);
   assert.equal(journalCandidates(null, { ...OPTIONS, pricesUsdt: PRICES }).status, 'unavailable');

@@ -1,12 +1,13 @@
-/** Asymmetry Journal agent: turns the daily "Jurnal Asimetri Kripto" research
- * feed into spot paper candidates. The journal owns the thesis, levels, and
+/** Asymmetry Journal agent: turns the daily asymmetry feed (built in GitHub
+ * Actions by asymmetry-screen.ts, following the "Jurnal Asimetri Kripto"
+ * method) into spot paper candidates. The feed owns the finalists, levels, and
  * BTC filter; this module only checks that a plan is still executable. */
 import { validNetPlan } from './trading-math.js';
 
 export const JOURNAL_AGENT = 'asymmetry-journal-trader';
-export const JOURNAL_FEED_PATH = 'feeds/asymmetry-journal.json';
-/** The journal skips weekends, so Friday's report must survive until Monday. */
-export const JOURNAL_MAX_AGE_HOURS = 96;
+export const JOURNAL_FEED_PATH = '.desk/asymmetry-feed.json';
+/** The feed is rebuilt daily; one failed rebuild is tolerated before blocking. */
+export const JOURNAL_MAX_AGE_HOURS = 48;
 export const JOURNAL_MIN_SCORE = 5.5;
 export const JOURNAL_MIN_NET_RR = 1.5;
 export const JOURNAL_ORDER_TTL_HOURS = 26;
@@ -34,7 +35,7 @@ export interface JournalAsset {
 
 export interface JournalFeed {
   version: 1;
-  source: 'jurnal-asimetri-kripto';
+  source: 'asymmetry-screen';
   reportDate: string;
   generatedAt: string;
   headline?: string;
@@ -106,25 +107,25 @@ function priceBlocker(plan: JournalPlan, price: number): string | null {
 }
 
 /**
- * Only the journal's primary setup is traded, only for scored finalists that
- * Binance quotes, and only while the journal's own BTC filter is green.
+ * Only the feed's primary setup is traded, only for scored finalists that
+ * Binance quotes, and only while the feed's BTC filter is green.
  */
 export function journalCandidates(
   feed: JournalFeed | null,
   options: { now: Date; pricesUsdt: Record<string, number>; strategyVersion: string },
 ): JournalScan {
   const empty = { plans: [], candidates: [], decisions: [] };
-  if (!feed || feed.source !== 'jurnal-asimetri-kripto' || !Array.isArray(feed.assets)) {
-    return { status: 'unavailable', reportDate: null, btcFilter: 'unknown', reason: 'Feed jurnal tidak tersedia', ...empty };
+  if (!feed || feed.source !== 'asymmetry-screen' || !Array.isArray(feed.assets)) {
+    return { status: 'unavailable', reportDate: null, btcFilter: 'unknown', reason: 'Feed asimetri tidak tersedia', ...empty };
   }
   const ageHours = (options.now.getTime() - Date.parse(feed.generatedAt)) / 3_600_000;
   if (!Number.isFinite(ageHours) || ageHours > JOURNAL_MAX_AGE_HOURS) {
-    return { status: 'blocked', reportDate: feed.reportDate, btcFilter: 'unknown', reason: `Feed jurnal kedaluwarsa (${Number.isFinite(ageHours) ? ageHours.toFixed(0) : '?'} jam > ${JOURNAL_MAX_AGE_HOURS} jam)`, ...empty };
+    return { status: 'blocked', reportDate: feed.reportDate, btcFilter: 'unknown', reason: `Feed asimetri kedaluwarsa (${Number.isFinite(ageHours) ? ageHours.toFixed(0) : '?'} jam > ${JOURNAL_MAX_AGE_HOURS} jam)`, ...empty };
   }
   const btcFilter = btcFilterState(feed, options.pricesUsdt.btc_usdt);
   if (btcFilter === 'unknown') return { status: 'unavailable', reportDate: feed.reportDate, btcFilter, reason: 'Harga BTC tidak tersedia', ...empty };
   if (btcFilter !== 'green') {
-    return { status: 'blocked', reportDate: feed.reportDate, btcFilter, reason: `Filter BTC jurnal ${btcFilter}: entry baru hanya saat BTC ≥ ${feed.btcFilter.greenAbove}`, ...empty };
+    return { status: 'blocked', reportDate: feed.reportDate, btcFilter, reason: `Filter BTC ${btcFilter}: entry baru hanya saat BTC ≥ ${feed.btcFilter.greenAbove} (EMA50 harian)`, ...empty };
   }
 
   const expiresAt = new Date(options.now.getTime() + JOURNAL_ORDER_TTL_HOURS * 3_600_000).toISOString();
@@ -144,13 +145,13 @@ export function journalCandidates(
     if (blocker) { decisions.push({ ticker: asset.ticker, setup: setup.name, action: 'skip', reason: blocker }); continue; }
     candidates.push({
       ...plan, id: `${JOURNAL_AGENT}-${asset.ticker.toLowerCase()}-${options.now.getTime()}`, agent: JOURNAL_AGENT, side: 'long', quoteCurrency: 'USDT', timeframe: '1d', expiresAt,
-      confirmations: [`Finalis jurnal ${feed.reportDate} · skor ${asset.score}/10 · ${asset.verdict}`, `Setup utama: ${setup.name}`, `Invalidasi: ${asset.invalidation ?? '—'}`],
-      reason: `Jurnal Asimetri: ${asset.thesis ?? asset.verdict}`,
+      confirmations: [`Finalis ${feed.reportDate} · skor ${asset.score}/10 · ${asset.verdict}`, `Setup utama: ${setup.name}`, `Invalidasi: ${asset.invalidation ?? '—'}`],
+      reason: `Asimetri: ${asset.thesis ?? asset.verdict}`,
       score: asset.score, volumeRatio: 0, allocationPct: JOURNAL_ALLOCATION_PCT, rewardMultiple: JOURNAL_MIN_NET_RR, validationStatus: 'research', strategyVersion: options.strategyVersion,
     });
     decisions.push({ ticker: asset.ticker, setup: setup.name, action: 'candidate', reason: `${plan.type} ${plan.entryLow}–${plan.entryHigh}, stop ${plan.stopPrice}, target ${plan.targetPrice}` });
   }
-  return { status: 'active', reportDate: feed.reportDate, btcFilter, reason: `Filter BTC jurnal hijau · ${candidates.length} setup dapat dieksekusi`, plans, candidates, decisions };
+  return { status: 'active', reportDate: feed.reportDate, btcFilter, reason: `Filter BTC hijau · ${candidates.length} setup dapat dieksekusi`, plans, candidates, decisions };
 }
 
 type OrderLevels = { pair: string; entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number };

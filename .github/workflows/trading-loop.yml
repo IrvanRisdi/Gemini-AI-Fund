@@ -30,15 +30,6 @@ jobs:
             git reset
           fi
 
-      - name: Restore Asymmetry Journal Feed
-        # Published daily by the local "Jurnal Asimetri Kripto" task. Missing
-        # feed is not an error: the journal agent simply reports it unavailable.
-        run: |
-          if git fetch origin journal-feed; then
-            git checkout origin/journal-feed -- feeds/asymmetry-journal.json || true
-            git reset
-          fi
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -47,6 +38,13 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
+
+      - name: 0. Daily Asymmetry Screen
+        # Rebuilds .desk/asymmetry-feed.json once per UTC day (later cycles
+        # skip). A failed rebuild keeps the previous feed; the agent blocks new
+        # entries once it is older than 48 hours.
+        continue-on-error: true
+        run: npx tsx scripts/asymmetry-screen.ts
 
       - name: 1. Scan Market Signals
         run: npx tsx scripts/scan-signals.ts
