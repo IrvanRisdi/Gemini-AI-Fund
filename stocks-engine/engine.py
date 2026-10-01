@@ -1047,9 +1047,11 @@ def process_pending_orders(db, timeframe: str) -> int:
                     db.execute("UPDATE paper_orders SET status='REJECTED_GAP_STOP' WHERE id=?", (order["id"],)); break
                 # Delayed-data paper fill: first eligible 5m candle open plus
                 # conservative slippage, never the already-known signal close.
-                price = round_up_to_tick(opening_price * 1.001)
-                if price > float(candle["high"]):
+                # Slippage is capped at the candle high so a bar that opens at
+                # its high still fills at a price that actually printed.
+                if opening_price > float(candle["high"]):
                     db.execute("UPDATE paper_orders SET status='REJECTED_NO_PRINT_AT_FILL' WHERE id=?", (order["id"],)); break
+                price = min(round_up_to_tick(opening_price * 1.001), float(candle["high"]))
                 target = max(target, round_up_to_tick(price + 2 * (price - stop)),
                              minimum_target_for_net_rr(price, stop))
                 proposal = db.execute("SELECT equity_risk_pct FROM agent_proposals WHERE id=?", (order["proposal_id"],)).fetchone()

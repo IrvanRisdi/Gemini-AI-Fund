@@ -532,11 +532,24 @@ class PaperExecutionV2Tests(unittest.TestCase):
             self.assertEqual(engine.process_pending_orders(self.db, '5m'), 0)
         self.assertEqual(self.db.execute("SELECT status FROM paper_orders WHERE id='on'").fetchone()[0], "REJECTED_GAP_CHASE")
 
-    def test_breakout_next_open_requires_observed_trade_at_fill_price(self):
+    def test_breakout_next_open_caps_slippage_at_candle_high(self):
+        # GGRP/MGRO 2026-09-30..10-01: the opening bar printed its open as the
+        # high, so open+slippage rounded one tick above anything that traded.
         self.breakout_next_open_order()
         self.db.execute("""INSERT INTO market_candles
           (symbol,timeframe,candle_at,open,high,low,close,volume,source,data_status,collected_at)
-          VALUES('NEXT','5m','2026-08-26T09:00:00+07:00',101,101,101,101,1000000,'yahoo','DELAYED','2026-08-26T09:10:00+07:00')""")
+          VALUES('NEXT','5m','2026-08-26T09:00:00+07:00',101,101,99,100,1000000,'yahoo','DELAYED','2026-08-26T09:10:00+07:00')""")
+        with patch.object(engine, "expire_pending_orders", return_value=0):
+            self.assertEqual(engine.process_pending_orders(self.db, '5m'), 1)
+        order = self.db.execute("SELECT status FROM paper_orders WHERE id='on'").fetchone()
+        position = self.db.execute("SELECT entry_price FROM positions WHERE symbol='NEXT'").fetchone()
+        self.assertEqual((order["status"], position["entry_price"]), ("FILLED", 101))
+
+    def test_breakout_next_open_rejects_open_above_reported_high(self):
+        self.breakout_next_open_order()
+        self.db.execute("""INSERT INTO market_candles
+          (symbol,timeframe,candle_at,open,high,low,close,volume,source,data_status,collected_at)
+          VALUES('NEXT','5m','2026-08-26T09:00:00+07:00',101,100,99,100,1000000,'yahoo','DELAYED','2026-08-26T09:10:00+07:00')""")
         with patch.object(engine, "expire_pending_orders", return_value=0):
             self.assertEqual(engine.process_pending_orders(self.db, '5m'), 0)
         self.assertEqual(self.db.execute("SELECT status FROM paper_orders WHERE id='on'").fetchone()[0], "REJECTED_NO_PRINT_AT_FILL")
