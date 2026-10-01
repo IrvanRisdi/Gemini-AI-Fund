@@ -7,7 +7,7 @@ import { getGeminiModelCandidates } from '../dashboard/lib/gemini-models.js';
 const API_KEY = process.env.GEMINI_API_KEY;
 const DESK_DIR = path.resolve(process.cwd(), '.desk');
 const BRIEFINGS_DIR = path.join(DESK_DIR, 'briefings');
-const PRIMARY_AGENTS = ['breakout-specialist', 'mean-reversion-trader', 'smc-trader', 'wyckoff-trader', 'aggressive-breakout-trader'];
+const PRIMARY_AGENTS = ['breakout-specialist', 'mean-reversion-trader', 'smc-trader', 'wyckoff-trader', 'aggressive-breakout-trader', 'asymmetry-journal-trader'];
 
 type AgentBook = { balance?: { IDR?: number }; positions?: Record<string, { size?: number; entryPrice?: number; quoteCurrency?: 'IDR' | 'USDT'; fxRateAtEntry?: number; costBasisIdr?: number; notional?: number }>; pendingOrders?: Array<{ pair?: string; status?: string; type?: string; quoteCurrency?: 'IDR' | 'USDT'; entryLow?: number; entryHigh?: number; stopPrice?: number; targetPrice?: number }> };
 type Ledger = { mode?: string; last_cycle?: string; total_starting_capital?: number; agents?: Record<string, AgentBook> };

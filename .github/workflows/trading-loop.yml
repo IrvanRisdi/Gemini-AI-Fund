@@ -30,6 +30,15 @@ jobs:
             git reset
           fi
 
+      - name: Restore Asymmetry Journal Feed
+        # Published daily by the local "Jurnal Asimetri Kripto" task. Missing
+        # feed is not an error: the journal agent simply reports it unavailable.
+        run: |
+          if git fetch origin journal-feed; then
+            git checkout origin/journal-feed -- feeds/asymmetry-journal.json || true
+            git reset
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:

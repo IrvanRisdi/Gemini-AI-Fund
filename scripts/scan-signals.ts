@@ -4,7 +4,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { adx, atr, bollingerBands, ema, rsi, type OHLCV } from '../lib/indicators.js';
-import { fetchCoinOhlcv } from '../dashboard/lib/coin-market.js';
+import { fetchBulkCoinPricesUsdt, fetchCoinOhlcv } from '../dashboard/lib/coin-market.js';
+import { JOURNAL_FEED_PATH, journalCandidates, type JournalCandidate, type JournalFeed } from './asymmetry-journal.js';
 import { discoverTradingUniverse, type UniversePair } from './coin-universe.js';
 import { orderedLimitBand, stopForRiskBand, targetForNetReward, validNetPlan } from './trading-math.js';
 
@@ -208,6 +209,22 @@ function activeLedgerPairs(): string[] {
   }
 }
 
+function readJournalFeed(): JournalFeed | null {
+  try { return JSON.parse(fs.readFileSync(path.join(process.cwd(), JOURNAL_FEED_PATH), 'utf8')) as JournalFeed; }
+  catch { return null; }
+}
+
+// The journal agent ignores the BTC 4H regime above: its research applies its
+// own BTC filter, so it is evaluated independently of the technical agents.
+async function scanAsymmetryJournal(errors: string[]) {
+  try {
+    return journalCandidates(readJournalFeed(), { now: new Date(), pricesUsdt: await fetchBulkCoinPricesUsdt(), strategyVersion: COIN_STRATEGY_VERSION });
+  } catch (error) {
+    errors.push(`asymmetry-journal: ${String(error)}`);
+    return journalCandidates(null, { now: new Date(), pricesUsdt: {}, strategyVersion: COIN_STRATEGY_VERSION });
+  }
+}
+
 async function main() {
   const [universe, marketRegime] = await Promise.all([discoverTradingUniverse(activeLedgerPairs()), readMarketRegime()]);
   const results = await mapLimit(universe, 6, (pair) => scanPair(pair, marketRegime)); const candidates: Candidate[] = []; const diagnostics: PairDiagnostic[] = []; const errors: string[] = [];
@@ -215,7 +232,9 @@ async function main() {
     if (result.status === 'fulfilled') { candidates.push(...result.value.candidates); diagnostics.push(result.value.diagnostic); }
     else errors.push(`${universe[index]?.pair ?? 'unknown'}: ${String(result.reason)}`);
   });
-  const output = { timestamp: new Date().toISOString(), mode: 'spot-only-v4-usdt', quoteCurrency: 'USDT', accountingCurrency: 'IDR', strategyVersion: COIN_STRATEGY_VERSION, marketRegime, pairsScanned: universe.length, universe, diagnostics, candidates, errors };
+  const asymmetryJournal = await scanAsymmetryJournal(errors);
+  const allCandidates: Array<Candidate | JournalCandidate> = [...candidates, ...asymmetryJournal.candidates];
+  const output = { timestamp: new Date().toISOString(), mode: 'spot-only-v4-usdt', quoteCurrency: 'USDT', accountingCurrency: 'IDR', strategyVersion: COIN_STRATEGY_VERSION, marketRegime, pairsScanned: universe.length, universe, diagnostics, candidates: allCandidates, asymmetryJournal, errors };
   fs.writeFileSync(path.join(process.cwd(), '.desk', 'latest-scan.json'), JSON.stringify(output, null, 2) + '\n'); console.log(JSON.stringify(output, null, 2));
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });

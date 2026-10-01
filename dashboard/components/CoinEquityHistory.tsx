@@ -6,6 +6,7 @@ const AGENT_STYLE: Record<string, { label: string; color: string }> = {
   'mean-reversion-trader': { label: 'Mean Reversion', color: '#a78bfa' },
   'smc-trader': { label: 'SMC Trader', color: '#22c55e' },
   'wyckoff-trader': { label: 'Wyckoff Trader', color: '#f59e0b' },
+  'asymmetry-journal-trader': { label: 'Asymmetry Journal', color: '#ec4899' },
 };
 
 function formatIdr(value: number): string {
@@ -37,6 +38,23 @@ function dailyChange(points: CoinEquityHistoryPoint[], index: number, value: (po
   const previous = value(points[index - 1]!);
   const current = value(points[index]!);
   return previous != null && current != null && previous > 0 ? ((current - previous) / previous) * 100 : null;
+}
+
+// Fund totals compare only agents present in both snapshots, so a newly
+// opened book shows up as added capital rather than as a daily gain.
+function fundDailyChange(points: CoinEquityHistoryPoint[], index: number): number | null {
+  if (index <= 0 || dayDistance(points[index - 1]!.date, points[index]!.date) !== 1) return null;
+  const previous = points[index - 1]!.agents;
+  const current = points[index]!.agents;
+  const shared = Object.keys(current).filter((slug) => previous[slug]);
+  const before = shared.reduce((sum, slug) => sum + previous[slug]!.equity, 0);
+  const after = shared.reduce((sum, slug) => sum + current[slug]!.equity, 0);
+  return before > 0 ? ((after - before) / before) * 100 : null;
+}
+
+function fundStartingTotal(point: CoinEquityHistoryPoint, startingByAgent: Record<string, number>, fallback: number): number {
+  const total = Object.keys(point.agents).reduce((sum, slug) => sum + (startingByAgent[slug] ?? 0), 0);
+  return total > 0 ? total : fallback;
 }
 
 function EquityCurve({
@@ -124,7 +142,7 @@ export function CoinEquityHistory({
 }) {
   const latest = points.at(-1);
   const previousIndex = points.length - 1;
-  const totalDaily = latest ? dailyChange(points, previousIndex, (point) => point.totalEquity) : null;
+  const totalDaily = latest ? fundDailyChange(points, previousIndex) : null;
   const totalReturn = latest ? percentage(latest.totalEquity, startingTotal) : null;
   const missingDays = points.some((point, index) => index > 0 && dayDistance(points[index - 1]!.date, point.date) > 1);
   const tablePoints = [...points].reverse().slice(0, 90);
@@ -173,7 +191,7 @@ export function CoinEquityHistory({
             return <tr key={`${point.date}-${point.kind}`} className="border-b border-border/60 last:border-0 hover:bg-surface-hover">
               <td className="sticky left-0 z-10 bg-surface px-3 py-3 font-semibold text-ink">{point.date}</td>
               <td className="px-3 py-3 text-ink-faint">{point.kind === 'baseline' ? 'Modal awal' : 'Snapshot'}</td>
-              <td className="px-3 py-3 text-right"><p className="font-semibold text-ink">{formatIdr(point.totalEquity)}</p><p className="mt-0.5 text-[9px]"><ChangeLabel value={dailyChange(points, sourceIndex, (row) => row.totalEquity)} prefix="H" /> · <ChangeLabel value={percentage(point.totalEquity, startingTotal)} prefix="T" /></p></td>
+              <td className="px-3 py-3 text-right"><p className="font-semibold text-ink">{formatIdr(point.totalEquity)}</p><p className="mt-0.5 text-[9px]"><ChangeLabel value={fundDailyChange(points, sourceIndex)} prefix="H" /> · <ChangeLabel value={percentage(point.totalEquity, fundStartingTotal(point, startingByAgent, startingTotal))} prefix="T" /></p></td>
               {agentSlugs.map((slug) => {
                 const equity = point.agents[slug]?.equity ?? null;
                 return <td key={slug} className="px-3 py-3 text-right">{equity == null ? <span className="text-ink-faint">—</span> : <><p className="font-semibold text-ink">{formatIdr(equity)}</p><p className="mt-0.5 text-[9px]"><ChangeLabel value={dailyChange(points, sourceIndex, (row) => row.agents[slug]?.equity ?? null)} prefix="H" /> · <ChangeLabel value={percentage(equity, startingByAgent[slug] ?? 0)} prefix="T" /></p></>}</td>;

@@ -5,8 +5,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { OHLCV } from '../lib/indicators.js';
 import { fetchCoinMarketSnapshot, fetchCoinOhlcv, usdtPriceKey } from '../dashboard/lib/coin-market.js';
+import { JOURNAL_AGENT, staleJournalOrder, type JournalScan } from './asymmetry-journal.js';
 import { displayPair, type UniversePair } from './coin-universe.js';
-import { meetsMinimumPaperNotional, MIN_PAPER_NOTIONAL_IDR, netRewardRisk, paperRiskPolicy, paperStrategyCanExecute, validNetPlan } from './trading-math.js';
+import { meetsMinimumPaperNotional, MIN_PAPER_NOTIONAL_IDR, netRewardRisk, paperRiskPolicy, paperStrategyCanExecute, STARTING_PAPER_EQUITY_IDR, validNetPlan } from './trading-math.js';
 
 const DESK = path.join(process.cwd(), '.desk');
 const LEDGER = path.join(DESK, 'paper-ledger.json');
@@ -21,14 +22,15 @@ const CASH_RESERVE_PCT = 0.10;
 const FEE_RATE = 0.003;
 const ATTEMPT_COOLDOWN_MS = 6 * 60 * 60 * 1000;
 const ALLOW_RESEARCH_ORDERS = process.env.COIN_ALLOW_RESEARCH_ORDERS === 'true';
-const OWNERS = new Set(['breakout-specialist', 'aggressive-breakout-trader', 'mean-reversion-trader', 'smc-trader', 'wyckoff-trader']);
+const OWNERS = new Set(['breakout-specialist', 'aggressive-breakout-trader', 'mean-reversion-trader', 'smc-trader', 'wyckoff-trader', JOURNAL_AGENT]);
 
 type QuoteCurrency = 'IDR' | 'USDT';
 type Pending = { id: string; campaignId: string; agent?: string; pair: string; side: 'long'; quoteCurrency?: QuoteCurrency; fxRateAtSignal?: number; type: 'limit' | 'stop'; entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number; riskReservedIdr: number; notionalReservedIdr: number; expiresAt: string; createdAt: string; status: 'pending' | 'filled' | 'cancelled' | 'expired' | 'rejected'; confirmations: string[]; reason: string; score?: number; volumeRatio?: number; allocationPct?: number; rewardMultiple?: number; strategyVersion?: string; };
 type Position = { side: 'long'; quoteCurrency?: QuoteCurrency; fxRateAtEntry?: number; costBasisIdr?: number; size: number; entryPrice: number; initialEntryPrice?: number; stopPrice: number; targetPrice: number; opened: string; campaignId: string; leg: number; initialRiskPerUnit: number; sizingNote: string; strategyVersion?: string; };
 type Trade = { timestamp: string; instrument: string; side: 'long'; type: 'open' | 'close' | 'add'; size: number; price: number; priceCurrency?: QuoteCurrency; priceIdr?: number; fxRate?: number; realizedPnlIdr?: number; reason: string; campaignId: string; confirmations?: string[]; feeIdr?: number; maintenance?: boolean; strategyVersion?: string };
 type Book = { balance: { IDR: number }; positions: Record<string, Position>; pendingOrders: Pending[]; trades: Trade[] };
-type Ledger = { created?: string; last_cycle: string; starting_balance_per_agent?: number; agents: Record<string, Book> };
+type Ledger = { created?: string; last_cycle: string; starting_balance_per_agent?: number; total_starting_capital?: number; agents: Record<string, Book> };
+type DeskState = { agents?: Record<string, { status: string; hired?: string; role?: string; last_action?: string; assets_covered?: string[] }> };
 type Candidate = Omit<Pending, 'campaignId' | 'fxRateAtSignal' | 'riskReservedIdr' | 'notionalReservedIdr' | 'createdAt' | 'status'> & { agent: string; score: number; quoteCurrency: 'USDT'; validationStatus: 'validated' | 'research' };
 type AllocationContext = { campaignId?: string; agent?: string; allocationPct?: number };
 type EquityHistoryPoint = { date: string; capturedAt: string; kind: 'baseline' | 'snapshot'; totalEquity: number; agents: Record<string, { equity: number }> };
@@ -101,6 +103,17 @@ function updateDailyEquityHistory(ledger: Ledger, pricesUsdt: Record<string, num
   history.points.sort((left, right) => left.date.localeCompare(right.date));
   history.points = history.points.slice(-400);
   write(EQUITY_HISTORY, history);
+}
+/** Opens a fresh book for an agent added after the desk started. Existing
+ * books, trades, and equity history are left untouched. */
+function ensureAgentBook(ledger: Ledger, state: DeskState, agent: string, timestamp: string) {
+  if (!ledger.agents[agent]) {
+    const startingBalance = ledger.starting_balance_per_agent ?? STARTING_PAPER_EQUITY_IDR;
+    ledger.agents[agent] = { balance: { IDR: startingBalance }, positions: {}, pendingOrders: [], trades: [] };
+    if (ledger.total_starting_capital != null) ledger.total_starting_capital += startingBalance;
+  }
+  state.agents ??= {};
+  state.agents[agent] ??= { status: 'active', hired: jakartaDate(timestamp), role: 'primary', last_action: 'Book baru dibuka' };
 }
 function activeCampaigns(book: Book) { return Object.keys(book.positions).length + book.pendingOrders.filter((order) => order.status === 'pending').length; }
 function reservedCash(book: Book, excludeId?: string) { return book.pendingOrders.filter((order) => order.status === 'pending' && order.id !== excludeId).reduce((total, order) => total + (order.notionalReservedIdr ?? 0), 0); }
@@ -271,7 +284,8 @@ function close(book: Book, pair: string, position: Position, price: number, time
 }
 
 async function main() {
-  const ledger = read<Ledger>(LEDGER); const scan = read<{ candidates?: Candidate[]; universe?: UniversePair[] }>(SCAN); const state = read<{ agents?: Record<string, { status: string; last_action?: string; assets_covered?: string[] }> }>(STATE); const { pricesUsdt, usdtIdr } = await fetchCoinMarketSnapshot(); const timestamp = now(); const touches = await pendingTouches(ledger);
+  const ledger = read<Ledger>(LEDGER); const scan = read<{ candidates?: Candidate[]; universe?: UniversePair[]; asymmetryJournal?: JournalScan }>(SCAN); const state = read<DeskState>(STATE); const { pricesUsdt, usdtIdr } = await fetchCoinMarketSnapshot(); const timestamp = now(); const touches = await pendingTouches(ledger);
+  ensureAgentBook(ledger, state, JOURNAL_AGENT, timestamp);
   for (const [agent, book] of Object.entries(ledger.agents)) {
     book.positions ??= {}; book.pendingOrders ??= []; book.trades ??= [];
     cleanDustPositions(book, pricesUsdt, usdtIdr, timestamp);
@@ -279,6 +293,12 @@ async function main() {
       // Cancel unfilled orders produced by the former loose gates. Existing
       // filled positions continue under their original stop/target plan.
       if (order.strategyVersion !== COIN_STRATEGY_VERSION) {
+        order.status = 'cancelled';
+        continue;
+      }
+      // Journal orders follow the latest report: revised levels, a dropped
+      // finalist, or a non-green BTC filter withdraw the unfilled order.
+      if (agent === JOURNAL_AGENT && staleJournalOrder(order, scan.asymmetryJournal)) {
         order.status = 'cancelled';
         continue;
       }
@@ -324,7 +344,8 @@ async function main() {
     const open = Object.keys(book.positions).length; const pending = book.pendingOrders.filter((item) => item.status === 'pending').length;
     if (state.agents?.[agent]) {
       state.agents[agent].last_action = `${open} posisi spot terbuka · ${pending} pending order`;
-      if (OWNERS.has(agent) && scan.universe?.length) state.agents[agent].assets_covered = scan.universe.map((item) => displayPair(item.pair));
+      if (agent === JOURNAL_AGENT) state.agents[agent].assets_covered = [...new Set([...Object.keys(book.positions), ...book.pendingOrders.filter((item) => item.status === 'pending').map((item) => item.pair)])].map(displayPair);
+      else if (OWNERS.has(agent) && scan.universe?.length) state.agents[agent].assets_covered = scan.universe.map((item) => displayPair(item.pair));
     }
   }
   ledger.last_cycle = timestamp;
