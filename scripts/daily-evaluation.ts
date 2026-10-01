@@ -105,7 +105,7 @@ Kandidat scan belum otomatis menjadi transaksi. Executor menolak order non-long/
 - Satu kampanye aktif per agen/pair; breakout dapat pyramid pada +0,5R, +1R, dan +1,5R.
 - Stop dirancang pada rentang 3–5% harga. Risk budget equity adaptif: 3% normal, 2% pada drawdown ≥5%, dan 1% pada drawdown ≥10%; fee simulasi 0,3% per sisi.
 - Jumlah kampanye turun otomatis dari 4 menjadi 3/2 ketika agen masuk recovery mode.
-- Pada fase paper trading, strategi `research` juga boleh membuat order eksperimen; labelnya tetap dipisahkan dari strategi `validated`.
+- Pada fase paper trading, strategi \`research\` juga boleh membuat order eksperimen; labelnya tetap dipisahkan dari strategi \`validated\`.
 - Target minimum dihitung setelah fee: 1,5R bersih untuk strategi umum dan 2,5R untuk kampanye breakout bertahap.
 - Jika data scan error, tidak ada order baru sampai siklus bersih berikutnya.
 
@@ -123,7 +123,7 @@ async function callGemini(prompt: string): Promise<string | undefined> {
   for (const model of getGeminiModelCandidates(process.env.GEMINI_MODELS || '')) {
     try {
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.15, maxOutputTokens: 450 } }) });
-      if (response.ok) { const data = await response.json(); const text = data.candidates?.[0]?.content?.parts?.[0]?.text; if (text) return text; }
+      if (response.ok) { const data = await response.json() as { candidates?: { content?: { parts?: { text?: string }[] } }[] }; const text = data.candidates?.[0]?.content?.parts?.[0]?.text; if (text) return text; }
     } catch { /* Try the economical fallback model. */ }
   }
   return undefined;
