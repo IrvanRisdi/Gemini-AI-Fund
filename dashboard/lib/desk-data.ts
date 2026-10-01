@@ -674,8 +674,7 @@ export async function listBriefingSlugs(): Promise<string[]> {
   try {
     const dir = getDeskDir();
     const briefingsPath = path.join(dir, 'briefings');
-    if (!existsSync(briefingsPath)) return DEFAULT_AGENTS;
-    const files = await readdir(briefingsPath);
+    const files = existsSync(briefingsPath) ? await readdir(briefingsPath) : [];
     const slugs = files.filter((f) => f.endsWith('.md')).map((f) => f.replace(/\.md$/, ''));
     const [ledger, state] = await Promise.all([
       readJson<PaperLedger>('paper-ledger.json'),
@@ -686,8 +685,10 @@ export async function listBriefingSlugs(): Promise<string[]> {
         (slug) => state?.agents[slug]?.status === 'active' && ledger?.agents?.[slug]?.balance,
       ),
     );
-    const activeBriefings = slugs.filter((slug) => activeStrategySlugs.has(slug));
-    return activeBriefings.length > 0 ? activeBriefings : DEFAULT_AGENTS;
+    // Ledger and state come from paper-data, but briefings are bundled with the
+    // deployment, so an agent added by the bot has a book before it has a file.
+    const activeSlugs = [...new Set([...slugs.filter((slug) => activeStrategySlugs.has(slug)), ...activeStrategySlugs])];
+    return activeSlugs.length > 0 ? activeSlugs : DEFAULT_AGENTS;
   } catch {
     return DEFAULT_AGENTS;
   }

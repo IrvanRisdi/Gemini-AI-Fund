@@ -117,7 +117,7 @@ function EquityCurve({
       ) : (
         <circle key={index} cx={x(segment[0]!.date)} cy={y(segment[0]!.amount)} r={compact ? 3 : 4} fill={color} />
       ))}
-      {rows.map((row) => <circle key={row.date} cx={x(row.date)} cy={y(row.amount)} r="2.5" fill={color}><title>{row.date}: {formatIdr(row.amount)}</title></circle>)}
+      {rows.map((row) => <circle key={row.date} cx={x(row.date)} cy={y(row.amount)} r="2.5" fill={color}><title>{`${row.date}: ${formatIdr(row.amount)}`}</title></circle>)}
       <text x={left} y={height - 7} fill="#8b93a7" fontSize="10">{rows[0]!.date}</text>
       <text x={width - right} y={height - 7} textAnchor="end" fill="#8b93a7" fontSize="10">{rows.at(-1)!.date}</text>
     </svg>
