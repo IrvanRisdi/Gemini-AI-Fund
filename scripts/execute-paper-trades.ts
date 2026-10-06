@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { OHLCV } from '../lib/indicators.js';
 import { fetchCoinMarketSnapshot, fetchCoinOhlcv, usdtPriceKey } from '../dashboard/lib/coin-market.js';
+import { AGGRESSIVE_STRATEGY_VERSION } from './aggressive-momentum.js';
 import { JOURNAL_AGENT, staleJournalOrder, type JournalScan } from './asymmetry-journal.js';
 import { displayPair, type UniversePair } from './coin-universe.js';
 import { meetsMinimumPaperNotional, MIN_PAPER_NOTIONAL_IDR, netRewardRisk, paperRiskPolicy, paperStrategyCanExecute, STARTING_PAPER_EQUITY_IDR, validNetPlan } from './trading-math.js';
@@ -15,6 +16,7 @@ const SCAN = path.join(DESK, 'latest-scan.json');
 const STATE = path.join(DESK, 'state.json');
 const EQUITY_HISTORY = path.join(DESK, 'equity-history.json');
 const COIN_STRATEGY_VERSION = 'recovery-v4-usdt';
+const ACTIVE_STRATEGY_VERSIONS = new Set([COIN_STRATEGY_VERSION, AGGRESSIVE_STRATEGY_VERSION]);
 const DEFAULT_MAX_NOTIONAL_PER_PAIR = 0.50;
 const BREAKOUT_INITIAL_ALLOCATION = 0.20;
 const BREAKOUT_MAX_NOTIONAL = 0.95;
@@ -25,8 +27,8 @@ const ALLOW_RESEARCH_ORDERS = process.env.COIN_ALLOW_RESEARCH_ORDERS === 'true';
 const OWNERS = new Set(['breakout-specialist', 'aggressive-breakout-trader', 'mean-reversion-trader', 'smc-trader', 'wyckoff-trader', JOURNAL_AGENT]);
 
 type QuoteCurrency = 'IDR' | 'USDT';
-type Pending = { id: string; campaignId: string; agent?: string; pair: string; side: 'long'; quoteCurrency?: QuoteCurrency; fxRateAtSignal?: number; type: 'limit' | 'stop'; entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number; riskReservedIdr: number; notionalReservedIdr: number; expiresAt: string; createdAt: string; status: 'pending' | 'filled' | 'cancelled' | 'expired' | 'rejected'; confirmations: string[]; reason: string; score?: number; volumeRatio?: number; allocationPct?: number; rewardMultiple?: number; strategyVersion?: string; };
-type Position = { side: 'long'; quoteCurrency?: QuoteCurrency; fxRateAtEntry?: number; costBasisIdr?: number; size: number; entryPrice: number; initialEntryPrice?: number; stopPrice: number; targetPrice: number; opened: string; campaignId: string; leg: number; initialRiskPerUnit: number; sizingNote: string; strategyVersion?: string; };
+type Pending = { id: string; campaignId: string; agent?: string; pair: string; side: 'long'; quoteCurrency?: QuoteCurrency; fxRateAtSignal?: number; type: 'limit' | 'stop'; entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number; riskReservedIdr: number; notionalReservedIdr: number; expiresAt: string; createdAt: string; status: 'pending' | 'filled' | 'cancelled' | 'expired' | 'rejected'; confirmations: string[]; reason: string; score?: number; volumeRatio?: number; allocationPct?: number; rewardMultiple?: number; strategyVersion?: string; timeStopHours?: number; breakevenAtR?: number | null; };
+type Position = { side: 'long'; quoteCurrency?: QuoteCurrency; fxRateAtEntry?: number; costBasisIdr?: number; size: number; entryPrice: number; initialEntryPrice?: number; stopPrice: number; targetPrice: number; opened: string; campaignId: string; leg: number; initialRiskPerUnit: number; sizingNote: string; strategyVersion?: string; timeStopAt?: string; breakevenAtR?: number | null; };
 type Trade = { timestamp: string; instrument: string; side: 'long'; type: 'open' | 'close' | 'add'; size: number; price: number; priceCurrency?: QuoteCurrency; priceIdr?: number; fxRate?: number; realizedPnlIdr?: number; reason: string; campaignId: string; confirmations?: string[]; feeIdr?: number; maintenance?: boolean; strategyVersion?: string };
 type Book = { balance: { IDR: number }; positions: Record<string, Position>; pendingOrders: Pending[]; trades: Trade[] };
 type Ledger = { created?: string; last_cycle: string; starting_balance_per_agent?: number; total_starting_capital?: number; agents: Record<string, Book> };
@@ -49,7 +51,7 @@ function currentQuotePrice(pair: string, currency: QuoteCurrency | undefined, pr
 function hasLiveCampaign(book: Book, pair: string) { return Boolean(book.positions[pair]) || book.pendingOrders.some((order) => order.pair === pair && order.status === 'pending'); }
 function hasRecentAttempt(book: Book, pair: string, timestamp: string) {
   const cutoff = Date.parse(timestamp) - ATTEMPT_COOLDOWN_MS;
-  return book.pendingOrders.some((order) => order.pair === pair && order.strategyVersion === COIN_STRATEGY_VERSION && Date.parse(order.createdAt) >= cutoff);
+  return book.pendingOrders.some((order) => order.pair === pair && ACTIVE_STRATEGY_VERSIONS.has(order.strategyVersion ?? '') && Date.parse(order.createdAt) >= cutoff);
 }
 function accountEquity(book: Book, pricesUsdt: Record<string, number>, usdtIdr: number) {
   return book.balance.IDR + Object.entries(book.positions).reduce((total, [pair, position]) => {
@@ -228,7 +230,7 @@ function fill(book: Book, order: Pending, price: number, timestamp: string, pric
   // Spot purchases spend both notional and fee. This prevents later fills
   // from sizing against capital that is already tied up in a position.
   book.balance.IDR -= notional + fee;
-  book.positions[order.pair] = { side: 'long', quoteCurrency: order.quoteCurrency ?? 'USDT', fxRateAtEntry: usdtIdr, costBasisIdr: notional, size, entryPrice: fillPrice, initialEntryPrice: fillPrice, stopPrice: order.stopPrice, targetPrice: order.targetPrice, opened: timestamp, campaignId: order.campaignId, leg: 1, initialRiskPerUnit: priceRiskPerUnit, sizingNote: `Spot-only ${order.quoteCurrency ?? 'USDT'} | Alokasi awal ${(cap * 100).toFixed(0)}% | Risiko harga ${((priceRiskPerUnit / fillPrice) * 100).toFixed(2)}% | Risiko equity maks. ${(policy.riskPerCampaign * 100).toFixed(0)}% (${policy.mode}) | Fee masuk Rp${Math.round(fee).toLocaleString('id-ID')}`, strategyVersion: order.strategyVersion };
+  book.positions[order.pair] = { side: 'long', quoteCurrency: order.quoteCurrency ?? 'USDT', fxRateAtEntry: usdtIdr, costBasisIdr: notional, size, entryPrice: fillPrice, initialEntryPrice: fillPrice, stopPrice: order.stopPrice, targetPrice: order.targetPrice, opened: timestamp, campaignId: order.campaignId, leg: 1, initialRiskPerUnit: priceRiskPerUnit, sizingNote: `Spot-only ${order.quoteCurrency ?? 'USDT'} | Alokasi awal ${(cap * 100).toFixed(0)}% | Risiko harga ${((priceRiskPerUnit / fillPrice) * 100).toFixed(2)}% | Risiko equity maks. ${(policy.riskPerCampaign * 100).toFixed(0)}% (${policy.mode}) | Fee masuk Rp${Math.round(fee).toLocaleString('id-ID')}`, strategyVersion: order.strategyVersion, timeStopAt: order.timeStopHours ? new Date(Date.parse(timestamp) + order.timeStopHours * 3_600_000).toISOString() : undefined, breakevenAtR: order.breakevenAtR };
   order.status = 'filled';
   book.trades.push({ timestamp, instrument: order.pair, side: 'long', type: 'open', size, price: fillPrice, priceCurrency: order.quoteCurrency ?? 'USDT', priceIdr: fillPrice * multiplier, fxRate: order.quoteCurrency === 'USDT' ? usdtIdr : undefined, reason: order.reason, campaignId: order.campaignId, confirmations: order.confirmations, feeIdr: fee, strategyVersion: order.strategyVersion });
 }
@@ -292,7 +294,7 @@ async function main() {
     for (const order of book.pendingOrders.filter((item) => item.status === 'pending')) {
       // Cancel unfilled orders produced by the former loose gates. Existing
       // filled positions continue under their original stop/target plan.
-      if (order.strategyVersion !== COIN_STRATEGY_VERSION) {
+      if (!ACTIVE_STRATEGY_VERSIONS.has(order.strategyVersion ?? '')) {
         order.status = 'cancelled';
         continue;
       }
@@ -334,9 +336,11 @@ async function main() {
       const price = currentQuotePrice(pair, position.quoteCurrency, pricesUsdt, usdtIdr); if (!price) continue;
       if (price <= position.stopPrice) close(book, pair, position, price, timestamp, 'Stop loss struktur', usdtIdr);
       else if (price >= position.targetPrice) close(book, pair, position, price, timestamp, 'Target tercapai', usdtIdr);
+      else if (position.timeStopAt && timestamp >= position.timeStopAt) close(book, pair, position, price, timestamp, 'Time stop: momentum tidak berlanjut', usdtIdr);
       else {
         if (agent === 'breakout-specialist') pyramidBreakout(book, pair, position, price, timestamp, pricesUsdt, usdtIdr);
-        else if (price >= position.entryPrice + position.initialRiskPerUnit * 1.25) position.stopPrice = Math.max(position.stopPrice, position.entryPrice * (1 + FEE_RATE * 2));
+        // breakevenAtR === null opts a strategy out of the breakeven move (aggressive v5 lets 3R winners run).
+        else if (position.breakevenAtR !== null && price >= position.entryPrice + position.initialRiskPerUnit * (position.breakevenAtR ?? 1.25)) position.stopPrice = Math.max(position.stopPrice, position.entryPrice * (1 + FEE_RATE * 2));
       }
     }
     const candidates = (scan.candidates ?? []).filter((item) => item.agent === agent && OWNERS.has(agent));

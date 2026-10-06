@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { adx, atr, bollingerBands, ema, rsi, type OHLCV } from '../lib/indicators.js';
 import { fetchBulkCoinPricesUsdt, fetchCoinOhlcv } from '../dashboard/lib/coin-market.js';
+import { AGGRESSIVE_ORDER_TTL_MINUTES, AGGRESSIVE_REWARD_MULTIPLE, AGGRESSIVE_STRATEGY_VERSION, AGGRESSIVE_TIME_STOP_HOURS, aggressiveAllocationPct, latestIgnition } from './aggressive-momentum.js';
 import { JOURNAL_FEED_PATH, journalCandidates, type JournalCandidate, type JournalFeed } from './asymmetry-journal.js';
 import { discoverTradingUniverse, type UniversePair } from './coin-universe.js';
 import { orderedLimitBand, stopForRiskBand, targetForNetReward, validNetPlan } from './trading-math.js';
@@ -13,11 +14,13 @@ type Owner = 'breakout-specialist' | 'aggressive-breakout-trader' | 'mean-revers
 const COIN_STRATEGY_VERSION = 'recovery-v4-usdt';
 type MarketRegime = { riskOn: boolean; close: number | null; ema21: number | null; adx: number | null; reason: string };
 export interface Candidate {
-  id: string; pair: string; agent: Owner; side: 'long'; quoteCurrency: 'USDT'; type: 'limit' | 'stop'; timeframe: '15m' | '4h';
+  id: string; pair: string; agent: Owner; side: 'long'; quoteCurrency: 'USDT'; type: 'limit' | 'stop'; timeframe: '5m' | '15m' | '4h';
   entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number; expiresAt: string;
   confirmations: string[]; reason: string; score: number; volumeRatio: number; allocationPct: number;
   rewardMultiple: number; validationStatus: 'validated' | 'research';
-  strategyVersion: typeof COIN_STRATEGY_VERSION;
+  strategyVersion: typeof COIN_STRATEGY_VERSION | typeof AGGRESSIVE_STRATEGY_VERSION;
+  /** Optional exit management carried to the position (default: no time stop, breakeven at +1.25R). */
+  timeStopHours?: number; breakevenAtR?: number | null;
 }
 export interface PairDiagnostic {
   pair: string;
@@ -79,19 +82,22 @@ async function scanPair(universePair: UniversePair, market: MarketRegime): Promi
   // Breakout: accept only a shallow retest; never park a wish-price far below market.
   const candleRange = Math.max(one.last.high - one.last.low, Number.EPSILON); const closeStrength = (one.last.close - one.last.low) / candleRange; const body = Math.abs(one.last.close - one.last.open);
   const breakoutExtension = (one.last.close - one.resistance) / one.atr;
-  // Both momentum agents use the validated continuation trigger. Their
-  // difference is campaign management: Jesse may pyramid; aggressive is all-in once.
   const aggressiveScore = Number(one.vol >= 1.5) + Number(closeStrength >= .7) + Number(body / one.atr >= .5 && body / one.atr <= 1.8) + Number(one.ema9 > one.ema21) + Number(breakoutExtension <= .75);
   // Prepare just below resistance, but retain buy-stop confirmation.
   if (market.riskOn && liquid && trendUp && one.vol >= 1.5 && one.last.close > one.resistance && aggressiveScore >= 4) {
     const entry = one.last.high * 1.0005; const structuralStop = Math.max(one.resistance - one.atr * .25, entry - 1.2 * one.atr); const stop = stopForRiskBand(entry, structuralStop, one.atr); const target = targetForNetReward(entry, stop, 2.5);
     if (validNetPlan(entry, stop, target, 2.5)) candidates.push({ id: id('breakout-specialist'), pair, agent: 'breakout-specialist', side: 'long', quoteCurrency: 'USDT', type: 'stop', timeframe: '15m', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(24), confirmations: ['Regime BTC 4H mendukung', 'Trend pair 4H ADX ≥ 22', `Skor breakout ${aggressiveScore}/5`, 'Entry awal 20%; tambah posisi hanya ketika harga bergerak sesuai rencana', 'Target kampanye 2,5R bersih setelah fee'], score: aggressiveScore, volumeRatio: one.vol, allocationPct: .20, rewardMultiple: 2.5, validationStatus: 'validated', strategyVersion: COIN_STRATEGY_VERSION, reason: 'Breakout 15m terkonfirmasi close di atas resistance dalam regime pasar positif.' });
   }
-  // Aggressive is a premium stop-entry, never pyramids, and may deploy the
-  // whole book only when both confirmation score and relative volume agree.
-  if (market.riskOn && liquid && trendUp && one.vol >= 1.5 && one.last.close > one.resistance && aggressiveScore >= 4) {
-    const entry = one.last.high * 1.0003; const structuralStop = Math.max(one.resistance - one.atr * .25, entry - 1.15 * one.atr); const stop = stopForRiskBand(entry, structuralStop, one.atr); const target = targetForNetReward(entry, stop, 1.5); const allocationPct = aggressiveAllocation(aggressiveScore, one.vol);
-    if (validNetPlan(entry, stop, target, 1.5)) candidates.push({ id: id('aggressive-breakout-trader'), pair, agent: 'aggressive-breakout-trader', side: 'long', quoteCurrency: 'USDT', type: 'stop', timeframe: '15m', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(6), confirmations: ['Regime BTC 4H mendukung', 'Trend pair 4H ADX ≥ 22', `Skor momentum ${aggressiveScore}/5`, `Relative volume ${one.vol.toFixed(2)}x`, `Alokasi langsung ${(allocationPct * 100).toFixed(0)}%`], score: aggressiveScore, volumeRatio: one.vol, allocationPct, rewardMultiple: 1.5, validationStatus: 'validated', strategyVersion: COIN_STRATEGY_VERSION, reason: 'Momentum 15m agresif hanya setelah breakout terkonfirmasi dan volume kuat.' });
+  // Aggressive v5 trades its own 5m momentum ignition instead of sharing the
+  // 15m breakout trigger: a 2-hour high broken on >=4x volume while the 15m
+  // trend agrees. Wide 3-5% stops keep fees near 0.2R; exits are 3R or 48h.
+  if (market.riskOn && liquid && one.ema9 > one.ema21 && one.last.close >= one.ema21) {
+    const fiveMinute = (await fetchCoinOhlcv(pair, '5m', 120)).slice(0, -1);
+    const plan = latestIgnition(fiveMinute, { ema9: one.ema9, ema21: one.ema21, close: one.last.close });
+    if (plan && validNetPlan(plan.entry, plan.stop, plan.target, AGGRESSIVE_REWARD_MULTIPLE)) {
+      const allocationPct = aggressiveAllocationPct(plan.relativeVolume);
+      candidates.push({ id: id('aggressive-breakout-trader'), pair, agent: 'aggressive-breakout-trader', side: 'long', quoteCurrency: 'USDT', type: 'stop', timeframe: '5m', entryLow: plan.entry, entryHigh: plan.entry, stopPrice: plan.stop, targetPrice: plan.target, expiresAt: new Date(Date.now() + AGGRESSIVE_ORDER_TTL_MINUTES * 60_000).toISOString(), confirmations: ['Regime BTC 4H mendukung', 'Trend 15m EMA9 > EMA21', `Close 5m menembus high 2 jam dengan volume ${plan.relativeVolume.toFixed(1)}x`, `Stop ${(((plan.entry - plan.stop) / plan.entry) * 100).toFixed(1)}% · target 3R bersih · time stop 48 jam`, `Alokasi ${(allocationPct * 100).toFixed(0)}%`], score: 5, volumeRatio: plan.relativeVolume, allocationPct, rewardMultiple: AGGRESSIVE_REWARD_MULTIPLE, validationStatus: 'research', strategyVersion: AGGRESSIVE_STRATEGY_VERSION, timeStopHours: AGGRESSIVE_TIME_STOP_HOURS, breakevenAtR: null, reason: 'Momentum ignition 5m: breakout high 2 jam dengan lonjakan volume dalam tren 15m.' });
+    }
   }
   // Mean reversion is deliberately a ranging-market strategy, not a
   // trend-pullback strategy. ADX/EMA compression identifies the regime;

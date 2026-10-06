@@ -2,7 +2,7 @@ import type { OHLCV } from './indicators';
 import { fetchBinanceOhlcv, fetchBinanceSpotPrices } from './binance';
 import { fetchBulkIdrPrices } from './market-data';
 
-export type CoinTimeframe = '1m' | '15m' | '1h' | '4h' | '1d';
+export type CoinTimeframe = '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
 
 function normalizedPair(pair: string): string {
   return pair.replace('/', '').toLowerCase();

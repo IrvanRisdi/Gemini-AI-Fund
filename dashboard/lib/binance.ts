@@ -1,10 +1,11 @@
 import type { OHLCV } from './indicators';
 
-export type BinanceTimeframe = '1m' | '15m' | '1h' | '4h' | '1d';
+export type BinanceTimeframe = '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
 
 const BINANCE_MARKET_DATA_BASE = process.env.BINANCE_MARKET_DATA_BASE ?? 'https://data-api.binance.vision';
 const INTERVALS: Record<BinanceTimeframe, string> = {
   '1m': '1m',
+  '5m': '5m',
   '15m': '15m',
   '1h': '1h',
   '4h': '4h',
