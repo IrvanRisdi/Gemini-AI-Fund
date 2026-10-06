@@ -6,6 +6,7 @@ import path from 'node:path';
 import { adx, atr, bollingerBands, ema, rsi, type OHLCV } from '../lib/indicators.js';
 import { fetchBulkCoinPricesUsdt, fetchCoinOhlcv } from '../dashboard/lib/coin-market.js';
 import { AGGRESSIVE_ORDER_TTL_MINUTES, AGGRESSIVE_REWARD_MULTIPLE, AGGRESSIVE_STRATEGY_VERSION, AGGRESSIVE_TIME_STOP_HOURS, aggressiveAllocationPct, latestIgnition } from './aggressive-momentum.js';
+import { SMC_ORDER_TTL_HOURS, SMC_REWARD_MULTIPLE, SMC_STRATEGY_VERSION, SMC_TIME_STOP_HOURS, smcPullbackPlan } from './smc-strategy.js';
 import { JOURNAL_FEED_PATH, journalCandidates, type JournalCandidate, type JournalFeed } from './asymmetry-journal.js';
 import { discoverTradingUniverse, type UniversePair } from './coin-universe.js';
 import { orderedLimitBand, stopForRiskBand, targetForNetReward, validNetPlan } from './trading-math.js';
@@ -18,7 +19,7 @@ export interface Candidate {
   entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number; expiresAt: string;
   confirmations: string[]; reason: string; score: number; volumeRatio: number; allocationPct: number;
   rewardMultiple: number; validationStatus: 'validated' | 'research';
-  strategyVersion: typeof COIN_STRATEGY_VERSION | typeof AGGRESSIVE_STRATEGY_VERSION;
+  strategyVersion: typeof COIN_STRATEGY_VERSION | typeof AGGRESSIVE_STRATEGY_VERSION | typeof SMC_STRATEGY_VERSION;
   /** Optional exit management carried to the position (default: no time stop, breakeven at +1.25R). */
   timeStopHours?: number; breakevenAtR?: number | null;
 }
@@ -53,20 +54,6 @@ function metric(candles: OHLCV[]) {
   return { last, closes, chop: choppiness(closed), adx: adx(closed, 14).at(-1)!, ema9: ema(closes, 9).at(-1)!, ema21: ema(closes, 21).at(-1)!, rsi: rsi(closes, 14).at(-1)!, previousRsi: rsi(closes.slice(0, -1), 14).at(-1)!, atr: atr(closed, 14).at(-1)!, upper: bands.upper.at(-1)!, lower: bands.lower.at(-1)!, mid: bands.middle.at(-1)!, resistance: Math.max(...prior.map((c) => c.high)), support: Math.min(...prior.map((c) => c.low)), vol: av > 0 ? last.volume / av : 0, closed };
 }
 function expiry(hours: number) { return new Date(Date.now() + hours * 3_600_000).toISOString(); }
-function demandZone(candles: OHLCV[], current: number) {
-  const recent = candles.slice(-32, -1); const low = Math.min(...recent.map((c) => c.low)); const high = Math.max(...recent.map((c) => c.high));
-  const zoneHigh = low + (high - low) * 0.3; return current >= low * 0.995 && current <= zoneHigh * 1.025 ? { low, high: zoneHigh } : null;
-}
-function fibConfluence(candles: OHLCV[], price: number) {
-  const recent = candles.slice(-50, -1); const low = Math.min(...recent.map((c) => c.low)); const high = Math.max(...recent.map((c) => c.high));
-  return [0.382, 0.5, 0.618].some((ratio) => Math.abs(price - (high - (high - low) * ratio)) / price < 0.008);
-}
-function bullishCandle(candles: OHLCV[]) { const [prev, last] = candles.slice(-3, -1); return !!prev && !!last && last.close > last.open && last.close >= prev.open && last.open <= prev.close; }
-function aggressiveAllocation(score: number, volumeRatio: number) {
-  if (score >= 5 && volumeRatio >= 2) return 1;
-  if (score >= 5 && volumeRatio >= 1.5) return 0.75;
-  return 0.5;
-}
 
 async function scanPair(universePair: UniversePair, market: MarketRegime): Promise<{ candidates: Candidate[]; diagnostic: PairDiagnostic }> {
   const pair = universePair.pair;
@@ -76,7 +63,6 @@ async function scanPair(universePair: UniversePair, market: MarketRegime): Promi
   const candidates: Candidate[] = [];
   const trendUp = four.ema9 > four.ema21 && four.last.close >= four.ema9 && four.adx >= 22;
   const liquid = one.closed.slice(-20).filter((bar) => bar.volume > 0).length >= 18 && one.atr / one.last.close <= 0.08;
-  const zone = demandZone(fifteenMinute, one.last.close);
   const id = (owner: Owner) => `${owner}-${pair}-${Date.now()}`;
 
   // Breakout: accept only a shallow retest; never park a wish-price far below market.
@@ -120,7 +106,6 @@ async function scanPair(universePair: UniversePair, market: MarketRegime): Promi
     if (validNetPlan(band.high, stop, target, 2)) candidates.push({ id: id('mean-reversion-trader'), pair, agent: 'mean-reversion-trader', side: 'long', quoteCurrency: 'USDT', type: 'limit', timeframe: '15m', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Regime BTC tidak bearish', 'Regime pair ranging lengkap', 'Reversal di Bollinger bawah', 'RSI reclaim + candle bullish + volume terkendali', `Skor range-reversion ${meanScore}/6`], score: meanScore, volumeRatio: one.vol, allocationPct: .25, rewardMultiple: 2, validationStatus: 'research', strategyVersion: COIN_STRATEGY_VERSION, reason: 'Range mean reversion selektif: seluruh enam konfirmasi wajib lolos, target 2R bersih.' });
   }
   // SMC and Wyckoff remain separate research strategies.
-  const fib = fibConfluence(fourHour, one.last.close); const engulfing = bullishCandle(fifteenMinute);
 
   // Phase-D Sign of Strength / Last Point of Support is used instead of trying
   // to catch every Phase-C spring in a spot-only market.
@@ -136,16 +121,11 @@ async function scanPair(universePair: UniversePair, market: MarketRegime): Promi
       candidates.push({ id: id('wyckoff-trader'), pair, agent: 'wyckoff-trader', side: 'long', quoteCurrency: 'USDT', type: 'limit', timeframe: '15m', entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(8), confirmations: ['Regime BTC 4H mendukung', 'Wyckoff phase D / SoS lengkap', `Skor ${sosScore}/5`, 'Retest range high dalam zona 0,3 ATR'], score: sosScore, volumeRatio: one.vol, allocationPct: .25, rewardMultiple: 2, validationStatus: 'research', strategyVersion: COIN_STRATEGY_VERSION, reason: 'Wyckoff SoS selektif: lima konfirmasi wajib, entry hanya pada retest breakout valid.' });
     }
   }
-  const sweepWindow = one.closed.slice(-9, -2); const sweepCandle = one.closed.at(-2)!; const swept = sweepWindow.length >= 5 && sweepCandle.low < Math.min(...sweepWindow.map((bar) => bar.low)); const choch = one.last.close > sweepCandle.high && one.last.close > one.last.open;
-  const smcScore = Number(Boolean(zone)) + Number(fib || engulfing) + Number(body >= one.atr * .4) + Number(closeStrength >= .55);
-  if (market.riskOn && liquid && trendUp && zone && one.vol >= 1.2 && swept && choch && smcScore >= 4) {
-    const entry = one.last.high * 1.0005;
-    const structuralStop = Math.min(sweepCandle.low - one.atr * .15, entry - one.atr * 1.2);
-    const stop = stopForRiskBand(entry, structuralStop, one.atr);
-    const target = targetForNetReward(entry, stop, 2);
-    if (validNetPlan(entry, stop, target, 2)) {
-      candidates.push({ id: id('smc-trader'), pair, agent: 'smc-trader', side: 'long', quoteCurrency: 'USDT', type: 'stop', timeframe: '15m', entryLow: entry, entryHigh: entry, stopPrice: stop, targetPrice: target, expiresAt: expiry(6), confirmations: ['Regime BTC + trend pair 4H', 'Sweep lalu CHoCH terkonfirmasi', 'Demand/fibonacci atau engulfing + volume ≥ 1,2x', `Skor konteks ${smcScore}/4`], score: smcScore, volumeRatio: one.vol, allocationPct: .25, rewardMultiple: 2, validationStatus: 'research', strategyVersion: COIN_STRATEGY_VERSION, reason: 'SMC confirmation entry: buy-stop di atas high setelah sweep dan CHoCH, bukan menangkap harga turun.' });
-    }
+  // SMC v5: sweep of the 7-bar low reclaimed on the next close, traded only
+  // with the 15m and 4H trend; limit entry mid-reclaim, 3R target, no breakeven.
+  const smc = market.riskOn && liquid ? smcPullbackPlan({ closed: one.closed, ema9: one.ema9, ema21: one.ema21, atr: one.atr, fourHourClose: four.last.close, fourHourEma21: four.ema21 }) : null;
+  if (smc) {
+    candidates.push({ id: id('smc-trader'), pair, agent: 'smc-trader', side: 'long', quoteCurrency: 'USDT', type: 'limit', timeframe: '15m', entryLow: smc.entryLow, entryHigh: smc.entryHigh, stopPrice: smc.stop, targetPrice: smc.target, expiresAt: expiry(SMC_ORDER_TTL_HOURS), confirmations: ['Regime BTC 4H mendukung', 'Sweep low 7 candle lalu reclaim di close berikutnya', 'Tren 15m (EMA9 > EMA21, di atas EMA50) dan 4H di atas EMA21', 'Entry limit di tengah candle reclaim · target 3R bersih · tanpa breakeven'], score: 4, volumeRatio: one.vol, allocationPct: .25, rewardMultiple: SMC_REWARD_MULTIPLE, validationStatus: 'research', strategyVersion: SMC_STRATEGY_VERSION, timeStopHours: SMC_TIME_STOP_HOURS, breakevenAtR: null, reason: 'SMC v5: sweep likuiditas kecil yang langsung direbut kembali dalam tren naik; entry pada retracement, bukan mengejar candle reclaim.' });
   }
   const status: PairDiagnostic['status'] = four.ema9 > four.ema21 && four.last.close >= four.ema9
     ? 'uptrend'
