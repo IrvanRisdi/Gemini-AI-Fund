@@ -1,0 +1,162 @@
+{
+  "version": 1,
+  "source": "asymmetry-screen",
+  "reportDate": "2026-10-10",
+  "generatedAt": "2026-10-10T00:00:45.780Z",
+  "headline": "Screen otomatis: AERO, PUMP, SKY, CRV, CAKE, ORCA",
+  "btcFilter": {
+    "greenAbove": 79775,
+    "redBelow": 75414
+  },
+  "assets": [
+    {
+      "ticker": "AERO",
+      "name": "Aerodrome Finance",
+      "score": 8.8,
+      "verdict": "Finalis screen otomatis · tren harian naik",
+      "thesis": "MC/HR 4.3x · holder revenue 188 jt USD/thn (+188% 30h) · harga 30h +45%",
+      "invalidation": "Close harian di bawah 0.5098 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.724574,
+            0.7751724407555727
+          ],
+          "stop": 0.509836,
+          "targets": [
+            0.8906,
+            0.932
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "PUMP",
+      "name": "Pump.fun",
+      "score": 7.2,
+      "verdict": "Finalis screen otomatis · tren harian naik",
+      "thesis": "MC/HR 7.4x · holder revenue 341 jt USD/thn (+7% 30h) · harga 30h +30%",
+      "invalidation": "Close harian di bawah 0.004768 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.005121706535484671,
+            0.005391270037352285
+          ],
+          "stop": 0.004768385,
+          "targets": [
+            0.005485,
+            0.006806,
+            0.007532
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "SKY",
+      "name": "Sky",
+      "score": 7.2,
+      "verdict": "Finalis screen otomatis · tren harian campuran",
+      "thesis": "MC/HR 26.1x · holder revenue 68 jt USD/thn (+76% 30h) · harga 30h +24%",
+      "invalidation": "Close harian di bawah 0.07046 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.07204416666666667,
+            0.075335
+          ],
+          "stop": 0.07045705,
+          "targets": [
+            0.0804,
+            0.0848,
+            0.08524
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "CRV",
+      "name": "Curve DAO",
+      "score": 6.5,
+      "verdict": "Finalis screen otomatis · tren harian campuran",
+      "thesis": "MC/HR 27.6x · holder revenue 21 jt USD/thn (+55% 30h) · harga 30h +2%",
+      "invalidation": "Close harian di bawah 0.3161 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.322028,
+            0.3255
+          ],
+          "stop": 0.3160865,
+          "targets": [
+            0.373,
+            0.4061,
+            0.416
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "CAKE",
+      "name": "PancakeSwap",
+      "score": 6.4,
+      "verdict": "Finalis screen otomatis · tren harian campuran",
+      "thesis": "MC/HR 16.3x · holder revenue 48 jt USD/thn (-21% 30h) · harga 30h -3%",
+      "invalidation": "Close harian di bawah 1.717 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            1.89525,
+            1.995
+          ],
+          "stop": 1.7174755500000003,
+          "targets": [
+            2.435,
+            2.507,
+            2.797
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "ORCA",
+      "name": "Orca",
+      "score": 6.4,
+      "verdict": "Finalis screen otomatis · tren harian naik",
+      "thesis": "MC/HR 22.2x · holder revenue 6 jt USD/thn (+74% 30h) · harga 30h +56%",
+      "invalidation": "Close harian di bawah 1.815 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            2.009378184124409,
+            2.143
+          ],
+          "stop": 1.815355,
+          "targets": [
+            2.422,
+            2.611,
+            3.335
+          ]
+        }
+      ]
+    }
+  ]
+}

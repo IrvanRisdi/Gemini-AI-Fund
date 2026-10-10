@@ -1,29 +1,1168 @@
 {
-  "timestamp": "2026-09-03T16:45:40.008Z",
-  "mode": "spot-only-v2",
-  "pairsScanned": 19,
-  "candidates": [
+  "timestamp": "2026-10-10T22:30:47.245Z",
+  "mode": "spot-only-v4-usdt",
+  "quoteCurrency": "USDT",
+  "accountingCurrency": "IDR",
+  "strategyVersion": "recovery-v4-usdt",
+  "marketRegime": {
+    "riskOn": false,
+    "close": 83085.43,
+    "ema21": 83075.65452617804,
+    "adx": 31.18112485269456,
+    "reason": "BTC 4H belum memenuhi EMA9/21, harga, dan ADX"
+  },
+  "pairsScanned": 42,
+  "universe": [
     {
-      "id": "wyckoff-trader-pepeidr-1788453939953",
+      "pair": "btcidr",
+      "volumeIdr": 8022958555,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "ethidr",
+      "volumeIdr": 2718428545,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "solidr",
+      "volumeIdr": 5388537439,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "xrpidr",
+      "volumeIdr": 2847527021,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "dogeidr",
+      "volumeIdr": 753188493,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
       "pair": "pepeidr",
-      "agent": "wyckoff-trader",
-      "side": "long",
-      "type": "limit",
-      "timeframe": "15m",
-      "entryLow": 0.06768382142857143,
-      "entryHigh": 0.067287,
-      "stopPrice": 0.06684067857142857,
-      "targetPrice": 0.06795987,
-      "expiresAt": "2026-09-04T00:45:39.953Z",
-      "confirmations": [
-        "Wyckoff phase D / SoS",
-        "Skor 3/5",
-        "Retest range high dalam zona 0,3 ATR"
-      ],
-      "score": 3,
-      "validationStatus": "research",
-      "reason": "Wyckoff SoS: buy limit pada zona retest range high."
+      "volumeIdr": 1832967988,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "suiidr",
+      "volumeIdr": 1753160463,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "bnbidr",
+      "volumeIdr": 321784378,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "trxidr",
+      "volumeIdr": 539266623,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "hypeidr",
+      "volumeIdr": 3036508757,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "linkidr",
+      "volumeIdr": 408400178,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "adaidr",
+      "volumeIdr": 1387803503,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "bchidr",
+      "volumeIdr": 0,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "ltcidr",
+      "volumeIdr": 0,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "hbaridr",
+      "volumeIdr": 0,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "avaxidr",
+      "volumeIdr": 0,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "shibidr",
+      "volumeIdr": 0,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "uniidr",
+      "volumeIdr": 360044529,
+      "source": "binance",
+      "selectedBecause": "core"
+    },
+    {
+      "pair": "zecidr",
+      "volumeIdr": 0,
+      "source": "binance",
+      "selectedBecause": "external"
+    },
+    {
+      "pair": "cakeidr",
+      "volumeIdr": 0,
+      "source": "binance",
+      "selectedBecause": "open-or-pending"
+    },
+    {
+      "pair": "skyidr",
+      "volumeIdr": 0,
+      "source": "binance",
+      "selectedBecause": "open-or-pending"
+    },
+    {
+      "pair": "pumpidr",
+      "volumeIdr": 426151471,
+      "source": "binance",
+      "selectedBecause": "open-or-pending"
+    },
+    {
+      "pair": "crvidr",
+      "volumeIdr": 0,
+      "source": "binance",
+      "selectedBecause": "open-or-pending"
+    },
+    {
+      "pair": "magicidr",
+      "volumeIdr": 3641736227,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "strkidr",
+      "volumeIdr": 3097647629,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "nearidr",
+      "volumeIdr": 1608049673,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "ognidr",
+      "volumeIdr": 1528522623,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "ondoidr",
+      "volumeIdr": 1340705055,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "rlcidr",
+      "volumeIdr": 1210128907,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "wldidr",
+      "volumeIdr": 1199474075,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "mubarakidr",
+      "volumeIdr": 903000469,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "asteridr",
+      "volumeIdr": 852709300,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "kaiaidr",
+      "volumeIdr": 828405919,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "penguidr",
+      "volumeIdr": 717327834,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "qntidr",
+      "volumeIdr": 578522480,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "xlmidr",
+      "volumeIdr": 563590797,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "marscoinidr",
+      "volumeIdr": 510432627,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "pythidr",
+      "volumeIdr": 320006659,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "dotidr",
+      "volumeIdr": 315837273,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "phaidr",
+      "volumeIdr": 289472316,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "pixelidr",
+      "volumeIdr": 278816668,
+      "source": "binance",
+      "selectedBecause": "liquidity"
+    },
+    {
+      "pair": "enaidr",
+      "volumeIdr": 260797572,
+      "source": "binance",
+      "selectedBecause": "liquidity"
     }
   ],
+  "diagnostics": [
+    {
+      "pair": "btcidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 8022958555,
+      "status": "sideways",
+      "close": 83085.43,
+      "ema9": 82840.41478789717,
+      "ema21": 83075.65452617804,
+      "adx": 31.18112485269456,
+      "relativeVolume": 3.00788655584555,
+      "candidates": 0
+    },
+    {
+      "pair": "ethidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 2718428545,
+      "status": "sideways",
+      "close": 2513.72,
+      "ema9": 2503.025563915369,
+      "ema21": 2529.1282798157085,
+      "adx": 50.53251375791037,
+      "relativeVolume": 0.8727848388425349,
+      "candidates": 0
+    },
+    {
+      "pair": "solidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 5388537439,
+      "status": "sideways",
+      "close": 110.46,
+      "ema9": 110.28198010429514,
+      "ema21": 111.99740198667527,
+      "adx": 46.90099333724514,
+      "relativeVolume": 0.572468862386045,
+      "candidates": 0
+    },
+    {
+      "pair": "xrpidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 2847527021,
+      "status": "sideways",
+      "close": 1.4057,
+      "ema9": 1.402257101062292,
+      "ema21": 1.4129656073387071,
+      "adx": 50.494944335653095,
+      "relativeVolume": 0.726483355757517,
+      "candidates": 0
+    },
+    {
+      "pair": "dogeidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 753188493,
+      "status": "sideways",
+      "close": 0.08608,
+      "ema9": 0.08586756902869244,
+      "ema21": 0.08692338819282489,
+      "adx": 48.76431392365254,
+      "relativeVolume": 0.690281307659384,
+      "candidates": 0
+    },
+    {
+      "pair": "pepeidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 1832967988,
+      "status": "sideways",
+      "close": 0.00000405,
+      "ema9": 0.00000400535451827757,
+      "ema21": 0.000004026270687702711,
+      "adx": 35.767447594931376,
+      "relativeVolume": 1.2659454486488917,
+      "candidates": 0
+    },
+    {
+      "pair": "suiidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 1753160463,
+      "status": "sideways",
+      "close": 1.1218,
+      "ema9": 1.0998015151873843,
+      "ema21": 1.1039951203307974,
+      "adx": 28.3488679751269,
+      "relativeVolume": 0.6276455718883193,
+      "candidates": 0
+    },
+    {
+      "pair": "bnbidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 321784378,
+      "status": "sideways",
+      "close": 751.11,
+      "ema9": 747.9444425360113,
+      "ema21": 752.548918845844,
+      "adx": 39.38444791105582,
+      "relativeVolume": 1.084339984100836,
+      "candidates": 0
+    },
+    {
+      "pair": "trxidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 539266623,
+      "status": "downtrend",
+      "close": 0.3309,
+      "ema9": 0.3315986558915599,
+      "ema21": 0.3326776102971096,
+      "adx": 15.801486581155022,
+      "relativeVolume": 0.7700378355677446,
+      "candidates": 0
+    },
+    {
+      "pair": "hypeidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 3036508757,
+      "status": "sideways",
+      "close": 85.37,
+      "ema9": 85.05428842005274,
+      "ema21": 86.07462069494446,
+      "adx": 40.044918052834575,
+      "relativeVolume": 1.3781968212214888,
+      "candidates": 0
+    },
+    {
+      "pair": "linkidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 408400178,
+      "status": "sideways",
+      "close": 13.076,
+      "ema9": 12.960630155425452,
+      "ema21": 13.072692930581377,
+      "adx": 45.10490815624073,
+      "relativeVolume": 0.6610024685319795,
+      "candidates": 0
+    },
+    {
+      "pair": "adaidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 1387803503,
+      "status": "uptrend",
+      "close": 0.2527,
+      "ema9": 0.24927822913005845,
+      "ema21": 0.24882429846740572,
+      "adx": 26.301999463845892,
+      "relativeVolume": 1.574852162311432,
+      "candidates": 0
+    },
+    {
+      "pair": "bchidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 0,
+      "status": "sideways",
+      "close": 281.3,
+      "ema9": 279.9703546381781,
+      "ema21": 285.8512481812053,
+      "adx": 69.56197559829288,
+      "relativeVolume": 0.5946679270667146,
+      "candidates": 0
+    },
+    {
+      "pair": "ltcidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 0,
+      "status": "sideways",
+      "close": 64.07,
+      "ema9": 63.87684681899039,
+      "ema21": 64.66978677035367,
+      "adx": 44.68166418941219,
+      "relativeVolume": 0.8691320090689867,
+      "candidates": 0
+    },
+    {
+      "pair": "hbaridr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 0,
+      "status": "sideways",
+      "close": 0.09246,
+      "ema9": 0.09222412524212091,
+      "ema21": 0.09322598733684864,
+      "adx": 37.95006577775315,
+      "relativeVolume": 0.9334579444738076,
+      "candidates": 0
+    },
+    {
+      "pair": "avaxidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 0,
+      "status": "sideways",
+      "close": 10.479,
+      "ema9": 10.465431322963756,
+      "ema21": 10.569850045486119,
+      "adx": 30.614301550356476,
+      "relativeVolume": 1.5082253565373382,
+      "candidates": 0
+    },
+    {
+      "pair": "shibidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 0,
+      "status": "sideways",
+      "close": 0.00000547,
+      "ema9": 0.000005442868599933188,
+      "ema21": 0.000005465822450067306,
+      "adx": 34.343150612263116,
+      "relativeVolume": 0.8797758857868637,
+      "candidates": 0
+    },
+    {
+      "pair": "uniidr",
+      "source": "binance",
+      "selectedBecause": "core",
+      "volumeIdr24h": 360044529,
+      "status": "sideways",
+      "close": 7.542,
+      "ema9": 7.480980635375378,
+      "ema21": 7.65143462650833,
+      "adx": 55.40082686290956,
+      "relativeVolume": 0.9329254035592713,
+      "candidates": 0
+    },
+    {
+      "pair": "zecidr",
+      "source": "binance",
+      "selectedBecause": "external",
+      "volumeIdr24h": 0,
+      "status": "sideways",
+      "close": 1225.35,
+      "ema9": 1224.3030857679014,
+      "ema21": 1240.9933296024194,
+      "adx": 30.64481574876041,
+      "relativeVolume": 0.7282715746001367,
+      "candidates": 0
+    },
+    {
+      "pair": "cakeidr",
+      "source": "binance",
+      "selectedBecause": "open-or-pending",
+      "volumeIdr24h": 0,
+      "status": "sideways",
+      "close": 2.244,
+      "ema9": 2.210553106197089,
+      "ema21": 2.2350860785001023,
+      "adx": 41.63663079776883,
+      "relativeVolume": 0.343568218534867,
+      "candidates": 0
+    },
+    {
+      "pair": "skyidr",
+      "source": "binance",
+      "selectedBecause": "open-or-pending",
+      "volumeIdr24h": 0,
+      "status": "sideways",
+      "close": 0.07741,
+      "ema9": 0.07738078869964904,
+      "ema21": 0.07908639804018018,
+      "adx": 31.138812938045444,
+      "relativeVolume": 0.6520351368825092,
+      "candidates": 0
+    },
+    {
+      "pair": "pumpidr",
+      "source": "binance",
+      "selectedBecause": "open-or-pending",
+      "volumeIdr24h": 426151471,
+      "status": "downtrend",
+      "close": 0.005535,
+      "ema9": 0.005595262164196027,
+      "ema21": 0.0057315782249846145,
+      "adx": 29.2642922078574,
+      "relativeVolume": 1.3687308810544718,
+      "candidates": 0
+    },
+    {
+      "pair": "crvidr",
+      "source": "binance",
+      "selectedBecause": "open-or-pending",
+      "volumeIdr24h": 0,
+      "status": "sideways",
+      "close": 0.3589,
+      "ema9": 0.3574665298232463,
+      "ema21": 0.3586919679394446,
+      "adx": 14.42190602681799,
+      "relativeVolume": 0.312274150978805,
+      "candidates": 0
+    },
+    {
+      "pair": "magicidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 3641736227,
+      "status": "sideways",
+      "close": 0.101,
+      "ema9": 0.10531271719035266,
+      "ema21": 0.09189871427561011,
+      "adx": 55.901887311832034,
+      "relativeVolume": 2.027550917628326,
+      "candidates": 0
+    },
+    {
+      "pair": "strkidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 3097647629,
+      "status": "uptrend",
+      "close": 0.0996,
+      "ema9": 0.07946909562924247,
+      "ema21": 0.06957223403032876,
+      "adx": 59.94911872740862,
+      "relativeVolume": 0.5508896976585945,
+      "candidates": 0
+    },
+    {
+      "pair": "nearidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1608049673,
+      "status": "uptrend",
+      "close": 5.32,
+      "ema9": 5.1241234243872835,
+      "ema21": 5.040091833251449,
+      "adx": 16.316184075606277,
+      "relativeVolume": 0.6681704670445227,
+      "candidates": 0
+    },
+    {
+      "pair": "ognidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1528522623,
+      "status": "sideways",
+      "close": 0.03379,
+      "ema9": 0.03600891508534515,
+      "ema21": 0.0340543297239931,
+      "adx": 59.885920313505714,
+      "relativeVolume": 0.7810891969567441,
+      "candidates": 0
+    },
+    {
+      "pair": "ondoidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1340705055,
+      "status": "uptrend",
+      "close": 0.4984,
+      "ema9": 0.4909126399661588,
+      "ema21": 0.4861454891727386,
+      "adx": 17.887187954176856,
+      "relativeVolume": 0.6983558043435474,
+      "candidates": 0
+    },
+    {
+      "pair": "rlcidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1210128907,
+      "status": "uptrend",
+      "close": 0.9741,
+      "ema9": 0.9613311004367104,
+      "ema21": 0.888641552730329,
+      "adx": 64.90818099858664,
+      "relativeVolume": 0.48696502279724263,
+      "candidates": 0
+    },
+    {
+      "pair": "wldidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 1199474075,
+      "status": "uptrend",
+      "close": 0.5619,
+      "ema9": 0.5349372551426301,
+      "ema21": 0.5266528191070315,
+      "adx": 34.326042234566295,
+      "relativeVolume": 0.6318790735152127,
+      "candidates": 0
+    },
+    {
+      "pair": "mubarakidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 903000469,
+      "status": "uptrend",
+      "close": 0.07567,
+      "ema9": 0.07549251298157979,
+      "ema21": 0.07485946123128619,
+      "adx": 14.906262263585537,
+      "relativeVolume": 1.5265465490922125,
+      "candidates": 0
+    },
+    {
+      "pair": "asteridr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 852709300,
+      "status": "sideways",
+      "close": 0.7107,
+      "ema9": 0.7074843653542562,
+      "ema21": 0.7084906009438992,
+      "adx": 31.707389005267547,
+      "relativeVolume": 0.22978907906980425,
+      "candidates": 0
+    },
+    {
+      "pair": "kaiaidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 828405919,
+      "status": "uptrend",
+      "close": 0.0559,
+      "ema9": 0.05401936147704748,
+      "ema21": 0.048695792524647674,
+      "adx": 57.74147639740899,
+      "relativeVolume": 0.42645616043041185,
+      "candidates": 0
+    },
+    {
+      "pair": "penguidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 717327834,
+      "status": "sideways",
+      "close": 0.008308,
+      "ema9": 0.008275690747082877,
+      "ema21": 0.008407341682124305,
+      "adx": 38.435016808655675,
+      "relativeVolume": 1.0787206843258899,
+      "candidates": 0
+    },
+    {
+      "pair": "qntidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 578522480,
+      "status": "downtrend",
+      "close": 241.31,
+      "ema9": 244.94769840143718,
+      "ema21": 246.0140975640871,
+      "adx": 11.656081103632493,
+      "relativeVolume": 0.9346028208959004,
+      "candidates": 0
+    },
+    {
+      "pair": "xlmidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 563590797,
+      "status": "sideways",
+      "close": 0.1971,
+      "ema9": 0.19630326767524364,
+      "ema21": 0.19838727343831752,
+      "adx": 42.764212474771774,
+      "relativeVolume": 0.6674229645292343,
+      "candidates": 0
+    },
+    {
+      "pair": "marscoinidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 510432627,
+      "status": "sideways",
+      "close": 0.0954,
+      "ema9": 0.09395179748820869,
+      "ema21": 0.09565931904568475,
+      "adx": 26.940593632700377,
+      "relativeVolume": 0.3397049928421598,
+      "candidates": 0
+    },
+    {
+      "pair": "pythidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 320006659,
+      "status": "sideways",
+      "close": 0.07861,
+      "ema9": 0.07947630241092998,
+      "ema21": 0.0789444739817622,
+      "adx": 29.46284390952801,
+      "relativeVolume": 0.4512068172016006,
+      "candidates": 0
+    },
+    {
+      "pair": "dotidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 315837273,
+      "status": "uptrend",
+      "close": 1.256,
+      "ema9": 1.2279657218837456,
+      "ema21": 1.1948377061439397,
+      "adx": 27.227715056794814,
+      "relativeVolume": 0.8508127760953543,
+      "candidates": 0
+    },
+    {
+      "pair": "phaidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 289472316,
+      "status": "downtrend",
+      "close": 0.06,
+      "ema9": 0.060528621609458724,
+      "ema21": 0.06222557101995289,
+      "adx": 31.580335960870517,
+      "relativeVolume": 1.9020419977229819,
+      "candidates": 0
+    },
+    {
+      "pair": "pixelidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 278816668,
+      "status": "sideways",
+      "close": 0.00634,
+      "ema9": 0.006478425115659464,
+      "ema21": 0.006286830186218094,
+      "adx": 34.07126638463278,
+      "relativeVolume": 0.9551984798508696,
+      "candidates": 0
+    },
+    {
+      "pair": "enaidr",
+      "source": "binance",
+      "selectedBecause": "liquidity",
+      "volumeIdr24h": 260797572,
+      "status": "sideways",
+      "close": 0.223,
+      "ema9": 0.21933952877854132,
+      "ema21": 0.22107274974757166,
+      "adx": 33.49361302727472,
+      "relativeVolume": 0.6006805907256865,
+      "candidates": 0
+    }
+  ],
+  "candidates": [
+    {
+      "pair": "pumpidr",
+      "type": "limit",
+      "entryLow": 0.005121706535484671,
+      "entryHigh": 0.005391270037352285,
+      "stopPrice": 0.004768385,
+      "targetPrice": 0.006806,
+      "id": "asymmetry-journal-trader-pump-1791671447095",
+      "agent": "asymmetry-journal-trader",
+      "side": "long",
+      "quoteCurrency": "USDT",
+      "timeframe": "1d",
+      "expiresAt": "2026-10-12T00:30:47.095Z",
+      "confirmations": [
+        "Finalis 2026-10-10 · skor 7.2/10 · Finalis screen otomatis · tren harian naik",
+        "Setup utama: A · Pullback (draf otomatis)",
+        "Invalidasi: Close harian di bawah 0.004768 atau keluar dari shortlist screen"
+      ],
+      "reason": "Asimetri: MC/HR 7.4x · holder revenue 341 jt USD/thn (+7% 30h) · harga 30h +30%",
+      "score": 7.2,
+      "volumeRatio": 0,
+      "allocationPct": 0.25,
+      "rewardMultiple": 1.5,
+      "validationStatus": "research",
+      "strategyVersion": "recovery-v4-usdt"
+    },
+    {
+      "pair": "skyidr",
+      "type": "limit",
+      "entryLow": 0.07204416666666667,
+      "entryHigh": 0.075335,
+      "stopPrice": 0.07045705,
+      "targetPrice": 0.0848,
+      "id": "asymmetry-journal-trader-sky-1791671447095",
+      "agent": "asymmetry-journal-trader",
+      "side": "long",
+      "quoteCurrency": "USDT",
+      "timeframe": "1d",
+      "expiresAt": "2026-10-12T00:30:47.095Z",
+      "confirmations": [
+        "Finalis 2026-10-10 · skor 7.2/10 · Finalis screen otomatis · tren harian campuran",
+        "Setup utama: A · Pullback (draf otomatis)",
+        "Invalidasi: Close harian di bawah 0.07046 atau keluar dari shortlist screen"
+      ],
+      "reason": "Asimetri: MC/HR 26.1x · holder revenue 68 jt USD/thn (+76% 30h) · harga 30h +24%",
+      "score": 7.2,
+      "volumeRatio": 0,
+      "allocationPct": 0.25,
+      "rewardMultiple": 1.5,
+      "validationStatus": "research",
+      "strategyVersion": "recovery-v4-usdt"
+    },
+    {
+      "pair": "crvidr",
+      "type": "limit",
+      "entryLow": 0.322028,
+      "entryHigh": 0.3255,
+      "stopPrice": 0.3160865,
+      "targetPrice": 0.373,
+      "id": "asymmetry-journal-trader-crv-1791671447095",
+      "agent": "asymmetry-journal-trader",
+      "side": "long",
+      "quoteCurrency": "USDT",
+      "timeframe": "1d",
+      "expiresAt": "2026-10-12T00:30:47.095Z",
+      "confirmations": [
+        "Finalis 2026-10-10 · skor 6.5/10 · Finalis screen otomatis · tren harian campuran",
+        "Setup utama: A · Pullback (draf otomatis)",
+        "Invalidasi: Close harian di bawah 0.3161 atau keluar dari shortlist screen"
+      ],
+      "reason": "Asimetri: MC/HR 27.6x · holder revenue 21 jt USD/thn (+55% 30h) · harga 30h +2%",
+      "score": 6.5,
+      "volumeRatio": 0,
+      "allocationPct": 0.25,
+      "rewardMultiple": 1.5,
+      "validationStatus": "research",
+      "strategyVersion": "recovery-v4-usdt"
+    },
+    {
+      "pair": "cakeidr",
+      "type": "limit",
+      "entryLow": 1.89525,
+      "entryHigh": 1.995,
+      "stopPrice": 1.7174755500000003,
+      "targetPrice": 2.507,
+      "id": "asymmetry-journal-trader-cake-1791671447095",
+      "agent": "asymmetry-journal-trader",
+      "side": "long",
+      "quoteCurrency": "USDT",
+      "timeframe": "1d",
+      "expiresAt": "2026-10-12T00:30:47.095Z",
+      "confirmations": [
+        "Finalis 2026-10-10 · skor 6.4/10 · Finalis screen otomatis · tren harian campuran",
+        "Setup utama: A · Pullback (draf otomatis)",
+        "Invalidasi: Close harian di bawah 1.717 atau keluar dari shortlist screen"
+      ],
+      "reason": "Asimetri: MC/HR 16.3x · holder revenue 48 jt USD/thn (-21% 30h) · harga 30h -3%",
+      "score": 6.4,
+      "volumeRatio": 0,
+      "allocationPct": 0.25,
+      "rewardMultiple": 1.5,
+      "validationStatus": "research",
+      "strategyVersion": "recovery-v4-usdt"
+    },
+    {
+      "pair": "orcaidr",
+      "type": "limit",
+      "entryLow": 2.009378184124409,
+      "entryHigh": 2.143,
+      "stopPrice": 1.815355,
+      "targetPrice": 3.335,
+      "id": "asymmetry-journal-trader-orca-1791671447095",
+      "agent": "asymmetry-journal-trader",
+      "side": "long",
+      "quoteCurrency": "USDT",
+      "timeframe": "1d",
+      "expiresAt": "2026-10-12T00:30:47.095Z",
+      "confirmations": [
+        "Finalis 2026-10-10 · skor 6.4/10 · Finalis screen otomatis · tren harian naik",
+        "Setup utama: A · Pullback (draf otomatis)",
+        "Invalidasi: Close harian di bawah 1.815 atau keluar dari shortlist screen"
+      ],
+      "reason": "Asimetri: MC/HR 22.2x · holder revenue 6 jt USD/thn (+74% 30h) · harga 30h +56%",
+      "score": 6.4,
+      "volumeRatio": 0,
+      "allocationPct": 0.25,
+      "rewardMultiple": 1.5,
+      "validationStatus": "research",
+      "strategyVersion": "recovery-v4-usdt"
+    }
+  ],
+  "asymmetryJournal": {
+    "status": "active",
+    "reportDate": "2026-10-10",
+    "btcFilter": "green",
+    "reason": "Filter BTC hijau · 5 setup dapat dieksekusi",
+    "plans": [
+      {
+        "pair": "pumpidr",
+        "type": "limit",
+        "entryLow": 0.005121706535484671,
+        "entryHigh": 0.005391270037352285,
+        "stopPrice": 0.004768385,
+        "targetPrice": 0.006806
+      },
+      {
+        "pair": "skyidr",
+        "type": "limit",
+        "entryLow": 0.07204416666666667,
+        "entryHigh": 0.075335,
+        "stopPrice": 0.07045705,
+        "targetPrice": 0.0848
+      },
+      {
+        "pair": "crvidr",
+        "type": "limit",
+        "entryLow": 0.322028,
+        "entryHigh": 0.3255,
+        "stopPrice": 0.3160865,
+        "targetPrice": 0.373
+      },
+      {
+        "pair": "cakeidr",
+        "type": "limit",
+        "entryLow": 1.89525,
+        "entryHigh": 1.995,
+        "stopPrice": 1.7174755500000003,
+        "targetPrice": 2.507
+      },
+      {
+        "pair": "orcaidr",
+        "type": "limit",
+        "entryLow": 2.009378184124409,
+        "entryHigh": 2.143,
+        "stopPrice": 1.815355,
+        "targetPrice": 3.335
+      }
+    ],
+    "candidates": [
+      {
+        "pair": "pumpidr",
+        "type": "limit",
+        "entryLow": 0.005121706535484671,
+        "entryHigh": 0.005391270037352285,
+        "stopPrice": 0.004768385,
+        "targetPrice": 0.006806,
+        "id": "asymmetry-journal-trader-pump-1791671447095",
+        "agent": "asymmetry-journal-trader",
+        "side": "long",
+        "quoteCurrency": "USDT",
+        "timeframe": "1d",
+        "expiresAt": "2026-10-12T00:30:47.095Z",
+        "confirmations": [
+          "Finalis 2026-10-10 · skor 7.2/10 · Finalis screen otomatis · tren harian naik",
+          "Setup utama: A · Pullback (draf otomatis)",
+          "Invalidasi: Close harian di bawah 0.004768 atau keluar dari shortlist screen"
+        ],
+        "reason": "Asimetri: MC/HR 7.4x · holder revenue 341 jt USD/thn (+7% 30h) · harga 30h +30%",
+        "score": 7.2,
+        "volumeRatio": 0,
+        "allocationPct": 0.25,
+        "rewardMultiple": 1.5,
+        "validationStatus": "research",
+        "strategyVersion": "recovery-v4-usdt"
+      },
+      {
+        "pair": "skyidr",
+        "type": "limit",
+        "entryLow": 0.07204416666666667,
+        "entryHigh": 0.075335,
+        "stopPrice": 0.07045705,
+        "targetPrice": 0.0848,
+        "id": "asymmetry-journal-trader-sky-1791671447095",
+        "agent": "asymmetry-journal-trader",
+        "side": "long",
+        "quoteCurrency": "USDT",
+        "timeframe": "1d",
+        "expiresAt": "2026-10-12T00:30:47.095Z",
+        "confirmations": [
+          "Finalis 2026-10-10 · skor 7.2/10 · Finalis screen otomatis · tren harian campuran",
+          "Setup utama: A · Pullback (draf otomatis)",
+          "Invalidasi: Close harian di bawah 0.07046 atau keluar dari shortlist screen"
+        ],
+        "reason": "Asimetri: MC/HR 26.1x · holder revenue 68 jt USD/thn (+76% 30h) · harga 30h +24%",
+        "score": 7.2,
+        "volumeRatio": 0,
+        "allocationPct": 0.25,
+        "rewardMultiple": 1.5,
+        "validationStatus": "research",
+        "strategyVersion": "recovery-v4-usdt"
+      },
+      {
+        "pair": "crvidr",
+        "type": "limit",
+        "entryLow": 0.322028,
+        "entryHigh": 0.3255,
+        "stopPrice": 0.3160865,
+        "targetPrice": 0.373,
+        "id": "asymmetry-journal-trader-crv-1791671447095",
+        "agent": "asymmetry-journal-trader",
+        "side": "long",
+        "quoteCurrency": "USDT",
+        "timeframe": "1d",
+        "expiresAt": "2026-10-12T00:30:47.095Z",
+        "confirmations": [
+          "Finalis 2026-10-10 · skor 6.5/10 · Finalis screen otomatis · tren harian campuran",
+          "Setup utama: A · Pullback (draf otomatis)",
+          "Invalidasi: Close harian di bawah 0.3161 atau keluar dari shortlist screen"
+        ],
+        "reason": "Asimetri: MC/HR 27.6x · holder revenue 21 jt USD/thn (+55% 30h) · harga 30h +2%",
+        "score": 6.5,
+        "volumeRatio": 0,
+        "allocationPct": 0.25,
+        "rewardMultiple": 1.5,
+        "validationStatus": "research",
+        "strategyVersion": "recovery-v4-usdt"
+      },
+      {
+        "pair": "cakeidr",
+        "type": "limit",
+        "entryLow": 1.89525,
+        "entryHigh": 1.995,
+        "stopPrice": 1.7174755500000003,
+        "targetPrice": 2.507,
+        "id": "asymmetry-journal-trader-cake-1791671447095",
+        "agent": "asymmetry-journal-trader",
+        "side": "long",
+        "quoteCurrency": "USDT",
+        "timeframe": "1d",
+        "expiresAt": "2026-10-12T00:30:47.095Z",
+        "confirmations": [
+          "Finalis 2026-10-10 · skor 6.4/10 · Finalis screen otomatis · tren harian campuran",
+          "Setup utama: A · Pullback (draf otomatis)",
+          "Invalidasi: Close harian di bawah 1.717 atau keluar dari shortlist screen"
+        ],
+        "reason": "Asimetri: MC/HR 16.3x · holder revenue 48 jt USD/thn (-21% 30h) · harga 30h -3%",
+        "score": 6.4,
+        "volumeRatio": 0,
+        "allocationPct": 0.25,
+        "rewardMultiple": 1.5,
+        "validationStatus": "research",
+        "strategyVersion": "recovery-v4-usdt"
+      },
+      {
+        "pair": "orcaidr",
+        "type": "limit",
+        "entryLow": 2.009378184124409,
+        "entryHigh": 2.143,
+        "stopPrice": 1.815355,
+        "targetPrice": 3.335,
+        "id": "asymmetry-journal-trader-orca-1791671447095",
+        "agent": "asymmetry-journal-trader",
+        "side": "long",
+        "quoteCurrency": "USDT",
+        "timeframe": "1d",
+        "expiresAt": "2026-10-12T00:30:47.095Z",
+        "confirmations": [
+          "Finalis 2026-10-10 · skor 6.4/10 · Finalis screen otomatis · tren harian naik",
+          "Setup utama: A · Pullback (draf otomatis)",
+          "Invalidasi: Close harian di bawah 1.815 atau keluar dari shortlist screen"
+        ],
+        "reason": "Asimetri: MC/HR 22.2x · holder revenue 6 jt USD/thn (+74% 30h) · harga 30h +56%",
+        "score": 6.4,
+        "volumeRatio": 0,
+        "allocationPct": 0.25,
+        "rewardMultiple": 1.5,
+        "validationStatus": "research",
+        "strategyVersion": "recovery-v4-usdt"
+      }
+    ],
+    "decisions": [
+      {
+        "ticker": "AERO",
+        "setup": "A · Pullback (draf otomatis)",
+        "action": "skip",
+        "reason": "tidak ada target dengan R:R bersih ≥ 1.5 dari entry 0.7751724407555727"
+      },
+      {
+        "ticker": "PUMP",
+        "setup": "A · Pullback (draf otomatis)",
+        "action": "candidate",
+        "reason": "limit 0.005121706535484671–0.005391270037352285, stop 0.004768385, target 0.006806"
+      },
+      {
+        "ticker": "SKY",
+        "setup": "A · Pullback (draf otomatis)",
+        "action": "candidate",
+        "reason": "limit 0.07204416666666667–0.075335, stop 0.07045705, target 0.0848"
+      },
+      {
+        "ticker": "CRV",
+        "setup": "A · Pullback (draf otomatis)",
+        "action": "candidate",
+        "reason": "limit 0.322028–0.3255, stop 0.3160865, target 0.373"
+      },
+      {
+        "ticker": "CAKE",
+        "setup": "A · Pullback (draf otomatis)",
+        "action": "candidate",
+        "reason": "limit 1.89525–1.995, stop 1.7174755500000003, target 2.507"
+      },
+      {
+        "ticker": "ORCA",
+        "setup": "A · Pullback (draf otomatis)",
+        "action": "candidate",
+        "reason": "limit 2.009378184124409–2.143, stop 1.815355, target 3.335"
+      }
+    ]
+  },
   "errors": []
 }
