@@ -1,0 +1,494 @@
+{
+  "date": "2026-10-18",
+  "generatedAt": "2026-10-18T00:00:47.572Z",
+  "universe": {
+    "scanned": 500,
+    "withRevenue": 390,
+    "passed": 23
+  },
+  "shortlist": [
+    {
+      "id": "bonk",
+      "ticker": "BONK",
+      "name": "Bonk",
+      "category": "Dexs",
+      "price": 0.00000297,
+      "mc": 261548094,
+      "fdv": 261548095,
+      "hrAnn": 53853698.82166667,
+      "mcHr": 4.856641228415916,
+      "hrGrowth": 180.2922593608326,
+      "runRate": 4.052855223103503,
+      "chg30d": 9.5435,
+      "score": 84.2,
+      "parts": {
+        "val": 86,
+        "gro": 100,
+        "dur": 32,
+        "dil": 100,
+        "crw": 100
+      },
+      "flags": [
+        "lonjakan"
+      ]
+    },
+    {
+      "id": "pump-fun",
+      "ticker": "PUMP",
+      "name": "Pump.fun",
+      "category": "Launchpad",
+      "price": 0.00433996,
+      "mc": 2007203842,
+      "fdv": 3590512833,
+      "hrAnn": 371408803.8333333,
+      "mcHr": 5.404297963008751,
+      "hrGrowth": 21.186351289255523,
+      "runRate": 1.3053479226231282,
+      "chg30d": 10.0489,
+      "score": 78.8,
+      "parts": {
+        "val": 83,
+        "gro": 47,
+        "dur": 100,
+        "dil": 61,
+        "crw": 100
+      },
+      "flags": []
+    },
+    {
+      "id": "pons",
+      "ticker": "PONS",
+      "name": "Pons",
+      "category": "Launchpad",
+      "price": 0.284924,
+      "mc": 192223452,
+      "fdv": 192218377,
+      "hrAnn": 70094989.33333333,
+      "mcHr": 2.742328001305353,
+      "hrGrowth": -59.03765326844466,
+      "runRate": 3.0744492912395316,
+      "chg30d": -56.4693,
+      "score": 74.6,
+      "parts": {
+        "val": 100,
+        "gro": 0,
+        "dur": 64,
+        "dil": 100,
+        "crw": 100
+      },
+      "flags": [
+        "lonjakan"
+      ]
+    },
+    {
+      "id": "sky",
+      "ticker": "SKY",
+      "name": "Sky",
+      "category": "CDP",
+      "price": 0.070602,
+      "mc": 1653334334,
+      "fdv": 1655177388,
+      "hrAnn": 71288588,
+      "mcHr": 23.192131873898244,
+      "hrGrowth": 42.45793063943872,
+      "runRate": 1.2157620231141024,
+      "chg30d": 19.6487,
+      "score": 69,
+      "parts": {
+        "val": 42,
+        "gro": 62,
+        "dur": 100,
+        "dil": 100,
+        "crw": 100
+      },
+      "flags": []
+    },
+    {
+      "id": "curve-dao-token",
+      "ticker": "CRV",
+      "name": "Curve DAO",
+      "category": "Dexs",
+      "price": 0.346934,
+      "mc": 546188870,
+      "fdv": 841982350,
+      "hrAnn": 22366616,
+      "mcHr": 24.41982595847311,
+      "hrGrowth": 59.57722736008417,
+      "runRate": 0.8261796686794372,
+      "chg30d": 5.9025,
+      "score": 68,
+      "parts": {
+        "val": 40,
+        "gro": 73,
+        "dur": 100,
+        "dil": 73,
+        "crw": 100
+      },
+      "flags": []
+    },
+    {
+      "id": "raydium",
+      "ticker": "RAY",
+      "name": "Raydium",
+      "category": "Dexs",
+      "price": 1.79,
+      "mc": 483524532,
+      "fdv": 994045650,
+      "hrAnn": 38520360.166666664,
+      "mcHr": 12.55244057708512,
+      "hrGrowth": 3.782111314963865,
+      "runRate": 2.0997132343645095,
+      "chg30d": 22.3859,
+      "score": 64.8,
+      "parts": {
+        "val": 59,
+        "gro": 36,
+        "dur": 97,
+        "dil": 47,
+        "crw": 98
+      },
+      "flags": []
+    },
+    {
+      "id": "meteora",
+      "ticker": "MET",
+      "name": "Meteora",
+      "category": "Dexs",
+      "price": 0.347627,
+      "mc": 194195200,
+      "fdv": 346869835,
+      "hrAnn": 8438946,
+      "mcHr": 23.011783699054362,
+      "hrGrowth": 217.83676779896348,
+      "runRate": 0.5786862037844138,
+      "chg30d": 54.3673,
+      "score": 64.7,
+      "parts": {
+        "val": 42,
+        "gro": 100,
+        "dur": 72,
+        "dil": 61,
+        "crw": 74
+      },
+      "flags": [
+        "revenue menurun",
+        "HR kecil"
+      ]
+    },
+    {
+      "id": "pancakeswap-token",
+      "ticker": "CAKE",
+      "name": "PancakeSwap",
+      "category": "Dexs",
+      "price": 2.19,
+      "mc": 695211430,
+      "fdv": 720536479,
+      "hrAnn": 39507058.21833334,
+      "mcHr": 17.597144949592465,
+      "hrGrowth": -38.73771099494654,
+      "runRate": 0.9002787027897449,
+      "chg30d": -11.1709,
+      "score": 61.1,
+      "parts": {
+        "val": 50,
+        "gro": 8,
+        "dur": 100,
+        "dil": 98,
+        "crw": 100
+      },
+      "flags": []
+    },
+    {
+      "id": "aerodrome-finance",
+      "ticker": "AERO",
+      "name": "Aerodrome Finance",
+      "category": "Dexs",
+      "price": 0.842926,
+      "mc": 846256645,
+      "fdv": 1687898613,
+      "hrAnn": 97822701,
+      "mcHr": 8.650922907965914,
+      "hrGrowth": -43.101462152972736,
+      "runRate": 1.1113271003144258,
+      "chg30d": 44.5895,
+      "score": 61,
+      "parts": {
+        "val": 70,
+        "gro": 5,
+        "dur": 100,
+        "dil": 50,
+        "crw": 81
+      },
+      "flags": []
+    },
+    {
+      "id": "orca",
+      "ticker": "ORCA",
+      "name": "Orca",
+      "category": "Dexs",
+      "price": 1.8,
+      "mc": 109207278,
+      "fdv": 134714835,
+      "hrAnn": 5479221.833333333,
+      "mcHr": 19.931165651229488,
+      "hrGrowth": 9.824659805882074,
+      "runRate": 2.673183067911842,
+      "chg30d": 29.9047,
+      "score": 60.7,
+      "parts": {
+        "val": 46,
+        "gro": 40,
+        "dur": 78,
+        "dil": 88,
+        "crw": 92
+      },
+      "flags": [
+        "HR kecil"
+      ]
+    },
+    {
+      "id": "hyperliquid",
+      "ticker": "HYPE",
+      "name": "Hyperliquid",
+      "category": "Derivatives",
+      "price": 77.97,
+      "mc": 17343093551,
+      "fdv": 74481003680,
+      "hrAnn": 871581370.8333334,
+      "mcHr": 19.89842157183555,
+      "hrGrowth": -17.036157219651404,
+      "runRate": 1.2434983875195575,
+      "chg30d": -6.0981,
+      "score": 52.8,
+      "parts": {
+        "val": 46,
+        "gro": 22,
+        "dur": 100,
+        "dil": 0,
+        "crw": 100
+      },
+      "flags": [
+        "dilusi"
+      ]
+    },
+    {
+      "id": "lighter",
+      "ticker": "LIT",
+      "name": "Lighter",
+      "category": "Derivatives",
+      "price": 3.11,
+      "mc": 778599559,
+      "fdv": 3114398236,
+      "hrAnn": 33657878.833333336,
+      "mcHr": 23.13275779663536,
+      "hrGrowth": -15.571735463490066,
+      "runRate": 1.102330349941942,
+      "chg30d": -32.6979,
+      "score": 51.3,
+      "parts": {
+        "val": 42,
+        "gro": 23,
+        "dur": 100,
+        "dil": 0,
+        "crw": 100
+      },
+      "flags": [
+        "dilusi"
+      ]
+    },
+    {
+      "id": "uniswap",
+      "ticker": "UNI",
+      "name": "Uniswap",
+      "category": "Dexs",
+      "price": 7.15,
+      "mc": 4463563160,
+      "fdv": 6337136169,
+      "hrAnn": 116315097.5,
+      "mcHr": 38.37475320003063,
+      "hrGrowth": -39.14478458344346,
+      "runRate": 2.0229518199938683,
+      "chg30d": -7.0992,
+      "score": 50.2,
+      "parts": {
+        "val": 27,
+        "gro": 7,
+        "dur": 99,
+        "dil": 79,
+        "crw": 100
+      },
+      "flags": []
+    },
+    {
+      "id": "jupiter-exchange-solana",
+      "ticker": "JUP",
+      "name": "Jupiter",
+      "category": "DEX Aggregator",
+      "price": 0.292079,
+      "mc": 969438283,
+      "fdv": 2003931115,
+      "hrAnn": 31470362.05,
+      "mcHr": 30.804802355300517,
+      "hrGrowth": -30.99566588489564,
+      "runRate": 0.8176399067446083,
+      "chg30d": 24.773,
+      "score": 50.1,
+      "parts": {
+        "val": 34,
+        "gro": 13,
+        "dur": 100,
+        "dil": 47,
+        "crw": 96
+      },
+      "flags": []
+    },
+    {
+      "id": "chainlink",
+      "ticker": "LINK",
+      "name": "Chainlink",
+      "category": "Services",
+      "price": 11.98,
+      "mc": 9186064099,
+      "fdv": 11978958666,
+      "hrAnn": 66432859.166666664,
+      "mcHr": 138.2759106597236,
+      "hrGrowth": 23.905295044160347,
+      "runRate": 1.1297200924679422,
+      "chg30d": 5.6864,
+      "score": 48.3,
+      "parts": {
+        "val": 0,
+        "gro": 49,
+        "dur": 100,
+        "dil": 85,
+        "crw": 100
+      },
+      "flags": []
+    },
+    {
+      "id": "edgex",
+      "ticker": "EDGE",
+      "name": "edgeX",
+      "category": "Derivatives",
+      "price": 0.29763,
+      "mc": 104173274,
+      "fdv": 297637925,
+      "hrAnn": 7460527,
+      "mcHr": 13.963259431940934,
+      "hrGrowth": -1.2986469476645945,
+      "runRate": 0.15731602421697208,
+      "chg30d": -52.6926,
+      "score": 47.6,
+      "parts": {
+        "val": 56,
+        "gro": 32,
+        "dur": 20,
+        "dil": 7,
+        "crw": 100
+      },
+      "flags": [
+        "revenue menurun",
+        "dilusi",
+        "HR kecil"
+      ]
+    },
+    {
+      "id": "tron",
+      "ticker": "TRX",
+      "name": "TRON",
+      "category": "Chain",
+      "price": 0.33352,
+      "mc": 31682492030,
+      "fdv": 31682815213,
+      "hrAnn": 290986224.6666667,
+      "mcHr": 108.87969719629591,
+      "hrGrowth": -2.3858587407878606,
+      "runRate": 0.8528387204613386,
+      "chg30d": -0.4391,
+      "score": 46.3,
+      "parts": {
+        "val": 0,
+        "gro": 32,
+        "dur": 100,
+        "dil": 100,
+        "crw": 100
+      },
+      "flags": []
+    },
+    {
+      "id": "aster-2",
+      "ticker": "ASTER",
+      "name": "Aster",
+      "category": "Dexs",
+      "price": 0.701811,
+      "mc": 1904415336,
+      "fdv": 5468907996,
+      "hrAnn": 39120809.5,
+      "mcHr": 48.68036628945523,
+      "hrGrowth": -35.06648427011492,
+      "runRate": 1.411567080222001,
+      "chg30d": -5.4988,
+      "score": 40.8,
+      "parts": {
+        "val": 21,
+        "gro": 10,
+        "dur": 100,
+        "dil": 6,
+        "crw": 100
+      },
+      "flags": [
+        "dilusi"
+      ]
+    }
+  ],
+  "rejected": [
+    {
+      "ticker": "BONK",
+      "reason": "flag lonjakan"
+    },
+    {
+      "ticker": "PONS",
+      "reason": "flag lonjakan"
+    },
+    {
+      "ticker": "MET",
+      "reason": "flag revenue menurun"
+    },
+    {
+      "ticker": "ORCA",
+      "reason": "kuota 6 finalis penuh"
+    },
+    {
+      "ticker": "HYPE",
+      "reason": "skor 52.8 < 55"
+    },
+    {
+      "ticker": "LIT",
+      "reason": "skor 51.3 < 55"
+    },
+    {
+      "ticker": "UNI",
+      "reason": "skor 50.2 < 55"
+    },
+    {
+      "ticker": "JUP",
+      "reason": "skor 50.1 < 55"
+    },
+    {
+      "ticker": "LINK",
+      "reason": "skor 48.3 < 55"
+    },
+    {
+      "ticker": "EDGE",
+      "reason": "skor 47.6 < 55"
+    },
+    {
+      "ticker": "TRX",
+      "reason": "skor 46.3 < 55"
+    },
+    {
+      "ticker": "ASTER",
+      "reason": "skor 40.8 < 55"
+    }
+  ]
+}
