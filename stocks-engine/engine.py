@@ -908,7 +908,33 @@ def market_regime_risk_factor(db, agent_id: str, today: date | None = None) -> f
         return 1.0
     if ihsg.get("status") == "DATA_NOT_AVAILABLE" or ihsg.get("trend") != "BEARISH":
         return 1.0
-    return .85 if agent_id == "fundamental" else .75
+    return .60 if agent_id == "fundamental" else .50
+
+
+def ihsg_bearish_blocks_new_entry(db, agent_id: str, today: date | None = None) -> bool:
+    """Block new swing/breakout-retest entries when IHSG is in a confirmed bearish breakdown."""
+    if agent_id not in {"swing", "breakout-retest"}:
+        return False
+    try:
+        row = db.execute("SELECT report_date,snapshot_json FROM reports ORDER BY report_date DESC LIMIT 1").fetchone()
+    except sqlite3.OperationalError:
+        return False
+    current = (today or now_wib().date()).isoformat()
+    if not row or not (row["report_date"] == current or is_prior_trading_session(row["report_date"], current)):
+        return False
+    try:
+        ihsg = json.loads(row["snapshot_json"]).get("ihsg") or {}
+    except (TypeError, ValueError):
+        return False
+    if ihsg.get("status") == "DATA_NOT_AVAILABLE" or ihsg.get("trend") != "BEARISH":
+        return False
+    change_pct = float(ihsg.get("change_pct") or 0)
+    close_px = float(ihsg.get("close") or 0)
+    sma20 = float(ihsg.get("sma20") or 0)
+    sma50 = float(ihsg.get("sma50") or 0)
+    if sma20 > 0 and sma50 > 0 and close_px < sma20 and close_px < sma50:
+        return True
+    return change_pct <= -1.0
 
 
 def cooldown_active(db, agent_id: str, symbol: str, moment: datetime | None = None) -> bool:
@@ -993,7 +1019,8 @@ def persist_proposal(db, run_id: str, symbol: str, proposal: Proposal, data_stat
         daily_net_pnl = float(db.execute("SELECT COALESCE(SUM(net_pnl),0) FROM trade_journal WHERE agent_id=? AND substr(closed_at,1,10)=?",
                                          (proposal.agent_id, day_key)).fetchone()[0])
         daily_loss_ok = daily_net_pnl > -equity*.02
-        if not exists and position_count < max_symbol_positions and capacity_ok and not cooling_down and daily_entry_ok and daily_loss_ok:
+        regime_blocked = ihsg_bearish_blocks_new_entry(db, proposal.agent_id, created_at.date())
+        if not exists and position_count < max_symbol_positions and capacity_ok and not cooling_down and daily_entry_ok and daily_loss_ok and not regime_blocked:
             order_id = f"ord-{uuid.uuid4().hex[:18]}"
             db.execute("""INSERT INTO paper_orders
               (id,proposal_id,agent_id,symbol,side,order_type,lots,limit_price,stop_price,target_price,
@@ -1004,6 +1031,8 @@ def persist_proposal(db, run_id: str, symbol: str, proposal: Proposal, data_stat
                stop, target, "PENDING", created, valid_until, features_candle(db, run_id, symbol),
                timeframe, STRATEGY_VERSION,ruleset))
             order_created = True
+        elif regime_blocked:
+            db.execute("UPDATE agent_proposals SET status='REJECTED_MARKET_REGIME' WHERE id=?", (proposal_id,))
         elif not capacity_ok:
             db.execute("UPDATE agent_proposals SET status='REJECTED_PORTFOLIO_CAP' WHERE id=?", (proposal_id,))
         elif cooling_down:
@@ -1133,7 +1162,20 @@ def manage_positions(db, timeframe: str) -> int:
                 continue
             db.execute("UPDATE positions SET last_price=?,last_managed_candle_at=? WHERE id=?",
                        (candle["close"], candle["candle_at"], position["id"]))
-            stop_hit = bool(current_stop and candle["low"] <= current_stop)
+            current_candle = datetime.fromisoformat(candle["candle_at"])
+            opened = datetime.fromisoformat(position["opened_at"]) if position["opened_at"] else current_candle
+            is_multiday_agent = position["agent_id"] in {"swing", "fundamental", "breakout-retest"}
+            in_opening_buffer = (
+                is_multiday_agent
+                and current_candle.date() > opened.date()
+                and current_candle.time() < clock_time(9, 30)
+            )
+            if in_opening_buffer:
+                # 30-minute opening buffer (09:00-09:29 WIB): protect multi-day swing/fundamental
+                # positions from opening noise wicks; only exit immediately on a catastrophic >4% crash below stop
+                stop_hit = bool(current_stop and float(candle["low"]) <= current_stop * 0.96)
+            else:
+                stop_hit = bool(current_stop and candle["low"] <= current_stop)
             target_hit = bool(position["target_price"] and candle["high"] >= position["target_price"])
             exit_price = reason = None
             if stop_hit:

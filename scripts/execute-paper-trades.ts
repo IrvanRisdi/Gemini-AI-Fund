@@ -186,10 +186,26 @@ async function pendingTouches(ledger: Ledger) {
   return new Map(entries);
 }
 
+function agentCircuitBreakerActive(book: Book, timestamp: string): boolean {
+  const closedCohortTrades = book.trades.filter(
+    (trade) =>
+      trade.type === 'close' &&
+      !trade.maintenance &&
+      ACTIVE_STRATEGY_VERSIONS.has(trade.strategyVersion ?? ''),
+  );
+  if (closedCohortTrades.length < 4) return false;
+  const lastFour = closedCohortTrades.slice(-4);
+  const allLosses = lastFour.every((trade) => (trade.realizedPnlIdr ?? 0) < 0);
+  if (!allLosses) return false;
+  const lastClosedAt = Date.parse(lastFour[lastFour.length - 1]?.timestamp ?? '');
+  const nowMs = Date.parse(timestamp);
+  return Number.isFinite(lastClosedAt) && Number.isFinite(nowMs) && nowMs - lastClosedAt < 24 * 3_600_000;
+}
+
 function reserveCandidate(book: Book, candidate: Candidate, timestamp: string, pricesUsdt: Record<string, number>, usdtIdr: number): Pending | null {
   const equity = accountEquity(book, pricesUsdt, usdtIdr);
   const policy = paperRiskPolicy(equity);
-  if (!valid(candidate) || hasLiveCampaign(book, candidate.pair) || hasRecentAttempt(book, candidate.pair, timestamp) || activeCampaigns(book) >= policy.maxCampaigns) return null;
+  if (agentCircuitBreakerActive(book, timestamp) || !valid(candidate) || hasLiveCampaign(book, candidate.pair) || hasRecentAttempt(book, candidate.pair, timestamp) || activeCampaigns(book) >= policy.maxCampaigns) return null;
   const riskPerUnit = netRewardRisk(candidate.entryHigh, candidate.stopPrice, candidate.targetPrice).netRisk * usdtIdr;
   const cap = allocationCap(candidate);
   const cashAvailable = Math.max(0, book.balance.IDR - equity * cashReservePct(candidate) - reservedCash(book));
@@ -292,18 +308,28 @@ async function main() {
     }
     for (const [pair, position] of Object.entries(book.positions)) {
       const price = currentQuotePrice(pair, position.quoteCurrency, pricesUsdt, usdtIdr); if (!price) continue;
+      const droppedFromJournalShortlist =
+        agent === JOURNAL_AGENT &&
+        scan.asymmetryJournal?.status === 'ok' &&
+        (scan.asymmetryJournal.watchlist?.length ?? 0) > 0 &&
+        !scan.asymmetryJournal.watchlist!.some((item) => item.pair === pair) &&
+        price < position.entryPrice * 0.99;
       if (price <= position.stopPrice) close(book, pair, position, price, timestamp, 'Stop loss struktur', usdtIdr);
+      else if (droppedFromJournalShortlist) close(book, pair, position, price, timestamp, 'Invalidasi tesis: keluar dari shortlist harian Asymmetry', usdtIdr);
       else if (price >= position.targetPrice) close(book, pair, position, price, timestamp, 'Target tercapai', usdtIdr);
       else if (position.timeStopAt && timestamp >= position.timeStopAt) close(book, pair, position, price, timestamp, 'Time stop: momentum tidak berlanjut', usdtIdr);
       else if (position.breakevenAtR !== null && price >= position.entryPrice + position.initialRiskPerUnit * (position.breakevenAtR ?? 1.25)) {
         position.stopPrice = Math.max(position.stopPrice, breakevenStopPrice(position.entryPrice, FEE_RATE));
       }
     }
+    const breakerActive = agentCircuitBreakerActive(book, timestamp);
     const candidates = (scan.candidates ?? []).filter((item) => item.agent === agent && OWNERS.has(agent));
     for (const candidate of candidates) { const order = reserveCandidate(book, candidate, timestamp, pricesUsdt, usdtIdr); if (order) book.pendingOrders.push(order); }
     const open = Object.keys(book.positions).length; const pending = book.pendingOrders.filter((item) => item.status === 'pending').length;
     if (state.agents?.[agent]) {
-      state.agents[agent].last_action = `${open} posisi spot terbuka · ${pending} pending order`;
+      state.agents[agent].last_action = breakerActive
+        ? `🛡️ Circuit Breaker (Cooldown 24j setelah 4 loss beruntun) · ${open} posisi terbuka`
+        : `${open} posisi spot terbuka · ${pending} pending order`;
       if (agent === JOURNAL_AGENT) state.agents[agent].assets_covered = [...new Set([...Object.keys(book.positions), ...book.pendingOrders.filter((item) => item.status === 'pending').map((item) => item.pair)])].map(displayPair);
       else if (OWNERS.has(agent) && scan.universe?.length) state.agents[agent].assets_covered = scan.universe.map((item) => displayPair(item.pair));
     }

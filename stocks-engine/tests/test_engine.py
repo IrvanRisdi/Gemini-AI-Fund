@@ -622,5 +622,28 @@ class PaperExecutionV2Tests(unittest.TestCase):
         self.assertEqual(trade['exit_reason'], 'STOP_LOSS')
         self.assertIn('posisi legacy', trade['notes'])
 
+    def test_opening_buffer_protects_multiday_position_from_opening_wick(self):
+        self.db.execute("""INSERT INTO positions
+          (agent_id,symbol,lots,entry_price,last_price,stop_price,target_price,status,opened_at,last_managed_candle_at,strategy_version)
+          VALUES('fundamental','TEST',10,100,100,95,115,'OPEN','2026-08-24T15:00:00+07:00','2026-08-24T15:00:00+07:00','2.0')""")
+        # Next trading session 09:05 WIB shallow wick to 94 (within 4% of stop 95 -> > 91.2) is buffered
+        self.candle('2026-08-26T09:05:00+07:00', low=94, high=99, close=98)
+        self.assertEqual(engine.manage_positions(self.db, '5m'), 0)
+        self.assertEqual(self.db.execute("SELECT status FROM positions WHERE agent_id='fundamental'").fetchone()[0], 'OPEN')
+        # At 09:35 WIB (past 09:30 buffer), stop at 95 is enforced normally
+        self.candle('2026-08-26T09:35:00+07:00', low=94, high=96, close=94)
+        self.assertEqual(engine.manage_positions(self.db, '5m'), 1)
+        self.assertEqual(self.db.execute("SELECT status FROM positions WHERE agent_id='fundamental'").fetchone()[0], 'CLOSED')
+
+    def test_ihsg_bearish_blocks_new_swing_and_breakout_retest_entry(self):
+        self.db.execute("CREATE TABLE reports(report_date TEXT PRIMARY KEY,snapshot_json TEXT)")
+        self.db.execute(
+            "INSERT INTO reports VALUES('2026-08-24', ?)",
+            (json.dumps({"ihsg": {"status": "AVAILABLE", "trend": "BEARISH", "change_pct": -1.5, "close": 7000, "sma20": 7150, "sma50": 7200}}),),
+        )
+        self.assertTrue(engine.ihsg_bearish_blocks_new_entry(self.db, "swing", date(2026, 8, 24)))
+        self.assertTrue(engine.ihsg_bearish_blocks_new_entry(self.db, "breakout-retest", date(2026, 8, 24)))
+        self.assertFalse(engine.ihsg_bearish_blocks_new_entry(self.db, "fundamental", date(2026, 8, 24)))
+
 
 if __name__ == "__main__": unittest.main()

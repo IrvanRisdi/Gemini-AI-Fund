@@ -24,3 +24,9 @@ jobs:
 
       - name: Run Governed Checks
         run: npm run check
+
+      - name: Run Crypto Strategy & Dashboard Unit Tests
+        run: npx tsx --test scripts/*.test.ts dashboard/lib/*.test.ts
+
+      - name: Run IDX Stock Engine (NusaQuant) Unit Tests
+        run: python3 -m unittest discover -s stocks-engine/tests -p "test_*.py"
