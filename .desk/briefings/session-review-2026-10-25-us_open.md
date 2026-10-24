@@ -1,12 +1,12 @@
 ---
 date: "2026-10-25"
-time: "2026-10-24T17:00:12.659Z"
+time: "2026-10-24T17:26:02.265Z"
 session: "US_OPEN"
 report_version: "unified-v6"
 model: "rule-based-analyst"
 ---
 
-# Laporan Harian Terpadu (Kripto & Saham IDX) — US Open (Malam)
+# Laporan Harian Terpadu (Kripto & Saham IDX) — Edisi Sore/Malam
 
 > Disusun oleh **rule-based-analyst** berdasarkan data faktual Kripto Spot (Binance USDT) dan Saham Indonesia (BEI/IDX NusaQuant).
 

@@ -1,11 +1,9 @@
-name: Gemini Market Session Evaluation
+name: Gemini Daily Intelligence & Telegram Delivery
 
 on:
   schedule:
-    # 1. 00:00 UTC = 07:00 WIB (Asia Morning Open)
+    # 1x sehari: 00:00 UTC = 07:00 WIB (Laporan Harian Pagi Terpadu - Kripto & Saham BEI)
     - cron: '0 0 * * *'
-    # 2. 13:30 UTC = 20:30 WIB (US Market Open / Wall Street)
-    - cron: '30 13 * * *'
   workflow_dispatch:
 
 permissions:
@@ -44,6 +42,7 @@ jobs:
       - name: Run Gemini Strategy Evaluation & Telegram Delivery
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-4-argon
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: npx tsx scripts/daily-evaluation.ts

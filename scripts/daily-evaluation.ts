@@ -476,7 +476,7 @@ Kembalikan HANYA objek JSON valid (tanpa markdown codefence \`\`\`json) dengan 5
   "actionableTakeaway": "Panduan praktis pengelolaan modal dan manajemen risiko hari ini dalam 2 kalimat yang menenangkan dan tegas"
 }`;
 
-  for (const model of getSmartestGeminiModelCandidates(process.env.GEMINI_MODELS || '')) {
+  for (const model of getSmartestGeminiModelCandidates(process.env.GEMINI_MODEL || process.env.GEMINI_MODELS || '')) {
     try {
       const isDeepReasoning = model.includes('argon') || model.includes('pro');
       const response = await fetch(
@@ -553,7 +553,7 @@ function buildWhatsAppMessage(report: UnifiedDailyReport): string {
 
   return [
     `📊 *LAPORAN HARIAN GEMINI AI-FUND*`,
-    `📅 Tanggal: ${report.dateWib} (${report.session === 'US_OPEN' ? 'Sesi Malam / US Open' : 'Sesi Pagi / Asia Open'})`,
+    `📅 Tanggal: ${report.dateWib} (${report.session === 'US_OPEN' ? 'Edisi Sore/Malam' : 'Edisi Pagi Terpadu'})`,
     `🧠 Analis AI: *${report.modelUsed}*`,
     ``,
     `💡 *Intisari Hari Ini:*`,
@@ -611,7 +611,7 @@ export async function deliverDailyReportNotifications(message: string): Promise<
 }
 
 function buildMarkdownReport(report: UnifiedDailyReport, facts: ReturnType<typeof buildFacts>, ledger: Ledger, scan: Scan) {
-  const label = report.session === 'US_OPEN' ? 'US Open (Malam)' : 'Asia Open (Pagi)';
+  const label = report.session === 'US_OPEN' ? 'Edisi Sore/Malam' : 'Edisi Pagi Terpadu';
   const rows = facts.agentRows
     .map((r) => `| ${r.agent} | ${formatIdr(r.cash)} | ${formatIdr(r.exposure)} | ${r.positions} | ${r.pending} |`)
     .join('\n');
