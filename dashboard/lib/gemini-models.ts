@@ -1,14 +1,29 @@
 export const GEMINI_MODEL_PRIORITY = [
-  'gemini-2.5-flash',
+  'gemini-4-argon',
+  'gemini-4.0-argon',
+  'gemini-3.1-pro-preview',
+  'gemini-3.1-pro',
+  'gemini-3.8-flash',
+  'gemini-3.7-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
   'gemini-2.5-flash-lite',
-  'gemini-2.0-flash',
 ] as const;
 
 export const SMARTEST_GEMINI_MODEL_PRIORITY = [
-  'gemini-2.5-pro',
-  'gemini-2.5-flash',
+  'gemini-4-argon',
+  'gemini-4.0-argon',
+  'gemini-3.1-pro-preview',
+  'gemini-3.1-pro',
+  'gemini-3.8-flash',
+  'gemini-3.7-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
   'gemini-2.5-flash-lite',
-  'gemini-2.0-flash',
 ] as const;
 
 /**
@@ -24,8 +39,8 @@ export function getGeminiModelCandidates(configuredModels = ''): string[] {
 }
 
 /**
- * Prioritizes Gemini 2.5 Pro (deep reasoning & cross-asset synthesis) first,
- * falling back to Gemini 2.5 Flash if Pro quota is exhausted.
+ * Prioritizes Gemini 4.0 Argon & Gemini 3.1 Pro first for deep reasoning and
+ * cross-asset daily reports, falling back to Gemini 3.8 Flash if needed.
  */
 export function getSmartestGeminiModelCandidates(configuredModels = ''): string[] {
   const configured = configuredModels

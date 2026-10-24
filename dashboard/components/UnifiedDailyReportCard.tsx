@@ -21,7 +21,7 @@ function pairSlug(pair: string): string {
 export function UnifiedDailyReportCard({ report }: { report: UnifiedDailyReportData }) {
   const [copied, setCopied] = useState(false);
 
-  async function handleCopyWhatsApp() {
+  async function handleCopyTelegram() {
     try {
       await navigator.clipboard.writeText(report.whatsappText);
       setCopied(true);
@@ -31,7 +31,7 @@ export function UnifiedDailyReportCard({ report }: { report: UnifiedDailyReportD
     }
   }
 
-  const waShareUrl = `https://wa.me/?text=${encodeURIComponent(report.whatsappText)}`;
+  const tgShareUrl = `https://t.me/share/url?url=${encodeURIComponent('https://github.com/IrvanRisdi/Gemini-AI-Fund')}&text=${encodeURIComponent(report.whatsappText)}`;
 
   return (
     <section className="mb-8 rounded-2xl border border-blue-500/30 bg-surface p-5 sm:p-6 shadow-lg shadow-black/20">
@@ -56,19 +56,19 @@ export function UnifiedDailyReportCard({ report }: { report: UnifiedDailyReportD
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           <a
-            href={waShareUrl}
+            href={tgShareUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-3.5 py-2 font-mono text-xs font-semibold text-emerald-300 hover:bg-emerald-500/25 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/40 bg-blue-500/15 px-3.5 py-2 font-mono text-xs font-semibold text-blue-300 hover:bg-blue-500/25 transition-colors"
           >
-            📲 Kirim ke WhatsApp
+            ✈️ Bagikan ke Telegram
           </a>
           <button
             type="button"
-            onClick={handleCopyWhatsApp}
+            onClick={handleCopyTelegram}
             className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-bg px-3.5 py-2 font-mono text-xs text-ink hover:border-blue-500/50 transition-colors"
           >
-            {copied ? '✓ Tersalin untuk WA!' : '📋 Salin Format WA'}
+            {copied ? '✓ Tersalin untuk Telegram!' : '📋 Salin Pesan Telegram'}
           </button>
         </div>
       </div>

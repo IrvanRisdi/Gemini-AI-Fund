@@ -38,32 +38,30 @@ export default async function ReportsPage() {
 
       {unifiedReport ? <UnifiedDailyReportCard report={unifiedReport} /> : null}
 
-      {/* Panduan Pengiriman Otomatis ke WhatsApp / Telegram */}
+      {/* Panduan Pengiriman Otomatis ke Telegram Bot */}
       <details className="mb-8 rounded-xl border border-border bg-surface">
         <summary className="cursor-pointer list-none px-5 py-4 font-sans text-sm font-semibold text-ink">
-          📲 Pengaturan Pengiriman Harian Otomatis ke WhatsApp / Telegram (GitHub Actions)
-          <span className="ml-2 font-mono text-[10px] font-normal text-ink-faint">klik untuk panduan</span>
+          ✈️ Cara Mengaktifkan Pengiriman Harian Otomatis ke Telegram Bot (07:00 &amp; 20:30 WIB)
+          <span className="ml-2 font-mono text-[10px] font-normal text-ink-faint">klik untuk panduan 1 menit</span>
         </summary>
         <div className="border-t border-border p-5 font-sans text-xs leading-relaxed text-ink-muted space-y-3">
           <p>
-            Workflow otomatis (<code className="text-ink">market-evaluation.yml</code>) berjalan setiap hari pukul <strong>07:00 WIB</strong> dan <strong>20:30 WIB</strong> menggunakan model <strong>Gemini 2.5 Pro</strong>. Untuk menerima laporan ini otomatis di HP Anda, tambahkan salah satu konfigurasi berikut pada <strong>GitHub Repository → Settings → Secrets and variables → Actions</strong>:
+            Workflow otomatis (<code className="text-ink">market-evaluation.yml</code>) berjalan setiap hari pukul <strong>07:00 WIB</strong> dan <strong>20:30 WIB</strong> menggunakan prioritas model <strong>Gemini 4.0 Argon → Gemini 3.1 Pro → Gemini 3.8 Flash</strong>. Untuk menerima laporan ini otomatis di Telegram Anda:
           </p>
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="rounded-lg border border-border bg-bg p-3.5">
-              <p className="font-semibold text-emerald-300">Opsi 1: WhatsApp Otomatis (Fonnte / CallMeBot)</p>
-              <ul className="mt-1.5 space-y-1">
-                <li>• <strong>Fonnte (Rekomendasi WA Indonesia):</strong> Isi secret <code className="text-ink">FONNTE_TOKEN</code> dan <code className="text-ink">WHATSAPP_TARGET</code> (contoh: <code className="text-ink">08123456789</code>).</li>
-                <li>• <strong>CallMeBot (WA Pribadi Gratis):</strong> Isi secret <code className="text-ink">CALLMEBOT_API_KEY</code> dan <code className="text-ink">WHATSAPP_TARGET</code> (contoh: <code className="text-ink">628123456789</code>).</li>
-              </ul>
-            </div>
-            <div className="rounded-lg border border-border bg-bg p-3.5">
-              <p className="font-semibold text-blue-300">Opsi 2: Telegram Bot (100% Gratis &amp; Paling Stabil)</p>
-              <ul className="mt-1.5 space-y-1">
-                <li>• Buat bot gratis di <code className="text-ink">@BotFather</code>, lalu isi secret <code className="text-ink">TELEGRAM_BOT_TOKEN</code>.</li>
-                <li>• Isi <code className="text-ink">TELEGRAM_CHAT_ID</code> dengan ID akun/grup Telegram Anda.</li>
-              </ul>
-            </div>
-          </div>
+          <ol className="space-y-1.5 list-decimal list-inside text-ink">
+            <li>
+              Buka Telegram, cari <code className="text-blue-300">@BotFather</code>, ketik <code className="text-blue-300">/newbot</code>, lalu salin <strong>HTTP API Token</strong> yang diberikan. Kunjungi bot baru Anda dan klik <strong>Start</strong>.
+            </li>
+            <li>
+              Cari <code className="text-blue-300">@userinfobot</code> di Telegram dan klik <strong>Start</strong> untuk melihat angka <strong>Id</strong> akun Telegram Anda.
+            </li>
+            <li>
+              Buka <strong>GitHub Repository → Settings → Secrets and variables → Actions</strong>, lalu tambahkan 2 <em>Repository Secrets</em>:
+              <span className="mt-1 block font-mono text-[11px] text-emerald-300">
+                TELEGRAM_BOT_TOKEN = (token dari @BotFather) · TELEGRAM_CHAT_ID = (angka ID dari @userinfobot)
+              </span>
+            </li>
+          </ol>
         </div>
       </details>
 

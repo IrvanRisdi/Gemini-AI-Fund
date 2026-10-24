@@ -478,7 +478,7 @@ Kembalikan HANYA objek JSON valid (tanpa markdown codefence \`\`\`json) dengan 5
 
   for (const model of getSmartestGeminiModelCandidates(process.env.GEMINI_MODELS || '')) {
     try {
-      const isPro = model.includes('pro');
+      const isDeepReasoning = model.includes('argon') || model.includes('pro');
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`,
         {
@@ -488,9 +488,9 @@ Kembalikan HANYA objek JSON valid (tanpa markdown codefence \`\`\`json) dengan 5
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {
               temperature: 0.2,
-              maxOutputTokens: isPro ? 4096 : 2048,
+              maxOutputTokens: isDeepReasoning ? 4096 : 2048,
               responseMimeType: 'application/json',
-              ...(isPro ? {} : { thinkingConfig: { thinkingBudget: 0 } }),
+              ...(isDeepReasoning ? {} : { thinkingConfig: { thinkingBudget: 0 } }),
             },
           }),
         },
@@ -583,61 +583,7 @@ function buildWhatsAppMessage(report: UnifiedDailyReport): string {
 export async function deliverDailyReportNotifications(message: string): Promise<string[]> {
   const delivered: string[] = [];
 
-  // 1. WhatsApp via Fonnte (Indonesian WhatsApp Gateway - https://fonnte.com)
-  const fonnteToken = process.env.FONNTE_TOKEN;
-  const waTarget = process.env.WHATSAPP_TARGET || process.env.WHATSAPP_PHONE;
-  if (fonnteToken && waTarget) {
-    try {
-      const res = await fetch('https://api.fonnte.com/send', {
-        method: 'POST',
-        headers: {
-          Authorization: fonnteToken,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          target: waTarget,
-          message,
-        }),
-      });
-      if (res.ok) delivered.push(`WhatsApp (Fonnte -> ${waTarget})`);
-    } catch (err) {
-      console.warn('Fonnte WhatsApp delivery warning:', err);
-    }
-  }
-
-  // 2. WhatsApp via CallMeBot (Free Personal WhatsApp Webhook)
-  const callMeBotKey = process.env.CALLMEBOT_API_KEY;
-  if (callMeBotKey && waTarget) {
-    try {
-      const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(waTarget)}&text=${encodeURIComponent(message)}&apikey=${encodeURIComponent(callMeBotKey)}`;
-      const res = await fetch(url);
-      if (res.ok) delivered.push(`WhatsApp (CallMeBot -> ${waTarget})`);
-    } catch (err) {
-      console.warn('CallMeBot WhatsApp delivery warning:', err);
-    }
-  }
-
-  // 3. Custom WhatsApp / Messaging Webhook
-  const webhookUrl = process.env.WHATSAPP_WEBHOOK_URL;
-  if (webhookUrl) {
-    try {
-      const res = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          target: waTarget,
-          phone: waTarget,
-          message,
-          text: message,
-        }),
-      });
-      if (res.ok) delivered.push('WhatsApp (Custom Webhook)');
-    } catch (err) {
-      console.warn('Custom webhook delivery warning:', err);
-    }
-  }
-
-  // 4. Telegram Bot (100% Free & Instant Official Bot API)
+  // Telegram Bot (Official Bot API — 100% Free & Reliable)
   const tgToken = process.env.TELEGRAM_BOT_TOKEN;
   const tgChatId = process.env.TELEGRAM_CHAT_ID;
   if (tgToken && tgChatId) {
@@ -650,7 +596,12 @@ export async function deliverDailyReportNotifications(message: string): Promise<
           text: message,
         }),
       });
-      if (res.ok) delivered.push(`Telegram (${tgChatId})`);
+      if (res.ok) {
+        delivered.push(`Telegram Bot (chat_id: ${tgChatId})`);
+      } else {
+        const detail = await res.text().catch(() => '');
+        console.warn(`Telegram API status ${res.status}: ${detail.slice(0, 180)}`);
+      }
     } catch (err) {
       console.warn('Telegram delivery warning:', err);
     }
