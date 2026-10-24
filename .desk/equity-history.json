@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "timezone": "Asia/Jakarta",
+  "points": [
+    {
+      "date": "2026-10-25",
+      "capturedAt": "2026-10-25T00:00:00.000Z",
+      "kind": "snapshot",
+      "totalEquity": 300000000,
+      "agents": {
+        "breakout-specialist": {
+          "equity": 50000000
+        },
+        "mean-reversion-trader": {
+          "equity": 50000000
+        },
+        "smc-trader": {
+          "equity": 50000000
+        },
+        "wyckoff-trader": {
+          "equity": 50000000
+        },
+        "aggressive-breakout-trader": {
+          "equity": 50000000
+        },
+        "asymmetry-journal-trader": {
+          "equity": 50000000
+        }
+      }
+    }
+  ]
+}
