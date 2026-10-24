@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "source": "asymmetry-screen",
+  "reportDate": "2026-10-24",
+  "generatedAt": "2026-10-24T00:00:52.553Z",
+  "headline": "Screen otomatis: PUMP, CRV, BONK, SKY, CAKE, RAY",
+  "btcFilter": {
+    "greenAbove": 80853,
+    "redBelow": 76407
+  },
+  "assets": [
+    {
+      "ticker": "PUMP",
+      "name": "Pump.fun",
+      "score": 8,
+      "verdict": "Finalis screen otomatis · tren harian campuran",
+      "thesis": "MC/HR 5.3x · holder revenue 375 jt USD/thn (+27% 30h) · harga 30h +8%",
+      "invalidation": "Close harian di bawah 0.003694 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.003779575,
+            0.0039785
+          ],
+          "stop": 0.00369375,
+          "targets": [
+            0.004864,
+            0.004867,
+            0.005447
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "CRV",
+      "name": "Curve DAO",
+      "score": 7.3,
+      "verdict": "Finalis screen otomatis · tren harian campuran",
+      "thesis": "MC/HR 23.3x · holder revenue 24 jt USD/thn (+96% 30h) · harga 30h +10%",
+      "invalidation": "Close harian di bawah 0.3161 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.322028,
+            0.35265
+          ],
+          "stop": 0.3160865,
+          "targets": [
+            0.373,
+            0.3996,
+            0.4061
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "BONK",
+      "name": "Bonk",
+      "score": 7.1,
+      "verdict": "Finalis screen otomatis · tren harian turun",
+      "thesis": "MC/HR 7.7x · holder revenue 36 jt USD/thn (-9% 30h) · harga 30h -11%",
+      "invalidation": "Close harian di bawah 0.000002758 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.0000028927499999999995,
+            0.0000030449999999999996
+          ],
+          "stop": 0.0000027579999999999997,
+          "targets": [
+            0.00000324,
+            0.00000367,
+            0.00000368
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "SKY",
+      "name": "Sky",
+      "score": 6.7,
+      "verdict": "Finalis screen otomatis · tren harian campuran",
+      "thesis": "MC/HR 23.8x · holder revenue 70 jt USD/thn (+27% 30h) · harga 30h +3%",
+      "invalidation": "Close harian di bawah 0.06513 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.0664038125,
+            0.06989875000000001
+          ],
+          "stop": 0.0651282,
+          "targets": [
+            0.07138,
+            0.07202,
+            0.07299
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "CAKE",
+      "name": "PancakeSwap",
+      "score": 5.9,
+      "verdict": "Finalis screen otomatis · tren harian campuran",
+      "thesis": "MC/HR 19.6x · holder revenue 35 jt USD/thn (-46% 30h) · harga 30h -17%",
+      "invalidation": "Close harian di bawah 1.717 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            1.89525,
+            1.995
+          ],
+          "stop": 1.7174755500000003,
+          "targets": [
+            2.173,
+            2.435,
+            2.507
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "RAY",
+      "name": "Raydium",
+      "score": 5.5,
+      "verdict": "Finalis screen otomatis · tren harian campuran",
+      "thesis": "MC/HR 17.9x · holder revenue 27 jt USD/thn (-43% 30h) · harga 30h -10%",
+      "invalidation": "Close harian di bawah 1.591 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            1.70397529,
+            1.7936582
+          ],
+          "stop": 1.590775,
+          "targets": [
+            1.954,
+            2.3561,
+            2.5729
+          ]
+        }
+      ]
+    }
+  ]
+}
