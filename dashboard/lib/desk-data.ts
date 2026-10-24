@@ -828,6 +828,15 @@ export interface UnifiedDailyReportData {
     actionableTakeaway: string;
   };
   whatsappText: string;
+  telegramDelivery?: {
+    delivered: boolean;
+    deliveredTo: string[];
+    tokenConfigured: boolean;
+    chatIdConfigured: boolean;
+    botUsername: string | null;
+    autoDiscoveredChats: number;
+    diagnostic: string;
+  };
 }
 
 export async function getUnifiedDailyReport(): Promise<UnifiedDailyReportData | null> {

@@ -45,8 +45,21 @@ export function UnifiedDailyReportCard({ report }: { report: UnifiedDailyReportD
             <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-300">
               🧠 AI Model: {report.modelUsed}
             </span>
+            {report.telegramDelivery ? (
+              <span
+                className={`rounded-full border px-2.5 py-0.5 font-mono text-[10px] font-semibold ${
+                  report.telegramDelivery.delivered
+                    ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-300'
+                    : 'border-amber-500/30 bg-amber-500/15 text-amber-300'
+                }`}
+              >
+                {report.telegramDelivery.delivered
+                  ? `✈️ Telegram Terkirim (${report.telegramDelivery.botUsername ?? 'Bot'})`
+                  : `⚠️ Telegram: ${report.telegramDelivery.diagnostic}`}
+              </span>
+            ) : null}
             <span className="font-mono text-xs text-ink-faint">
-              {report.dateWib} · {report.session === 'US_OPEN' ? 'Sesi Malam (US Open)' : 'Sesi Pagi (Asia Open)'}
+              {report.dateWib} · {report.session === 'US_OPEN' ? 'Edisi Sore/Malam' : 'Edisi Pagi Terpadu'}
             </span>
           </div>
           <h2 className="mt-2 font-sans text-xl sm:text-2xl font-semibold text-ink">

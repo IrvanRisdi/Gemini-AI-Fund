@@ -206,6 +206,15 @@ export interface UnifiedDailyReport {
     actionableTakeaway: string;
   };
   whatsappText: string;
+  telegramDelivery?: {
+    delivered: boolean;
+    deliveredTo: string[];
+    tokenConfigured: boolean;
+    chatIdConfigured: boolean;
+    botUsername: string | null;
+    autoDiscoveredChats: number;
+    diagnostic: string;
+  };
 }
 
 function formatIdr(value: number) {
@@ -580,34 +589,173 @@ function buildWhatsAppMessage(report: UnifiedDailyReport): string {
   ].join('\n');
 }
 
-export async function deliverDailyReportNotifications(message: string): Promise<string[]> {
-  const delivered: string[] = [];
+export async function deliverDailyReportNotifications(
+  message: string,
+): Promise<NonNullable<UnifiedDailyReport['telegramDelivery']>> {
+  const deliveredTo: string[] = [];
+  const rawToken = (
+    process.env.TELEGRAM_BOT_TOKEN ||
+    process.env.TELEGRAM_TOKEN ||
+    process.env.BOT_TOKEN ||
+    ''
+  )
+    .trim()
+    .replace(/^["']|["']$/g, '');
+  const tgToken = rawToken.replace(/^bot(?=\d+:)/i, '');
+  const rawChatId = (process.env.TELEGRAM_CHAT_ID || process.env.CHAT_ID || '')
+    .trim()
+    .replace(/^["']|["']$/g, '');
 
-  // Telegram Bot (Official Bot API — 100% Free & Reliable)
-  const tgToken = process.env.TELEGRAM_BOT_TOKEN;
-  const tgChatId = process.env.TELEGRAM_CHAT_ID;
-  if (tgToken && tgChatId) {
-    try {
+  if (!tgToken) {
+    return {
+      delivered: false,
+      deliveredTo: [],
+      tokenConfigured: false,
+      chatIdConfigured: Boolean(rawChatId),
+      botUsername: null,
+      autoDiscoveredChats: 0,
+      diagnostic:
+        'Secret TELEGRAM_BOT_TOKEN belum terbaca di GitHub Actions Secrets (Settings -> Secrets and variables -> Actions -> Repository secrets).',
+    };
+  }
+
+  let botUsername: string | null = null;
+  try {
+    const meRes = await fetch(`https://api.telegram.org/bot${tgToken}/getMe`);
+    if (meRes.ok) {
+      const meJson = (await meRes.json()) as { result?: { username?: string } };
+      if (meJson.result?.username) {
+        botUsername = `@${meJson.result.username}`;
+      }
+    } else {
+      const errText = await meRes.text().catch(() => '');
+      return {
+        delivered: false,
+        deliveredTo: [],
+        tokenConfigured: true,
+        chatIdConfigured: Boolean(rawChatId),
+        botUsername: null,
+        autoDiscoveredChats: 0,
+        diagnostic: `TELEGRAM_BOT_TOKEN ditolak oleh Telegram API (HTTP ${meRes.status}): ${errText.slice(0, 120)}`,
+      };
+    }
+  } catch (err) {
+    console.warn('Telegram getMe warning:', err);
+  }
+
+  const sendChunks = async (chatId: string | number): Promise<{ ok: boolean; error?: string }> => {
+    const maxLen = 3900;
+    const chunks =
+      message.length <= maxLen
+        ? [message]
+        : [message.slice(0, maxLen) + '\n...(1/2)', '(2/2)...\n' + message.slice(maxLen)];
+    for (const chunk of chunks) {
       const res = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          chat_id: tgChatId,
-          text: message,
+          chat_id: chatId,
+          text: chunk,
         }),
       });
-      if (res.ok) {
-        delivered.push(`Telegram Bot (chat_id: ${tgChatId})`);
-      } else {
+      if (!res.ok) {
         const detail = await res.text().catch(() => '');
-        console.warn(`Telegram API status ${res.status}: ${detail.slice(0, 180)}`);
+        return { ok: false, error: `HTTP ${res.status}: ${detail.slice(0, 160)}` };
+      }
+    }
+    return { ok: true };
+  };
+
+  let lastError = '';
+  if (rawChatId) {
+    try {
+      const result = await sendChunks(rawChatId);
+      if (result.ok) {
+        deliveredTo.push(`Telegram Bot (${botUsername ?? 'Bot'} -> chat_id: ${rawChatId})`);
+      } else {
+        lastError = result.error ?? 'Gagal mengirim ke TELEGRAM_CHAT_ID';
+        console.warn(`Telegram direct chat_id (${rawChatId}) warning: ${lastError}`);
       }
     } catch (err) {
-      console.warn('Telegram delivery warning:', err);
+      lastError = err instanceof Error ? err.message : String(err);
     }
   }
 
-  return delivered;
+  // Fallback / Auto-discovery via getUpdates if TELEGRAM_CHAT_ID was omitted or failed
+  let autoDiscoveredChats = 0;
+  if (deliveredTo.length === 0) {
+    try {
+      let updatesRes = await fetch(`https://api.telegram.org/bot${tgToken}/getUpdates?limit=50`);
+      if (updatesRes.status === 409) {
+        await fetch(`https://api.telegram.org/bot${tgToken}/deleteWebhook?drop_pending_updates=false`);
+        updatesRes = await fetch(`https://api.telegram.org/bot${tgToken}/getUpdates?limit=50`);
+      }
+      if (updatesRes.ok) {
+        const updatesData = (await updatesRes.json()) as {
+          result?: Array<{
+            message?: { chat?: { id?: number; username?: string } };
+            my_chat_member?: { chat?: { id?: number; username?: string } };
+            channel_post?: { chat?: { id?: number; username?: string } };
+          }>;
+        };
+        const chatIds = new Set<number>();
+        const targetUsername = rawChatId.startsWith('@') ? rawChatId.slice(1).toLowerCase() : '';
+        for (const item of updatesData.result ?? []) {
+          const chat = item.message?.chat ?? item.my_chat_member?.chat ?? item.channel_post?.chat;
+          if (chat?.id != null) {
+            if (!targetUsername || chat.username?.toLowerCase() === targetUsername) {
+              chatIds.add(chat.id);
+            }
+          }
+        }
+        // If username filter didn't match, include all chats that messaged the bot
+        if (chatIds.size === 0) {
+          for (const item of updatesData.result ?? []) {
+            const chat = item.message?.chat ?? item.my_chat_member?.chat ?? item.channel_post?.chat;
+            if (chat?.id != null) {
+              chatIds.add(chat.id);
+            }
+          }
+        }
+        autoDiscoveredChats = chatIds.size;
+        for (const discoveredId of chatIds) {
+          const res = await sendChunks(discoveredId);
+          if (res.ok) {
+            deliveredTo.push(`Telegram Bot (${botUsername ?? 'Bot'} -> auto chat_id: ${discoveredId})`);
+          } else if (res.error) {
+            lastError = res.error;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Telegram getUpdates auto-discovery warning:', err);
+    }
+  }
+
+  if (deliveredTo.length > 0) {
+    return {
+      delivered: true,
+      deliveredTo,
+      tokenConfigured: true,
+      chatIdConfigured: Boolean(rawChatId),
+      botUsername,
+      autoDiscoveredChats,
+      diagnostic: `Berhasil dikirim ke Telegram melalui ${botUsername ?? 'Bot'}.`,
+    };
+  }
+
+  const botNameHint = botUsername ? `bot ${botUsername}` : 'bot Telegram Anda';
+  return {
+    delivered: false,
+    deliveredTo: [],
+    tokenConfigured: true,
+    chatIdConfigured: Boolean(rawChatId),
+    botUsername,
+    autoDiscoveredChats,
+    diagnostic: lastError
+      ? `Gagal kirim ke Telegram (${lastError}). Pastikan Anda sudah membuka ${botNameHint} di Telegram lalu klik START (/start), dan pastikan TELEGRAM_CHAT_ID berisi angka ID (bukan @username atau nomor HP).`
+      : `Bot ${botUsername ?? ''} aktif, tetapi belum ada riwayat chat. Buka ${botNameHint} di Telegram lalu klik START (/start) atau kirim pesan "halo", kemudian jalankan ulang workflow.`,
+  };
 }
 
 function buildMarkdownReport(report: UnifiedDailyReport, facts: ReturnType<typeof buildFacts>, ledger: Ledger, scan: Scan) {
@@ -712,6 +860,8 @@ async function main() {
     whatsappText: '',
   };
   report.whatsappText = buildWhatsAppMessage(report);
+  const telegramDelivery = await deliverDailyReportNotifications(report.whatsappText);
+  report.telegramDelivery = telegramDelivery;
 
   fs.mkdirSync(BRIEFINGS_DIR, { recursive: true });
   fs.writeFileSync(UNIFIED_REPORT_FILE, JSON.stringify(report, null, 2) + '\n', 'utf8');
@@ -720,13 +870,12 @@ async function main() {
   const markdownOutput = `---\ndate: "${dateWib}"\ntime: "${now}"\nsession: "${session}"\nreport_version: "unified-v6"\nmodel: "${modelUsed}"\n---\n\n${buildMarkdownReport(report, facts, ledger, scan)}`;
   fs.writeFileSync(path.join(BRIEFINGS_DIR, filename), markdownOutput, 'utf8');
 
-  const delivered = await deliverDailyReportNotifications(report.whatsappText);
   console.log(`✓ Unified daily report written: ${UNIFIED_REPORT_FILE} (model: ${modelUsed})`);
   console.log(`✓ Session briefing written: ${path.join(BRIEFINGS_DIR, filename)}`);
-  if (delivered.length > 0) {
-    console.log(`✓ Daily report delivered to: ${delivered.join(', ')}`);
+  if (telegramDelivery.delivered) {
+    console.log(`✓ Daily report delivered to: ${telegramDelivery.deliveredTo.join(', ')}`);
   } else {
-    console.log('ℹ No external WhatsApp/Telegram credentials configured in env; saved to web dashboard.');
+    console.log(`ℹ Telegram status: ${telegramDelivery.diagnostic}`);
   }
 }
 
