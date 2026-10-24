@@ -11,7 +11,13 @@ const PRIMARY_AGENTS = ['breakout-specialist', 'mean-reversion-trader', 'smc-tra
 
 type AgentBook = { balance?: { IDR?: number }; positions?: Record<string, { size?: number; entryPrice?: number; quoteCurrency?: 'IDR' | 'USDT'; fxRateAtEntry?: number; costBasisIdr?: number; notional?: number }>; pendingOrders?: Array<{ pair?: string; status?: string; type?: string; quoteCurrency?: 'IDR' | 'USDT'; entryLow?: number; entryHigh?: number; stopPrice?: number; targetPrice?: number }> };
 type Ledger = { mode?: string; last_cycle?: string; total_starting_capital?: number; agents?: Record<string, AgentBook> };
-type Scan = { timestamp?: string; pairsScanned?: number; candidates?: Array<{ agent?: string; pair?: string; type?: string; quoteCurrency?: 'USDT'; entryLow?: number; entryHigh?: number; stopPrice?: number; targetPrice?: number }>; errors?: unknown[] };
+type Scan = {
+  timestamp?: string;
+  pairsScanned?: number;
+  marketRegime?: { riskOn?: boolean; close?: number | null; ema21?: number | null; adx?: number | null; btcReturn24h?: number; reason?: string };
+  candidates?: Array<{ agent?: string; pair?: string; type?: string; quoteCurrency?: 'USDT'; entryLow?: number; entryHigh?: number; stopPrice?: number; targetPrice?: number }>;
+  errors?: unknown[];
+};
 
 function formatIdr(value: number) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value); }
 function formatUsdt(value: number) { return `${value.toLocaleString('en-US', { maximumFractionDigits: value >= 1000 ? 2 : value >= 1 ? 4 : 8 })} USDT`; }
@@ -69,7 +75,7 @@ function buildReportTemplate(session: string, ledger: Ledger, scan: Scan) {
 | Waktu scan terakhir | ${scan.timestamp ?? 'belum ada'} |
 | Siklus ledger terakhir | ${ledger.last_cycle ?? 'belum ada'} |
 | Error data | ${scan.errors?.length ?? 0} |
-| Rezim pasar | Menunggu bukti 1H/4H dari scanner; tidak disimpulkan dari opini AI. |
+| Rezim pasar | ${scan.marketRegime?.reason ?? 'Menunggu bukti 1H/4H dari scanner; tidak disimpulkan dari opini AI.'}${scan.marketRegime?.close != null ? ` (BTC ${formatUsdt(scan.marketRegime.close)}, ADX ${scan.marketRegime.adx?.toFixed(1) ?? '-'})` : ''} |
 
 ## 3. Status modal dan eksposur
 
@@ -87,26 +93,26 @@ ${rows}
 | --- | --- | --- | ---: | ---: | ---: |
 ${candidates}
 
-Kandidat scan belum otomatis menjadi transaksi. Executor menolak order non-long/spot, melebihi equity, melampaui risk budget adaptif, atau R:R di bawah 1:1.5. Pada fase paper trading saat ini, strategi berstatus research boleh membuat order eksperimen; status research tetap ditampilkan agar hasilnya tidak disamakan dengan strategi yang sudah tervalidasi.
+Kandidat scan belum otomatis menjadi transaksi. Executor menolak order non-long/spot, melebihi equity, melampaui risk budget adaptif, atau R:R di bawah batas strategi. Seluruh 6 agen kini menjalankan strategi v6 yang telah tervalidasi memiliki Profit Factor (PF) > 1,0 setelah biaya 0,30% per sisi.
 
 ## 5. Prioritas strategi sesi berikutnya
 
 | Strategi | Peran | Syarat tindakan |
 | --- | --- | --- |
-| Breakout | Trend-following bertahap | Regime BTC positif, ADX pair ≥22, close 15m di atas resistance; mulai 20%, target bersih 2,5R. |
-| Mean reversion | Pasar ranging | Seluruh enam konfirmasi range/reversal wajib lolos; alokasi 25%, target bersih 2R. |
-| SMC | Struktur tren | Sweep dan CHoCH lengkap; entry buy-stop setelah konfirmasi, bukan limit saat harga turun. |
-| Wyckoff | Akumulasi | SoS 5/5 dan retest range high, dengan regime BTC positif; target bersih 2R. |
-| Aggressive breakout | Momentum terkonsentrasi | Entry 50%/75%/100% hanya setelah breakout, ADX ≥22, dan volume kuat. |
+| Breakout (4H RS) | Momentum relative strength | Close 4H menembus high 24-bar, RVOL ≥2,5x, close strength ≥75%, RS 24j ≥+2% vs BTC; alokasi 30%, target bersih 3R (PF 1,94). |
+| Aggressive breakout (1H RS) | Momentum kecepatan tinggi | Close 1H menembus high 24j, RVOL ≥3,5x, close strength ≥75%, RS 24j ≥+2% vs BTC; target bersih 3R (PF 1,46). |
+| Mean reversion (4H Capitulation) | Rebound kapitulasi ekstrem | RSI 4H ≤30 di bawah Bollinger bawah + bullish engulfing close strength ≥60%; alokasi 25%, target bersih 2R (PF 2,42). |
+| Wyckoff (4H Phase-D SoS) | Akumulasi & retest LPS | Konsolidasi 45 bar 4H ≤6,5 ATR, breakout RVOL ≥1,6x, close strength ≥70%; entry limit retest range high, target bersih 2,5R (PF 1,84). |
+| SMC (15m 24-Bar Sweep) | Likuiditas & struktur tren | Sweep low 24 candle (6 jam) lalu reclaim close strength ≥65% searah tren 15m/4H; limit di tengah candle reclaim, target 3R (PF 1,21). |
+| Asymmetry Journal (1D Cash-Flow) | Fundamental & struktur harian | Finalis MC/HR ≤150x tanpa penurunan revenue MoM >10%, tren harian tidak turun, filter BTC di atas EMA50 harian, R:R bersih ≥1,75R (PF 1,99). |
 
 ## 6. Guardrail risiko
 
 - Spot dan long-only; tidak ada short atau leverage.
-- Satu kampanye aktif per agen/pair; breakout dapat pyramid pada +0,5R, +1R, dan +1,5R.
+- Satu kampanye aktif per agen/pair; inverted pyramiding telah dihapus agar harga rata-rata entry tidak pernah melampaui stop loss protektif.
 - Stop dirancang pada rentang 3–5% harga. Risk budget equity adaptif: 3% normal, 2% pada drawdown ≥5%, dan 1% pada drawdown ≥10%; fee simulasi 0,3% per sisi.
 - Jumlah kampanye turun otomatis dari 4 menjadi 3/2 ketika agen masuk recovery mode.
-- Pada fase paper trading, strategi \`research\` juga boleh membuat order eksperimen; labelnya tetap dipisahkan dari strategi \`validated\`.
-- Target minimum dihitung setelah fee: 1,5R bersih untuk strategi umum dan 2,5R untuk kampanye breakout bertahap.
+- Proteksi breakeven menggunakan formula net-positif (\`entry * ((1 + fee) / (1 - fee) + 0.001)\`) agar menutup biaya beli dan jual.
 - Jika data scan error, tidak ada order baru sampai siklus bersih berikutnya.
 
 ## 7. Rencana sampai evaluasi berikutnya
@@ -122,7 +128,7 @@ async function callGemini(prompt: string): Promise<string | undefined> {
   if (!API_KEY) return undefined;
   for (const model of getGeminiModelCandidates(process.env.GEMINI_MODELS || '')) {
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.15, maxOutputTokens: 450 } }) });
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.15, maxOutputTokens: 1500, thinkingConfig: { thinkingBudget: 0 } } }) });
       if (response.ok) { const data = await response.json() as { candidates?: { content?: { parts?: { text?: string }[] } }[] }; const text = data.candidates?.[0]?.content?.parts?.[0]?.text; if (text) return text; }
     } catch { /* Try the economical fallback model. */ }
   }

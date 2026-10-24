@@ -9,18 +9,17 @@ import { AGGRESSIVE_STRATEGY_VERSION } from './aggressive-momentum.js';
 import { SMC_STRATEGY_VERSION } from './smc-strategy.js';
 import { JOURNAL_AGENT, staleJournalOrder, type JournalScan } from './asymmetry-journal.js';
 import { displayPair, type UniversePair } from './coin-universe.js';
-import { meetsMinimumPaperNotional, MIN_PAPER_NOTIONAL_IDR, netRewardRisk, paperRiskPolicy, paperStrategyCanExecute, STARTING_PAPER_EQUITY_IDR, validNetPlan } from './trading-math.js';
+import { breakevenStopPrice, meetsMinimumPaperNotional, MIN_PAPER_NOTIONAL_IDR, netRewardRisk, paperRiskPolicy, paperStrategyCanExecute, STARTING_PAPER_EQUITY_IDR, validNetPlan } from './trading-math.js';
 
 const DESK = path.join(process.cwd(), '.desk');
 const LEDGER = path.join(DESK, 'paper-ledger.json');
 const SCAN = path.join(DESK, 'latest-scan.json');
 const STATE = path.join(DESK, 'state.json');
 const EQUITY_HISTORY = path.join(DESK, 'equity-history.json');
-const COIN_STRATEGY_VERSION = 'recovery-v4-usdt';
+const COIN_STRATEGY_VERSION = 'recovery-v6-usdt';
 const ACTIVE_STRATEGY_VERSIONS = new Set([COIN_STRATEGY_VERSION, AGGRESSIVE_STRATEGY_VERSION, SMC_STRATEGY_VERSION]);
 const DEFAULT_MAX_NOTIONAL_PER_PAIR = 0.50;
-const BREAKOUT_INITIAL_ALLOCATION = 0.20;
-const BREAKOUT_MAX_NOTIONAL = 0.95;
+const BREAKOUT_INITIAL_ALLOCATION = 0.30;
 const CASH_RESERVE_PCT = 0.10;
 const FEE_RATE = 0.003;
 const ATTEMPT_COOLDOWN_MS = 6 * 60 * 60 * 1000;
@@ -216,8 +215,6 @@ function fill(book: Book, order: Pending, price: number, timestamp: string, pric
   const cap = allocationCap(order);
   const cashAvailable = Math.max(0, book.balance.IDR - equity * cashReservePct(order) - reservedCash(book, order.id));
   const riskAvailable = Math.max(0, equity * policy.maxAggregateRisk - reservedRisk(book, usdtIdr, order.id));
-  // Allocation is strategy-specific. Breakout starts at 20% and pyramids;
-  // aggressive momentum can deploy nearly all available cash at conviction 5.
   const size = Math.min(
     (equity * cap) / (fillPrice * multiplier),
     (equity * policy.riskPerCampaign) / riskPerUnit,
@@ -231,49 +228,9 @@ function fill(book: Book, order: Pending, price: number, timestamp: string, pric
   // Spot purchases spend both notional and fee. This prevents later fills
   // from sizing against capital that is already tied up in a position.
   book.balance.IDR -= notional + fee;
-  book.positions[order.pair] = { side: 'long', quoteCurrency: order.quoteCurrency ?? 'USDT', fxRateAtEntry: usdtIdr, costBasisIdr: notional, size, entryPrice: fillPrice, initialEntryPrice: fillPrice, stopPrice: order.stopPrice, targetPrice: order.targetPrice, opened: timestamp, campaignId: order.campaignId, leg: 1, initialRiskPerUnit: priceRiskPerUnit, sizingNote: `Spot-only ${order.quoteCurrency ?? 'USDT'} | Alokasi awal ${(cap * 100).toFixed(0)}% | Risiko harga ${((priceRiskPerUnit / fillPrice) * 100).toFixed(2)}% | Risiko equity maks. ${(policy.riskPerCampaign * 100).toFixed(0)}% (${policy.mode}) | Fee masuk Rp${Math.round(fee).toLocaleString('id-ID')}`, strategyVersion: order.strategyVersion, timeStopAt: order.timeStopHours ? new Date(Date.parse(timestamp) + order.timeStopHours * 3_600_000).toISOString() : undefined, breakevenAtR: order.breakevenAtR };
+  book.positions[order.pair] = { side: 'long', quoteCurrency: order.quoteCurrency ?? 'USDT', fxRateAtEntry: usdtIdr, costBasisIdr: notional, size, entryPrice: fillPrice, initialEntryPrice: fillPrice, stopPrice: order.stopPrice, targetPrice: order.targetPrice, opened: timestamp, campaignId: order.campaignId, leg: 1, initialRiskPerUnit: priceRiskPerUnit, sizingNote: `Spot-only ${order.quoteCurrency ?? 'USDT'} | Alokasi ${(cap * 100).toFixed(0)}% | Risiko harga ${((priceRiskPerUnit / fillPrice) * 100).toFixed(2)}% | Risiko equity maks. ${(policy.riskPerCampaign * 100).toFixed(0)}% (${policy.mode}) | Fee masuk Rp${Math.round(fee).toLocaleString('id-ID')}`, strategyVersion: order.strategyVersion, timeStopAt: order.timeStopHours ? new Date(Date.parse(timestamp) + order.timeStopHours * 3_600_000).toISOString() : undefined, breakevenAtR: order.breakevenAtR };
   order.status = 'filled';
   book.trades.push({ timestamp, instrument: order.pair, side: 'long', type: 'open', size, price: fillPrice, priceCurrency: order.quoteCurrency ?? 'USDT', priceIdr: fillPrice * multiplier, fxRate: order.quoteCurrency === 'USDT' ? usdtIdr : undefined, reason: order.reason, campaignId: order.campaignId, confirmations: order.confirmations, feeIdr: fee, strategyVersion: order.strategyVersion });
-}
-
-function pyramidBreakout(book: Book, pair: string, position: Position, price: number, timestamp: string, pricesUsdt: Record<string, number>, usdtIdr: number) {
-  if (position.leg >= 4) return;
-  const initialRisk = position.initialRiskPerUnit;
-  const initialEntry = position.initialEntryPrice ?? position.entryPrice;
-  const addThresholds = [.5, 1, 1.5];
-  const threshold = addThresholds[position.leg - 1] ?? 1.5;
-  if (initialRisk <= 0 || price < initialEntry + initialRisk * threshold) return;
-  const multiplier = quoteMultiplier(position.quoteCurrency, usdtIdr);
-  const currentNotional = position.size * price * multiplier;
-  const equity = accountEquity(book, pricesUsdt, usdtIdr);
-  const policy = paperRiskPolicy(equity);
-  const capacity = Math.max(0, equity * BREAKOUT_MAX_NOTIONAL - currentNotional);
-  const cashAvailable = Math.max(0, book.balance.IDR - equity * .05 - reservedCash(book));
-  const addRiskPerUnit = netRewardRisk(price, position.stopPrice, position.targetPrice).netRisk * multiplier;
-  if (addRiskPerUnit <= 0) return;
-  const riskCapacity = Math.max(0, equity * policy.maxAggregateRisk - reservedRisk(book, usdtIdr));
-  const addSize = Math.min(
-    (equity * BREAKOUT_INITIAL_ALLOCATION) / (price * multiplier * (1 + FEE_RATE)),
-    capacity / (price * multiplier),
-    riskCapacity / addRiskPerUnit,
-    cashAvailable / (price * multiplier * (1 + FEE_RATE)),
-  );
-  if (!Number.isFinite(addSize) || addSize <= 0) return;
-  const oldQuoteNotional = position.size * position.entryPrice;
-  const addQuoteNotional = addSize * price;
-  const addNotional = addQuoteNotional * multiplier;
-  if (!meetsMinimumPaperNotional(addSize, price * multiplier)) return;
-  const addFee = addNotional * FEE_RATE;
-  if (addNotional + addFee > book.balance.IDR + 1) return;
-  position.entryPrice = (oldQuoteNotional + addQuoteNotional) / (position.size + addSize);
-  position.costBasisIdr = (position.costBasisIdr ?? oldQuoteNotional * quoteMultiplier(position.quoteCurrency, position.fxRateAtEntry ?? usdtIdr)) + addNotional;
-  position.size += addSize;
-  position.leg += 1;
-  position.initialEntryPrice = initialEntry;
-  if (position.leg >= 3) position.stopPrice = Math.max(position.stopPrice, initialEntry * (1 + FEE_RATE * 2));
-  if (position.leg >= 4) position.stopPrice = Math.max(position.stopPrice, initialEntry + initialRisk * .5);
-  book.balance.IDR -= addNotional + addFee;
-  book.trades.push({ timestamp, instrument: pair, side: 'long', type: 'add', size: addSize, price, priceCurrency: position.quoteCurrency ?? 'IDR', priceIdr: price * multiplier, fxRate: position.quoteCurrency === 'USDT' ? usdtIdr : undefined, reason: `Jesse Livermore pyramid leg ${position.leg}/4 setelah +${threshold}R`, campaignId: position.campaignId, feeIdr: addFee, strategyVersion: position.strategyVersion });
 }
 
 function close(book: Book, pair: string, position: Position, price: number, timestamp: string, reason: string, usdtIdr: number) {
@@ -338,10 +295,8 @@ async function main() {
       if (price <= position.stopPrice) close(book, pair, position, price, timestamp, 'Stop loss struktur', usdtIdr);
       else if (price >= position.targetPrice) close(book, pair, position, price, timestamp, 'Target tercapai', usdtIdr);
       else if (position.timeStopAt && timestamp >= position.timeStopAt) close(book, pair, position, price, timestamp, 'Time stop: momentum tidak berlanjut', usdtIdr);
-      else {
-        if (agent === 'breakout-specialist') pyramidBreakout(book, pair, position, price, timestamp, pricesUsdt, usdtIdr);
-        // breakevenAtR === null opts a strategy out of the breakeven move (aggressive v5 lets 3R winners run).
-        else if (position.breakevenAtR !== null && price >= position.entryPrice + position.initialRiskPerUnit * (position.breakevenAtR ?? 1.25)) position.stopPrice = Math.max(position.stopPrice, position.entryPrice * (1 + FEE_RATE * 2));
+      else if (position.breakevenAtR !== null && price >= position.entryPrice + position.initialRiskPerUnit * (position.breakevenAtR ?? 1.25)) {
+        position.stopPrice = Math.max(position.stopPrice, breakevenStopPrice(position.entryPrice, FEE_RATE));
       }
     }
     const candidates = (scan.candidates ?? []).filter((item) => item.agent === agent && OWNERS.has(agent));
@@ -358,4 +313,3 @@ async function main() {
   write(LEDGER, ledger); write(STATE, state); console.log(`[Spot paper] cycle ${timestamp} complete`);
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });
-

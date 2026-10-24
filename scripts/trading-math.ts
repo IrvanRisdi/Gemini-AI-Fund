@@ -84,3 +84,10 @@ export function validNetPlan(entry: number, stop: number, target: number, minimu
   const plan = netRewardRisk(entry, stop, target);
   return plan.netReward > 0 && plan.multiple >= minimumMultiple - 1e-9;
 }
+
+/**
+ * Solve the stop price that guarantees positive net P&L after both entry and exit fees.
+ */
+export function breakevenStopPrice(entry: number, feePerSide = PAPER_FEE_PER_SIDE) {
+  return entry * ((1 + feePerSide) / (1 - feePerSide) + 0.001);
+}

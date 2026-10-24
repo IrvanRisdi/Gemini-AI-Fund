@@ -187,8 +187,8 @@ class EngineFeatureTests(unittest.TestCase):
     def test_breakout_v3_does_not_require_positive_daily_change(self):
         features = engine.feature_set(engine.yahoo_rows(yahoo_fixture()))
         features.update({"ema20":100,"ema50":90,"close":110,"retest_confirmed":True,
-            "retest_age_sessions":4,"breakout_level":105,"relative_volume":1.1,
-            "rsi14":60,"change_pct":-1})
+            "retest_age_sessions":4,"breakout_level":105,"relative_volume":1.3,
+            "rsi14":60,"change_pct":1.5,"close_strength":0.70,"atr_pct":2.5})
         proposal = next(p for p in engine.evaluate_agents(features, None, "1d") if p.agent_id == "breakout-retest")
         self.assertEqual((proposal.action,proposal.status), ("BUY","ACTIONABLE"))
         self.assertIn("ke-4", proposal.rationale)

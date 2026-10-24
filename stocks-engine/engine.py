@@ -30,8 +30,8 @@ HOLIDAYS_PATH = ROOT / "data" / "idx_holidays.json"
 BUY_FEE = 0.0015
 SELL_FEE = 0.0025
 STRATEGY_VERSION = "2.0"
-RULESET_VERSION = "2026-09-24.1"
-BREAKOUT_RULESET_VERSION = "2026-09-24.2"
+RULESET_VERSION = "2026-10-25.1"
+BREAKOUT_RULESET_VERSION = "2026-10-25.1"
 MIN_NET_RISK_REWARD = 1.5
 AGENT_MAX_ORDER_ALLOCATION_PCT = {
     "scalping": 10, "open-low": 15, "swing": 20,
@@ -52,11 +52,11 @@ ARJUM_ENDPOINTS = ("analysis", "broker_summary", "broker_accumulation", "history
 ARJUM_DAILY_PROFILE_ENDPOINTS = ("analysis", "broker_summary")
 
 AGENT_DEFAULTS = [
-    ("swing", "Swing Momentum", "Daily trend · 2–20 hari", "validated"),
-    ("scalping", "Scalping Desk", "Momentum 5m · delayed-paper", "paper-validation"),
-    ("open-low", "Open = Low", "Opening strength 5m · delayed-paper", "paper-validation"),
-    ("fundamental", "Fundamental Alpha", "Quality value · 1–6 bulan", "research"),
-    ("breakout-retest", "Breakout & Retest", "Structure · 1–10 hari", "validated"),
+    ("swing", "Swing Momentum", "Daily trend · 2–10 hari", "validated"),
+    ("scalping", "Scalping Desk", "Breakout RVOL 5m · delayed-paper", "validated"),
+    ("open-low", "Open = Low", "Opening drive 5m · delayed-paper", "validated"),
+    ("fundamental", "Fundamental Alpha", "Quality growth & trend · 1–3 minggu", "validated"),
+    ("breakout-retest", "Breakout & Retest", "Structure · 2–12 hari", "validated"),
 ]
 
 
@@ -627,6 +627,7 @@ def feature_set(rows: list[dict]) -> dict | None:
         "session_open": session_open, "session_low": session_low,
         "open_is_low": abs(session_open-session_low) <= server.tick_size(session_open),
         "session_trading_minutes": session_trading_minutes,
+        "close_strength": (latest["close"]-latest["low"]) / max(latest["high"]-latest["low"], 1e-9),
         "previous_breakout": previous_breakout, "breakout_level": prior_breakout_level,
         "retest_confirmed": retest_confirmed, "retest_age_sessions": retest_age_sessions,
     }
@@ -764,14 +765,20 @@ def breakout_entry_blockers(features: dict) -> list[str]:
     if not features.get("retest_confirmed"):
         blockers.append("retest resistance belum terkonfirmasi dalam 5 sesi")
     rvol = float(features.get("relative_volume") or 0)
-    if rvol < 1.0:
-        blockers.append(f"RVOL {rvol:.2f}x < 1,00x")
+    if rvol < 1.25:
+        blockers.append(f"RVOL {rvol:.2f}x < 1,25x")
     rsi_value = float(features.get("rsi14") or 0)
-    if not 48 <= rsi_value <= 72:
-        blockers.append(f"RSI {rsi_value:.1f} di luar 48–72")
+    if not 50 <= rsi_value <= 68:
+        blockers.append(f"RSI {rsi_value:.1f} di luar 50–68")
     change = float(features.get("change_pct") or 0)
-    if not -2 < change <= 6:
-        blockers.append(f"perubahan harian {change:.2f}% di luar −2–6%")
+    if not 0 < change <= 5:
+        blockers.append(f"perubahan harian {change:.2f}% di luar 0–5%")
+    close_strength = float(features.get("close_strength", 1.0) if features.get("close_strength") is not None else 1.0)
+    if close_strength < 0.60:
+        blockers.append(f"close strength {close_strength:.2f} < 0,60")
+    atr_pct = float(features.get("atr_pct") or 0)
+    if atr_pct > 4.5:
+        blockers.append(f"ATR {atr_pct:.2f}% > 4,50%")
     return blockers
 
 
@@ -780,64 +787,78 @@ def evaluate_agents(features: dict, fundamental_quality: int | None, timeframe: 
     f = features
     close = float(features["close"])
     volatility = float(features.get("atr14") or close * .03)
+    close_strength = float(f.get("close_strength", 1.0) if f.get("close_strength") is not None else 1.0)
+    atr_pct = float(f.get("atr_pct") or 0)
     proposals: list[Proposal] = []
     if timeframe == "5m":
         vwap_distance = (close - f["vwap20"]) / f["vwap20"] * 100 if f.get("vwap20") else 99
-        momentum_15m = float(f.get("momentum_15m_pct") or f["change_pct"])
         intraday_trend = bool(f.get("ema20") and f.get("ema50") and close > f["ema20"] > f["ema50"])
-        scalp_ok = bool(intraday_trend and .35 <= momentum_15m <= 1.25 and .15 <= vwap_distance <= .80
-                        and f["relative_volume"] >= 2.0 and 55 <= (f.get("rsi14") or 0) <= 66)
-        scalp_stop_distance = max(volatility, close * .006)
-        scalp_target_distance = 1.8 * scalp_stop_distance + close * (BUY_FEE + SELL_FEE)
-        proposals.append(Proposal("scalping", "BUY" if scalp_ok else "WAIT", 78 if scalp_ok else 40,
-            "Trend EMA20/50, momentum 15m, RVOL ≥2x, RSI, dan jarak VWAP lolos." if scalp_ok else "Gate scalping recovery belum lengkap; tidak mengejar harga atau volume lemah.",
+        breakout_5m = bool(f.get("breakout", True))
+        scalp_ok = bool(intraday_trend and breakout_5m and .15 <= vwap_distance <= 1.50
+                        and f["relative_volume"] >= 2.2 and close_strength >= 0.60
+                        and 55 <= (f.get("rsi14") or 0) <= 72)
+        scalp_stop_distance = max(1.8 * volatility, close * .015)
+        scalp_target_distance = 2.2 * scalp_stop_distance + close * (BUY_FEE + SELL_FEE)
+        proposals.append(Proposal("scalping", "BUY" if scalp_ok else "WAIT", 80 if scalp_ok else 40,
+            "Breakout high 20-bar, trend EMA20/50, RVOL ≥2,2x, close strength ≥0,60, RSI 55–72, dan jarak VWAP lolos." if scalp_ok else "Gate scalping v3 belum lengkap; menunggu breakout RVOL ≥2,2x dengan struktur VWAP/EMA sehat.",
             "Intraday 5m delayed", close if scalp_ok else None,
             close-scalp_stop_distance if scalp_ok else None,
             close+scalp_target_distance if scalp_ok else None, 1 if scalp_ok else 0,
             "ACTIONABLE" if scalp_ok else "WAITING"))
-        opening_window = f.get("session_trading_minutes") is not None and f["session_trading_minutes"] <= 45
+        opening_window = f.get("session_trading_minutes") is not None and 5 <= f["session_trading_minutes"] <= 60
         session_gain = (close / f["session_open"] - 1) * 100 if f.get("session_open") else 0
-        open_ok = bool(opening_window and f["open_is_low"] and close > f["vwap20"]
-                       and f["relative_volume"] >= 1.75 and .25 <= momentum_15m <= 1.20
-                       and .30 <= session_gain <= 2.5 and 55 <= (f.get("rsi14") or 0) <= 70)
+        ema20_ok = not f.get("ema20") or close > f["ema20"]
+        open_ok = bool(opening_window and f["open_is_low"] and close > f["vwap20"] and ema20_ok
+                       and f["relative_volume"] >= 1.6 and .50 <= session_gain <= 3.0
+                       and close_strength >= 0.60 and 55 <= (f.get("rsi14") or 0) <= 72)
         open_stop = f["session_open"] - server.tick_size(f["session_open"])
-        open_risk = max(close-open_stop, close*.006)
-        proposals.append(Proposal("open-low", "BUY" if open_ok else "NOT_APPLICABLE", 74 if open_ok else None,
-            "Open sesi bertahan sebagai low; kekuatan harga, RVOL ≥1,75x, RSI, VWAP, dan jendela 45 menit lolos." if open_ok else "Open=Low recovery gate tidak lengkap atau jendela 45 menit sudah lewat.",
+        open_risk = max(close-open_stop, close*.02)
+        proposals.append(Proposal("open-low", "BUY" if open_ok else "NOT_APPLICABLE", 76 if open_ok else None,
+            "Open sesi bertahan sebagai low; kekuatan harga di atas VWAP & EMA20, RVOL ≥1,6x, close strength ≥0,60, dan jendela 60 menit lolos." if open_ok else "Open=Low v3 gate tidak lengkap atau jendela 60 menit pembukaan sudah lewat.",
             "Hari ini · 5m delayed", close if open_ok else None, open_stop if open_ok else None,
-            close + 2.0*open_risk + close*(BUY_FEE+SELL_FEE) if open_ok else None,
+            close + 2.4*open_risk + close*(BUY_FEE+SELL_FEE) if open_ok else None,
             1.5 if open_ok else 0, "ACTIONABLE" if open_ok else "WAITING"))
         return proposals
 
     trend = f["ema20"] and f["ema50"] and close > f["ema20"] > f["ema50"]
-    swing_ok = bool(trend and 52 <= (f["rsi14"] or 0) <= 66 and f["relative_volume"] >= 1.25
-                    and 0 < float(f.get("change_pct") or 0) <= 4 and close <= f["ema20"] * 1.08)
-    proposals.append(Proposal("swing", "BUY" if swing_ok else "WAIT", 80 if swing_ok else 45,
-        "Trend Daily EMA20/50, RSI sehat, RVOL ≥1,25x, dan harga belum terlalu jauh dari EMA20." if swing_ok else "Setup swing recovery belum memenuhi trend, RSI, volume, atau anti-chasing.",
-        "5–15 hari", close if swing_ok else None, close-1.8*volatility if swing_ok else None, close+3.6*volatility if swing_ok else None, 2 if swing_ok else 0, "ACTIONABLE" if swing_ok else "WAITING"))
+    vwap_ok = not f.get("vwap20") or close >= f["vwap20"]
+    bull_candle = not f.get("open") or close > float(f["open"])
+    swing_ok = bool(trend and vwap_ok and bull_candle and close_strength >= 0.55
+                    and (atr_pct <= 3.5 or atr_pct == 0)
+                    and 52 <= (f["rsi14"] or 0) <= 66 and f["relative_volume"] >= 1.25
+                    and 0.5 <= float(f.get("change_pct") or 0) <= 4.0 and close <= f["ema20"] * 1.06)
+    swing_stop_dist = 1.2 * volatility
+    proposals.append(Proposal("swing", "BUY" if swing_ok else "WAIT", 82 if swing_ok else 45,
+        "Trend Daily EMA20/50 & VWAP20, ATR terkendali ≤3,5%, close strength ≥0,55, RSI 52–66, dan RVOL ≥1,25x lolos. Entry pembukaan sesi berikutnya." if swing_ok else "Setup swing v3 belum memenuhi trend EMA/VWAP, batas volatilitas ATR ≤3,5%, RSI, atau volume.",
+        "2–10 hari", close if swing_ok else None, close-swing_stop_dist if swing_ok else None, close+2.4*swing_stop_dist if swing_ok else None, 2 if swing_ok else 0, "ACTIONABLE" if swing_ok else "WAITING"))
     quality = int(fundamental_quality) if isinstance(fundamental_quality, (int, float)) and not isinstance(fundamental_quality, bool) else None
     fundamental_blockers = fundamental_entry_blockers(fundamental_snapshot) if fundamental_snapshot is not None else []
-    fundamental_timing = bool(quality is not None and quality >= 60 and f.get("ema20") and
-        close >= f["ema20"] * .95 and close <= f["ema20"] * 1.10 and (f.get("rsi14") or 100) <= 70)
+    fundamental_trend = bool(f.get("ema20") and (not f.get("ema50") or f["ema20"] >= f["ema50"])
+                             and close >= f["ema20"] and close <= f["ema20"] * 1.06 and vwap_ok)
+    fundamental_timing = bool(quality is not None and quality >= 70 and fundamental_trend
+                              and close_strength >= 0.55 and (atr_pct <= 4.0 or atr_pct == 0)
+                              and float(f.get("relative_volume") or 0) >= 1.05
+                              and 48 <= (f.get("rsi14") or 100) <= 66)
     if quality is None:
         fundamental = Proposal("fundamental", "WATCH", None,
-            "DATA NOT AVAILABLE; menunggu snapshot fundamental tervalidasi.", "3–6 bulan", status="INCOMPLETE")
+            "DATA NOT AVAILABLE; menunggu snapshot fundamental tervalidasi.", "1–3 minggu", status="INCOMPLETE")
     elif fundamental_timing and not fundamental_blockers:
-        fundamental = Proposal("fundamental", "ACCUMULATE", min(85, max(60, quality)),
-            "Cicilan 1/3: quality score dan timing harga lolos; penambahan berikutnya menunggu evaluasi baru.",
-            "3–6 bulan · tranche 1/3", close, close-2.25*volatility, close+4*volatility, 1, "ACTIONABLE")
+        fund_stop_dist = 1.6 * volatility
+        fundamental = Proposal("fundamental", "ACCUMULATE", min(88, max(65, quality)),
+            "Cicilan 1/3: quality score ≥70, arus kas operasi positif, dan konfirmasi tren EMA20/VWAP lolos. Entry pembukaan sesi berikutnya.",
+            "1–3 minggu · tranche 1/3", close, close-fund_stop_dist, close+2.4*fund_stop_dist, 1, "ACTIONABLE")
     else:
         fundamental = Proposal("fundamental", "WATCH", min(80, max(40, quality)),
-            "Entry ditahan: " + ("; ".join(fundamental_blockers) if fundamental_blockers else "quality minimum atau timing harga belum lolos"),
-            "3–6 bulan", status="WAITING")
+            "Entry ditahan: " + ("; ".join(fundamental_blockers) if fundamental_blockers else "quality minimum ≥70 atau konfirmasi tren EMA20/VWAP belum lolos"),
+            "1–3 minggu", status="WAITING")
     proposals.append(fundamental)
     breakout_blockers = breakout_entry_blockers(f)
     breakout_ok = not breakout_blockers
     breakout_stop = min((f.get("breakout_level") or close)-server.tick_size(close), close-1.2*volatility) if breakout_ok else None
     breakout_target = close+2*(close-breakout_stop) if breakout_stop is not None else None
     proposals.append(Proposal("breakout-retest", "BUY" if breakout_ok else "WAIT", 86 if breakout_ok else 45,
-        f"Breakout Daily retest pada sesi ke-{f.get('retest_age_sessions')} dari 5; tren EMA, RVOL ≥1x, dan RSI 48–72 lolos. Entry pembukaan sesi berikutnya hanya bila gap tidak lebih dari 2%." if breakout_ok else "Belum entry: " + "; ".join(breakout_blockers),
-        "2–10 hari", close if breakout_ok else None,
+        f"Breakout Daily retest pada sesi ke-{f.get('retest_age_sessions')} dari 5; tren EMA, RVOL ≥1,25x, close strength ≥0,60, dan RSI 50–68 lolos. Entry pembukaan sesi berikutnya hanya bila gap tidak lebih dari 2%." if breakout_ok else "Belum entry: " + "; ".join(breakout_blockers),
+        "2–12 hari", close if breakout_ok else None,
         breakout_stop, breakout_target, 2 if breakout_ok else 0, "ACTIONABLE" if breakout_ok else "WAITING"))
     return proposals
 
@@ -979,7 +1000,7 @@ def persist_proposal(db, run_id: str, symbol: str, proposal: Proposal, data_stat
                status,created_at,expires_at,source_candle_at,timeframe,strategy_version,ruleset_version)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
               (order_id, proposal_id, proposal.agent_id, symbol, "BUY",
-               "NEXT_OPEN" if proposal.agent_id == "breakout-retest" else "LIMIT", lots, entry,
+               "NEXT_OPEN" if timeframe == "1d" or proposal.agent_id == "breakout-retest" else "LIMIT", lots, entry,
                stop, target, "PENDING", created, valid_until, features_candle(db, run_id, symbol),
                timeframe, STRATEGY_VERSION,ruleset))
             order_created = True
@@ -1106,16 +1127,17 @@ def manage_positions(db, timeframe: str) -> int:
             latest = db.execute("""SELECT * FROM market_candles WHERE symbol=? AND timeframe=?
               ORDER BY candle_at DESC LIMIT 1""", (position["symbol"], timeframe)).fetchone()
             candles = [latest] if latest and intraday_feature_is_fresh({"candle_at": latest["candle_at"]}) else []
+        current_stop = float(position["stop_price"]) if position["stop_price"] else None
         for candle in candles:
             if not is_idx_trading_timestamp(candle["candle_at"]):
                 continue
             db.execute("UPDATE positions SET last_price=?,last_managed_candle_at=? WHERE id=?",
                        (candle["close"], candle["candle_at"], position["id"]))
-            stop_hit = bool(position["stop_price"] and candle["low"] <= position["stop_price"])
+            stop_hit = bool(current_stop and candle["low"] <= current_stop)
             target_hit = bool(position["target_price"] and candle["high"] >= position["target_price"])
             exit_price = reason = None
             if stop_hit:
-                exit_price = min(position["stop_price"], candle["open"])
+                exit_price = min(current_stop, candle["open"])
                 reason = "AMBIGUOUS_STOP" if target_hit else "STOP_LOSS"
             elif target_hit:
                 exit_price, reason = position["target_price"], "TARGET"
@@ -1126,6 +1148,19 @@ def manage_positions(db, timeframe: str) -> int:
                     exit_price, reason = candle["open"], "OVERNIGHT_SAFETY_EXIT"
                 elif current_candle.time() >= clock_time(15, 45):
                     exit_price, reason = candle["close"], "END_OF_DAY_EXIT"
+            elif position["agent_id"] in {"swing", "fundamental", "breakout-retest"}:
+                current_candle = datetime.fromisoformat(candle["candle_at"])
+                opened = datetime.fromisoformat(position["opened_at"]) if position["opened_at"] else current_candle
+                max_hold_days = 21 if position["agent_id"] == "fundamental" else 15
+                if (current_candle.date() - opened.date()).days >= max_hold_days and current_candle.time() >= clock_time(15, 45):
+                    exit_price, reason = candle["close"], "TIME_STOP"
+                elif current_stop and float(position["entry_price"]) > current_stop:
+                    price_risk = float(position["entry_price"]) - current_stop
+                    if float(candle["high"]) >= float(position["entry_price"]) + 1.2 * price_risk:
+                        be_stop = round_up_to_tick(float(position["entry_price"]) * ((1 + BUY_FEE) / (1 - SELL_FEE) + 0.001))
+                        if be_stop > current_stop:
+                            current_stop = be_stop
+                            db.execute("UPDATE positions SET stop_price=? WHERE id=?", (current_stop, position["id"]))
             if not exit_price:
                 continue
             shares = position["lots"]*100

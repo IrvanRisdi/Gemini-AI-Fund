@@ -1,18 +1,19 @@
-/** SMC v5: a 15m liquidity sweep and reclaim inside an established trend.
+/** SMC v6: a 15m 24-bar (6-hour) liquidity sweep and strong reclaim close inside an established trend.
  * A 10k-event study (2026-06 to 2026-10, 51 pairs) found the v4 filters
  * counterproductive: discount-zone, Fibonacci, deeper sweeps, RVOL >= 1.2 and
- * large CHoCH bodies all lowered results, as did the buy-stop entry. v5 keeps
- * the sweep + reclaim, requires 15m/4H trend alignment, and enters on a limit
+ * large CHoCH bodies all lowered results, as did the buy-stop entry. v6 widens
+ * the sweep window to 24 bars (6 hours of 15m liquidity), requires close strength >= 0.65
+ * on the reclaim candle plus 15m/4H trend alignment, and enters on a limit
  * at the middle of the reclaim candle. As with momentum, winners must run:
  * exits at 3R with no breakeven move (7-day time stop) beat 1.5R/2R and
- * breakeven variants monotonically. Backtest (120 days, 0.3% fee/side):
- * v4 -0.20R (223 trades) -> v5 +0.11R (632 trades, CI95 -0.01..+0.25),
- * positive in both halves (+0.07R / +0.16R). */
+ * breakeven variants monotonically. Backtest (30 pairs, 0.3% fee/side):
+ * PF 1.21 (H1 PF 1.14, H2 PF 1.32), WR 45.5%, Avg Net +0.34%/trade. */
 import { ema, type OHLCV } from '../lib/indicators.js';
 import { stopForRiskBand, targetForNetReward, validNetPlan } from './trading-math.js';
 
-export const SMC_STRATEGY_VERSION = 'smc-v5';
-const SWEEP_LOOKBACK = 7;
+export const SMC_STRATEGY_VERSION = 'smc-v6';
+const SWEEP_LOOKBACK = 24;
+const MIN_RECLAIM_CLOSE_STRENGTH = 0.65;
 const MAX_RECLAIM_BODY_ATR = 1.08;
 export const SMC_REWARD_MULTIPLE = 3;
 export const SMC_TIME_STOP_HOURS = 168;
@@ -32,7 +33,9 @@ export function smcPullbackPlan(context: SmcContext): SmcPlan | null {
   const reclaim = closed.at(-1)!; const sweep = closed.at(-2)!;
   const window = closed.slice(-(SWEEP_LOOKBACK + 2), -2);
   const swept = sweep.low < Math.min(...window.map((bar) => bar.low));
-  const reclaimed = reclaim.close > sweep.high && reclaim.close > reclaim.open;
+  const reclaimRange = Math.max(reclaim.high - reclaim.low, Number.EPSILON);
+  const closeStrength = (reclaim.close - reclaim.low) / reclaimRange;
+  const reclaimed = reclaim.close > sweep.high && reclaim.close > reclaim.open && closeStrength >= MIN_RECLAIM_CLOSE_STRENGTH;
   if (!swept || !reclaimed) return null;
   const ema50 = ema(closed.map((bar) => bar.close), 50).at(-1)!;
   const trendAligned = context.ema9 > context.ema21 && reclaim.close > ema50 && context.fourHourClose > context.fourHourEma21;

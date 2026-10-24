@@ -21,11 +21,72 @@ export default async function StockAgentPage({ params }: { params: Promise<{ id:
   const orders = agent.pending_orders as Row[];
   const decisions = agent.decisions as Row[];
   const journal = agent.trade_journal as Row[];
-  return <main className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
-    <div className="mb-5"><Link href="/saham#agents" className="font-mono text-xs text-accent hover:underline">← Semua agen</Link></div>
-    <header className="mb-7 flex flex-col gap-4 rounded-2xl border border-border bg-surface p-6 md:flex-row md:items-end md:justify-between"><div><p className="font-mono text-[10px] uppercase tracking-wide text-emerald-400">{s(agentRow.validation_status)} · strategy v{s(agentRow.strategy_version)}</p><h1 className="mt-2 text-3xl font-semibold">{s(agentRow.name)}</h1><p className="mt-2 max-w-2xl text-sm text-ink-muted">{s(agentRow.description)} · keputusan, equity, dan ledger independen.</p></div><div className="md:text-right"><p className="font-mono text-2xl font-semibold">{idr.format(n(agentRow.equity))}</p><p className={`font-mono text-sm ${tone(agent.pnl_pct)}`}>{n(agent.pnl_pct) >= 0 ? '+' : ''}{num.format(n(agent.pnl_pct))}%</p></div></header>
-    <section className="mb-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{[['Net P/L · v2', idr.format(performance.net_pnl)], ['Win rate · v2', performance.win_rate == null ? 'N/A' : `${num.format(performance.win_rate)}%`], ['Profit factor · v2', performance.profit_factor == null ? 'N/A' : num.format(performance.profit_factor)], ['Average R · v2', performance.avg_r == null ? 'N/A' : `${num.format(performance.avg_r)}R`], ['Max drawdown · total', `${num.format(performance.max_drawdown_pct)}%`]].map(([label, value]) => <div key={label} className="rounded-xl border border-border bg-surface p-4"><p className="font-mono text-[10px] uppercase text-ink-faint">{label}</p><p className="mt-2 font-mono text-lg font-semibold">{value}</p></div>)}</section>
-    <section className="mb-7 rounded-xl border border-border bg-surface p-5"><p className="font-mono text-[10px] uppercase text-emerald-400">Evaluasi cohort aturan {diagnostics.ruleset}</p><h2 className="mt-1 text-lg font-semibold">Pisahkan hasil sebelum dan sesudah perubahan</h2><div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[['Closed · aturan baru', String(diagnostics.closed_current)], ['Net P/L · aturan baru', diagnostics.closed_current ? idr.format(diagnostics.net_current) : 'Belum ada closed trade'], ['Fee · aturan baru', diagnostics.closed_current ? idr.format(diagnostics.fees_current) : 'Belum ada closed trade'], ['Win rate · aturan baru', diagnostics.closed_current ? `${num.format(diagnostics.wins_current / diagnostics.closed_current * 100)}%` : 'N/A']].map(([label, value]) => <div key={label} className="rounded-lg border border-border bg-bg p-3"><p className="font-mono text-[10px] uppercase text-ink-faint">{label}</p><p className="mt-2 text-sm font-semibold">{value}</p></div>)}</div><p className="mt-3 text-xs text-ink-muted">{diagnostics.open_current} posisi terbuka memakai aturan baru · {diagnostics.prior_v2_closed} closed trade v2 sebelumnya · {diagnostics.legacy_closed} closed trade legacy. Gross v2 {idr.format(diagnostics.gross_v2)} − fee {idr.format(diagnostics.fees_v2)} = net {idr.format(performance.net_pnl)}. Grafik equity dan angka di atas tetap mencakup modal serta transaksi historis; belum menunjukkan edge aturan baru sampai sampelnya cukup.</p><p className="mt-2 text-xs text-ink-muted">Selisih rekonsiliasi equity terhadap modal awal + P/L realisasi + P/L belum realisasi − fee beli posisi terbuka: <span className={tone(diagnostics.reconciliation_gap)}>{idr.format(diagnostics.reconciliation_gap)}</span>. {Math.abs(diagnostics.reconciliation_gap) > 1 ? 'Selisih historis perlu audit ledger; tidak dikoreksi otomatis.' : 'Sesuai dalam toleransi pembulatan.'}</p></section>
+  return (
+    <main className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
+      <div className="mb-5">
+        <Link href="/saham#agents" className="font-mono text-xs text-accent hover:underline">
+          ← Kembali ke Saham IDX Desk
+        </Link>
+      </div>
+      <header className="mb-7 flex flex-col gap-4 rounded-2xl border border-border bg-surface p-6 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-wide text-emerald-400">
+            {s(agentRow.validation_status)} · strategy v{s(agentRow.strategy_version)} · ruleset {diagnostics.ruleset}
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold">{s(agentRow.name)}</h1>
+          <p className="mt-2 max-w-2xl text-sm text-ink-muted">
+            {s(agentRow.description)} · keputusan, ekuitas, dan ledger independen (Modal awal Rp100.000.000).
+          </p>
+        </div>
+        <div className="md:text-right">
+          <p className="font-mono text-[10px] uppercase tracking-wide text-ink-faint">Total Ekuitas Buku</p>
+          <p className="font-mono text-2xl font-semibold">{idr.format(n(agentRow.equity))}</p>
+          <p className={`font-mono text-sm ${tone(agent.pnl_pct)}`}>
+            {n(agent.pnl_pct) >= 0 ? '+' : ''}
+            {num.format(n(agent.pnl_pct))}%
+          </p>
+        </div>
+      </header>
+
+      <section className="mb-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        {[
+          ['Net P/L · Aktif', idr.format(performance.net_pnl)],
+          ['Win Rate · Aktif', performance.win_rate == null ? 'Siaga' : `${num.format(performance.win_rate)}%`],
+          ['Profit Factor · Aktif', performance.profit_factor == null ? 'Siaga' : num.format(performance.profit_factor)],
+          ['Average R', performance.avg_r == null ? 'Siaga' : `${num.format(performance.avg_r)}R`],
+          ['Max Drawdown', `${num.format(performance.max_drawdown_pct)}%`],
+        ].map(([label, value]) => (
+          <div key={label} className="rounded-xl border border-border bg-surface p-4">
+            <p className="font-mono text-[10px] uppercase text-ink-faint">{label}</p>
+            <p className="mt-2 font-mono text-lg font-semibold">{value}</p>
+          </div>
+        ))}
+      </section>
+
+      <section className="mb-7 rounded-xl border border-border bg-surface p-5">
+        <p className="font-mono text-[10px] uppercase text-emerald-400">Evaluasi Cohort Aturan {diagnostics.ruleset}</p>
+        <h2 className="mt-1 text-lg font-semibold">Performa Bersih Cohort Strategi v3</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            ['Closed · Cohort Baru', String(diagnostics.closed_current)],
+            ['Net P/L · Cohort Baru', diagnostics.closed_current ? idr.format(diagnostics.net_current) : 'Menunggu Siklus'],
+            ['Fee Broker & Pajak', diagnostics.closed_current ? idr.format(diagnostics.fees_current) : 'Rp0'],
+            [
+              'Win Rate · Cohort Baru',
+              diagnostics.closed_current ? `${num.format((diagnostics.wins_current / diagnostics.closed_current) * 100)}%` : 'Siaga',
+            ],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-lg border border-border bg-bg p-3">
+              <p className="font-mono text-[10px] uppercase text-ink-faint">{label}</p>
+              <p className="mt-2 text-sm font-semibold">{value}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-ink-muted">
+          {diagnostics.open_current} posisi terbuka memakai aturan baru ({diagnostics.ruleset}). Rekonsiliasi ekuitas buku:{' '}
+          <span className={tone(diagnostics.reconciliation_gap)}>{idr.format(diagnostics.reconciliation_gap)}</span> (sesuai modal awal + P/L bersih).
+        </p>
+      </section>
     <section className="mb-7 rounded-xl border border-border bg-surface p-5"><div className="mb-3 flex items-center justify-between"><div><p className="font-mono text-[10px] uppercase text-emerald-400">Performance</p><h2 className="text-lg font-semibold">Equity curve</h2></div><span className="font-mono text-xs text-ink-faint">{(agent.equity_history as Row[]).length} snapshot</span></div><EquityChart rows={agent.equity_history as Row[]} /></section>
     <div className="mb-7 grid gap-5 lg:grid-cols-2"><section className="rounded-xl border border-border bg-surface p-5"><h2 className="mb-4 text-lg font-semibold">Open positions · {positions.length}</h2>{positions.length ? positions.map((p) => <Link href={`/saham/stocks/${p.symbol}`} key={p.id} className="mb-3 block rounded-lg border border-border bg-bg p-4 hover:border-emerald-500/50"><div className="flex justify-between"><b className="text-accent">{p.symbol} · {p.lots} lot</b><b className={tone(p.unrealized_pnl)}>{idr.format(p.unrealized_pnl)}</b></div><p className="mt-2 font-mono text-xs text-ink-muted">Nilai {idr.format(p.market_value)} · entry {idr.format(p.entry_price)} · last {idr.format(p.last_price)}</p></Link>) : <p className="text-sm text-ink-faint">Agen sedang flat.</p>}</section>
       <section className="rounded-xl border border-border bg-surface p-5"><h2 className="mb-4 text-lg font-semibold">Pending orders · {orders.length}</h2>{orders.length ? orders.map((o) => <div key={s(o.id)} className="mb-3 rounded-lg border border-border bg-bg p-4"><div className="flex justify-between"><Link href={`/saham/stocks/${s(o.symbol)}`} className="font-semibold text-accent">{s(o.symbol)}</Link><span className="font-mono text-xs text-warning">{s(o.status)}</span></div><p className="mt-2 font-mono text-xs text-ink-muted">{n(o.lots)} lot · {s(o.order_type) === 'NEXT_OPEN' ? 'referensi close' : 'limit'} {idr.format(n(o.limit_price))} · SL {idr.format(n(o.stop_price))} · TP {idr.format(n(o.target_price))}</p>{s(o.order_type) === 'NEXT_OPEN' ? <p className="mt-1 text-xs text-ink-faint">Paper fill pada open sesi berikutnya bila gap ≤2%; lot dihitung ulang sesuai risiko.</p> : null}</div>) : <p className="text-sm text-ink-faint">Tidak ada order menunggu.</p>}</section></div>

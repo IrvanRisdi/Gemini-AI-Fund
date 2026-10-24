@@ -6,7 +6,7 @@ import { netRewardRisk } from './trading-math.ts';
 
 const UP = { ema9: 101, ema21: 100, close: 102 };
 
-/** 80 gently rising 5m bars, then an optional ignition bar. */
+/** 80 gently rising bars, then an optional ignition bar. */
 function bars(ignition?: Partial<OHLCV>): OHLCV[] {
   const out: OHLCV[] = Array.from({ length: 80 }, (_, index) => {
     const close = 100 + index * 0.01;
@@ -19,7 +19,7 @@ function bars(ignition?: Partial<OHLCV>): OHLCV[] {
   return out;
 }
 
-test('fires on a 2-hour high broken by a strong close on 4x volume', () => {
+test('fires on a 24-bar high broken by a strong close on >=3.5x volume', () => {
   const series = bars({});
   const plan = ignitionAt(series, series.length - 1, UP)!;
   assert.ok(plan);
@@ -30,14 +30,16 @@ test('fires on a 2-hour high broken by a strong close on 4x volume', () => {
   assert.ok(Math.abs(netRewardRisk(plan.entry, plan.stop, plan.target).multiple - 3) < 1e-9);
 });
 
-test('rejects weak volume, a weak close, and a misaligned 15m trend', () => {
+test('rejects weak volume, a weak close, misaligned trend, and weak relative strength vs BTC', () => {
   const weakVolume = bars({ volume: 3_000 });
   assert.equal(ignitionAt(weakVolume, weakVolume.length - 1, UP), null);
-  // Closes above the 2-hour high but in the lower third of a long-wicked bar.
+  // Closes above the 24-bar high but in the lower third of a long-wicked bar.
   const weakClose = bars({ high: 101.4 });
   assert.equal(ignitionAt(weakClose, weakClose.length - 1, UP), null);
   const series = bars({});
   assert.equal(ignitionAt(series, series.length - 1, { ema9: 99, ema21: 100, close: 102 }), null);
+  assert.equal(ignitionAt(series, series.length - 1, { ...UP, pairReturn24h: 0.01, btcReturn24h: 0.005 }), null);
+  assert.ok(ignitionAt(series, series.length - 1, { ...UP, pairReturn24h: 0.04, btcReturn24h: 0.01 }));
 });
 
 test('does not chase a bar that closes far beyond the breakout level', () => {
@@ -45,7 +47,7 @@ test('does not chase a bar that closes far beyond the breakout level', () => {
   assert.equal(ignitionAt(extended, extended.length - 1, UP), null);
 });
 
-test('only signals from the last three closed bars of a 15-minute scan', () => {
+test('only signals from the last three closed bars of a scan', () => {
   const series = bars({});
   const quiet = (offset: number): OHLCV => ({ ...series.at(-1)!, timestamp: series.at(-1)!.timestamp + offset * 300_000, open: 100.8, high: 100.85, low: 100.75, close: 100.8, volume: 900 });
   assert.ok(latestIgnition([...series, quiet(1), quiet(2)], UP));

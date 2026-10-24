@@ -3,6 +3,7 @@
  * The human research layer (news, catalysts, bear case) is not reproduced:
  * finalists come from the transparent screen score plus hard exclusions. */
 import type { JournalAsset, JournalFeed } from './asymmetry-journal.js';
+import { targetForNetReward } from './trading-math.js';
 
 export const SCREEN_MIN_MC = 100e6;
 export const SCREEN_MIN_HR_ANN = 5e6;
@@ -53,7 +54,7 @@ export function scoreCoin(coin: MarketCoin, totals: RevenueTotals, category: str
   const crw = clamp(1 - (chg30d - 20) / 130);
   const flags: string[] = [];
   if (runRate != null && runRate > 3) flags.push('lonjakan');
-  if (runRate != null && runRate < 0.6) flags.push('revenue menurun');
+  if ((runRate != null && runRate < 0.6) || (growth != null && growth < -0.10)) flags.push('revenue menurun');
   if (chg30d > 80) flags.push('crowded');
   if (fdv / mc > 2.5) flags.push('dilusi');
   if (hrAnn < 20e6) flags.push('HR kecil');
@@ -147,7 +148,8 @@ export function draftPullback(t: ReturnType<typeof technicals>) {
   const lower = t.support.filter((value) => value < zoneLow);
   const stop = (lower[0] ?? zoneLow * 0.92) * 0.985;
   const highs = t.resistance.filter((value) => value > close);
-  const targets = [...new Set([...(highs.length ? highs : [t.hi30]), t.hi30].filter((value) => value > close))].sort((a, b) => a - b).slice(0, 3);
+  const minNetTarget = targetForNetReward(zoneHigh, stop, 2.0);
+  const targets = [...new Set([...(highs.length ? highs : [t.hi30]), t.hi30, minNetTarget].filter((value) => value > close))].sort((a, b) => a - b).slice(0, 3);
   return { entry: [zoneLow, zoneHigh] as [number, number], stop, targets };
 }
 
@@ -163,9 +165,10 @@ function percent(value: number | null, digits = 0) { return value == null ? '—
 export function finalistAsset(row: ScreenRow, candles: Candle[]): JournalAsset {
   const t = technicals(candles);
   const draft = draftPullback(t);
+  const bearishTrend = t.trend === 'turun';
   return {
-    ticker: row.ticker, name: row.name, score: Math.round(row.score) / 10,
-    verdict: `Finalis screen otomatis · tren harian ${t.trend}`,
+    ticker: row.ticker, name: row.name, score: bearishTrend ? null : Math.round(row.score) / 10,
+    verdict: bearishTrend ? 'Tren harian turun · ditahan sampai struktur berbalik naik' : `Finalis screen otomatis · tren harian ${t.trend}`,
     thesis: `MC/HR ${row.mcHr.toFixed(1)}x · holder revenue ${(row.hrAnn / 1e6).toFixed(0)} jt USD/thn (${percent(row.hrGrowth)} 30h) · harga 30h ${percent(row.chg30d)}`,
     invalidation: `Close harian di bawah ${draft.stop.toPrecision(4)} atau keluar dari shortlist screen`,
     setups: [{ name: 'A · Pullback (draf otomatis)', kind: 'pullback', primary: true, entry: draft.entry, stop: draft.stop, targets: draft.targets }],

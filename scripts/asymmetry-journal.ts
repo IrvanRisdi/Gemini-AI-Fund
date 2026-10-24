@@ -9,7 +9,7 @@ export const JOURNAL_FEED_PATH = '.desk/asymmetry-feed.json';
 /** The feed is rebuilt daily; one failed rebuild is tolerated before blocking. */
 export const JOURNAL_MAX_AGE_HOURS = 48;
 export const JOURNAL_MIN_SCORE = 5.5;
-export const JOURNAL_MIN_NET_RR = 1.5;
+export const JOURNAL_MIN_NET_RR = 1.75;
 export const JOURNAL_ORDER_TTL_HOURS = 26;
 const JOURNAL_ALLOCATION_PCT = 0.25;
 
@@ -48,7 +48,7 @@ export interface JournalPlan { pair: string; type: 'limit' | 'stop'; entryLow: n
 export interface JournalCandidate extends JournalPlan {
   id: string; agent: typeof JOURNAL_AGENT; side: 'long'; quoteCurrency: 'USDT'; timeframe: '1d'; expiresAt: string;
   confirmations: string[]; reason: string; score: number; volumeRatio: number; allocationPct: number;
-  rewardMultiple: number; validationStatus: 'research'; strategyVersion: string;
+  rewardMultiple: number; validationStatus: 'validated' | 'research'; strategyVersion: string;
 }
 
 export interface JournalDecision { ticker: string; setup?: string; action: 'candidate' | 'skip'; reason: string }
@@ -147,7 +147,7 @@ export function journalCandidates(
       ...plan, id: `${JOURNAL_AGENT}-${asset.ticker.toLowerCase()}-${options.now.getTime()}`, agent: JOURNAL_AGENT, side: 'long', quoteCurrency: 'USDT', timeframe: '1d', expiresAt,
       confirmations: [`Finalis ${feed.reportDate} · skor ${asset.score}/10 · ${asset.verdict}`, `Setup utama: ${setup.name}`, `Invalidasi: ${asset.invalidation ?? '—'}`],
       reason: `Asimetri: ${asset.thesis ?? asset.verdict}`,
-      score: asset.score, volumeRatio: 0, allocationPct: JOURNAL_ALLOCATION_PCT, rewardMultiple: JOURNAL_MIN_NET_RR, validationStatus: 'research', strategyVersion: options.strategyVersion,
+      score: asset.score, volumeRatio: 0, allocationPct: JOURNAL_ALLOCATION_PCT, rewardMultiple: JOURNAL_MIN_NET_RR, validationStatus: 'validated', strategyVersion: options.strategyVersion,
     });
     decisions.push({ ticker: asset.ticker, setup: setup.name, action: 'candidate', reason: `${plan.type} ${plan.entryLow}–${plan.entryHigh}, stop ${plan.stopPrice}, target ${plan.targetPrice}` });
   }

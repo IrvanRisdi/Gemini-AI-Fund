@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  breakevenStopPrice,
   meetsMinimumPaperNotional,
   netRewardRisk,
   orderedLimitBand,
@@ -63,4 +64,11 @@ test('longer breakout target produces 2.5R net', () => {
 
   assert.ok(Math.abs(netRewardRisk(entry, stop, target).multiple - 2.5) < 1e-9);
   assert.equal(validNetPlan(entry, stop, target, 2.5), true);
+});
+
+test('breakeven stop guarantees positive net proceeds after both entry and exit fees', () => {
+  const entry = 100;
+  const beStop = breakevenStopPrice(entry, 0.003);
+  const netProceeds = beStop * (1 - 0.003) - entry * (1 + 0.003);
+  assert.ok(netProceeds > 0);
 });

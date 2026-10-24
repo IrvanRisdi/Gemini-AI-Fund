@@ -205,6 +205,7 @@ export const DEFAULT_AGENTS = [
   'breakout-specialist',
   'wyckoff-trader',
   'aggressive-breakout-trader',
+  'asymmetry-journal-trader',
 ];
 
 const DEFAULT_STARTING_BALANCE = 50000000;
@@ -456,18 +457,20 @@ export async function getDeskSnapshot(): Promise<DeskSnapshot> {
 }
 
 export async function getBriefingExcerpt(slug: string, maxChars = 2400): Promise<string> {
-  try {
-    const dir = getDeskDir();
-    const fullPath = path.join(dir, 'briefings', `${slug}.md`);
-    if (!existsSync(fullPath)) return `# ${slug}\n\nActive strategy persona on Gemini AI-Fund desk.`;
-    const raw = await readFile(fullPath, 'utf8');
-    return raw.length > maxChars ? raw.slice(0, maxChars) + '\n…' : raw;
-  } catch {
-    return `# ${slug}\n\nActive strategy persona on Gemini AI-Fund desk.`;
-  }
+  const raw = await getFullBriefing(slug);
+  if (!raw) return `# ${slug}\n\nActive strategy persona on Gemini AI-Fund desk.`;
+  return raw.length > maxChars ? raw.slice(0, maxChars) + '\n…' : raw;
 }
 
 export async function getFullBriefing(slug: string): Promise<string | null> {
+  try {
+    const response = await fetch(`${GITHUB_DESK_BASE}/briefings/${slug}.md`, {
+      next: { revalidate: 60 },
+    });
+    if (response.ok) return await response.text();
+  } catch {
+    // Fall through to local desk directory.
+  }
   try {
     const dir = getDeskDir();
     const fullPath = path.join(dir, 'briefings', `${slug}.md`);
@@ -640,7 +643,7 @@ export async function getAgentBookBreakdown(slug: string): Promise<AgentBookBrea
     const realizedPnlIdr = cycles
       .filter((cycle) => cycle.status === 'closed' && !cycle.maintenance)
       .reduce((sum, cycle) => sum + (cycle.realizedPnlIdr ?? 0), 0);
-    const recoveryCycles = cycles.filter((cycle) => cycle.status === 'closed' && !cycle.maintenance && cycle.strategyVersion?.startsWith('recovery-v'));
+    const recoveryCycles = cycles.filter((cycle) => cycle.status === 'closed' && !cycle.maintenance && Boolean(cycle.strategyVersion && cycle.strategyVersion !== 'legacy'));
     const recoveryWins = recoveryCycles.filter((cycle) => (cycle.realizedPnlIdr ?? 0) > 0).length;
 
     return {
@@ -722,7 +725,12 @@ export async function getAgentMeta(slug: string): Promise<AgentMeta> {
     const book = ledger?.agents?.[slug];
     const hasBook = !!book?.balance;
     const startingBal = ledger?.starting_balance_per_agent ?? DEFAULT_STARTING_BALANCE;
-    const pnlIdr = hasBook && ledger ? book!.balance.IDR - startingBal : 0;
+    const openExposure = Object.values(book?.positions ?? {}).reduce(
+      (sum, pos) => sum + (pos.costBasisIdr ?? pos.entryPrice * pos.size * (pos.quoteCurrency === 'USDT' ? pos.fxRateAtEntry ?? 1 : 1)),
+      0,
+    );
+    const equity = hasBook && ledger ? book!.balance.IDR + openExposure : startingBal;
+    const pnlIdr = hasBook && ledger ? equity - startingBal : 0;
 
     const trades = book?.trades ?? [];
     const strategyTrades = trades.filter((trade) => !trade.maintenance);
@@ -737,7 +745,7 @@ export async function getAgentMeta(slug: string): Promise<AgentMeta> {
       lastAction: stateAgent?.last_action ?? 'Active',
       assetsCovered: stateAgent?.assets_covered ?? [],
       hasBook,
-      balance: hasBook ? book!.balance.IDR : startingBal,
+      balance: equity,
       startingBalance: startingBal,
       pnlIdr,
       pnlPct: (pnlIdr / startingBal) * 100,
