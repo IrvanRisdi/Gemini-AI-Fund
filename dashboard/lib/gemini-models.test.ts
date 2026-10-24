@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { GEMINI_MODEL_PRIORITY, getGeminiModelCandidates } from './gemini-models.js';
+import {
+  GEMINI_MODEL_PRIORITY,
+  SMARTEST_GEMINI_MODEL_PRIORITY,
+  getGeminiModelCandidates,
+  getSmartestGeminiModelCandidates,
+} from './gemini-models.js';
 
 test('Gemini Flash models are tried before Lite fallbacks', () => {
   assert.deepEqual(GEMINI_MODEL_PRIORITY, [
@@ -9,6 +14,12 @@ test('Gemini Flash models are tried before Lite fallbacks', () => {
     'gemini-2.0-flash',
   ]);
   assert.ok(GEMINI_MODEL_PRIORITY[1].includes('lite'));
+});
+
+test('Smartest Gemini models prioritize gemini-2.5-pro first for daily reports', () => {
+  const models = getSmartestGeminiModelCandidates();
+  assert.equal(models[0], 'gemini-2.5-pro');
+  assert.equal(SMARTEST_GEMINI_MODEL_PRIORITY[0], 'gemini-2.5-pro');
 });
 
 test('configured models are appended once without replacing priority order', () => {

@@ -12,12 +12,19 @@ interface GdeltArticle {
   seendate?: string;
 }
 
+const coinNewsCache = new Map<string, { expiresAt: number; data: NewsItem[] }>();
+
 /**
- * Broad, no-key news discovery. Results are cached for one hour so opening a
- * pair page never causes repeated provider calls. News is intentionally kept
- * separate from a trading signal: an article is context, not a recommendation.
+ * Broad, no-key news discovery. Results are cached so opening a
+ * pair page never causes repeated or blocking provider calls.
  */
 export async function fetchCoinNews(name: string, symbol: string): Promise<NewsItem[]> {
+  const cacheKey = symbol.toLowerCase();
+  const now = Date.now();
+  const cached = coinNewsCache.get(cacheKey);
+  if (cached && cached.expiresAt > now) {
+    return cached.data;
+  }
   try {
     const query = `"${name.replace(/"/g, '')}" OR "${symbol.replace(/"/g, '')} crypto"`;
     const url = new URL('https://api.gdeltproject.org/api/v2/doc/doc');
@@ -27,11 +34,14 @@ export async function fetchCoinNews(name: string, symbol: string): Promise<NewsI
     url.searchParams.set('maxrecords', '5');
     url.searchParams.set('timespan', '7d');
     url.searchParams.set('sort', 'datedesc');
-    const res = await fetch(url, { next: { revalidate: 3600 } });
-    if (!res.ok) return [];
+    const res = await fetch(url, {
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(1800),
+    });
+    if (!res.ok) return cached?.data ?? [];
     const data = (await res.json()) as { articles?: GdeltArticle[] };
     const seen = new Set<string>();
-    return (data.articles ?? [])
+    const items = (data.articles ?? [])
       .filter((article) => article.title && article.url && !seen.has(article.url) && (seen.add(article.url), true))
       .slice(0, 5)
       .map((article) => ({
@@ -40,7 +50,9 @@ export async function fetchCoinNews(name: string, symbol: string): Promise<NewsI
         source: article.domain || 'Sumber berita',
         publishedAt: article.seendate ?? null,
       }));
+    coinNewsCache.set(cacheKey, { expiresAt: now + 1800_000, data: items });
+    return items;
   } catch {
-    return [];
+    return cached?.data ?? [];
   }
 }

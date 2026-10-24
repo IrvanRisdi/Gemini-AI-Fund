@@ -7,6 +7,19 @@ export const dynamic = 'force-dynamic';
 
 export default async function ExplorePage() {
   const [basePairs, latestScan] = await Promise.all([fetchAllPairs(), getLatestCoinScan()]);
+  const seen = new Set(basePairs.map((p) => p.symbol));
+  for (const u of latestScan?.universe ?? []) {
+    const sym = u.pair.replace('/', '').replace('_', '').replace(/(?:idr|usdt)$/i, '').toLowerCase();
+    if (sym && !seen.has(sym)) {
+      seen.add(sym);
+      basePairs.push({
+        symbol: sym,
+        name: sym.toUpperCase(),
+        indodaxId: `${sym}_idr`,
+        coingeckoId: '',
+      });
+    }
+  }
   const pairs = await fetchExplorePairs(basePairs);
 
   return (

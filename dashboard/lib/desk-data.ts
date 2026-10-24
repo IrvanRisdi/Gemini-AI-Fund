@@ -772,3 +772,65 @@ export async function getAgentMeta(slug: string): Promise<AgentMeta> {
   }
 }
 
+export interface UnifiedDailyReportData {
+  generatedAt: string;
+  dateWib: string;
+  session: 'ASIA_OPEN' | 'US_OPEN';
+  modelUsed: string;
+  portfolio: {
+    cryptoEquityIdr: number;
+    cryptoCashIdr: number;
+    cryptoOpenPositions: number;
+    cryptoPendingOrders: number;
+    stockEquityIdr: number;
+    stockOpenPositions: number;
+    totalCombinedEquityIdr: number;
+  };
+  cryptoSummary: {
+    posture: string;
+    regimeReason: string;
+    btcPriceUsdt: number | null;
+    btcChange24hPct: number | null;
+    pairsScanned: number;
+    uptrendCount: number;
+    topSetups: Array<{
+      pair: string;
+      agent: string;
+      entry: string;
+      stop: string;
+      target: string;
+      note: string;
+    }>;
+  };
+  stockSummary: {
+    marketPhase: string;
+    ihsgTrend: string;
+    ihsgClose: number | null;
+    ihsgChangePct: number | null;
+    regimeLabel: string;
+    topSetups: Array<{
+      symbol: string;
+      name: string;
+      agent: string;
+      price: string;
+      entry: string;
+      stop: string;
+      target: string;
+      score: number | null;
+      note: string;
+    }>;
+  };
+  aiDigest: {
+    headline: string;
+    marketWeather: string;
+    cryptoRecommendation: string;
+    stockRecommendation: string;
+    actionableTakeaway: string;
+  };
+  whatsappText: string;
+}
+
+export async function getUnifiedDailyReport(): Promise<UnifiedDailyReportData | null> {
+  return readJson<UnifiedDailyReportData>('unified-daily-report.json');
+}
+

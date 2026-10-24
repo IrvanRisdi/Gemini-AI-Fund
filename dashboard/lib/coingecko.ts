@@ -14,19 +14,30 @@ export interface CoinInfo {
   homepage: string | null;
 }
 
+const coinInfoCache = new Map<string, { expiresAt: number; data: CoinInfo | null }>();
+
 /**
  * CoinGecko's free public API (no key). Returns null on any failure —
  * network block, rate limit, unknown id — so callers can render a graceful
  * "unavailable" state instead of crashing the page.
  */
 export async function fetchCoinInfo(coingeckoId: string): Promise<CoinInfo | null> {
+  if (!coingeckoId) return null;
+  const now = Date.now();
+  const cached = coinInfoCache.get(coingeckoId);
+  if (cached && cached.expiresAt > now) {
+    return cached.data;
+  }
   try {
     const url = `https://api.coingecko.com/api/v3/coins/${coingeckoId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`;
-    const res = await fetch(url, { next: { revalidate: 300 } });
-    if (!res.ok) return null;
+    const res = await fetch(url, {
+      next: { revalidate: 900 },
+      signal: AbortSignal.timeout(1800),
+    });
+    if (!res.ok) return cached?.data ?? null;
     const data = await res.json();
 
-    return {
+    const info: CoinInfo = {
       name: data.name,
       symbol: (data.symbol ?? '').toUpperCase(),
       rank: data.market_cap_rank ?? null,
@@ -41,7 +52,9 @@ export async function fetchCoinInfo(coingeckoId: string): Promise<CoinInfo | nul
       athDate: data.market_data?.ath_date?.usd ?? null,
       homepage: data.links?.homepage?.[0] || null,
     };
+    coinInfoCache.set(coingeckoId, { expiresAt: now + 900_000, data: info });
+    return info;
   } catch {
-    return null;
+    return cached?.data ?? null;
   }
 }

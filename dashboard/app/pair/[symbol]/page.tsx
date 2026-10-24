@@ -1,8 +1,10 @@
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getPair } from '@/lib/pairs';
 import { findPairBySymbol } from '@/lib/all-pairs';
 import { fetchCoinOhlcv } from '@/lib/coin-market';
+import { fetchBinance24hStats } from '@/lib/binance';
 import { fetchCoinInfo } from '@/lib/coingecko';
 import { fetchCoinNews } from '@/lib/news';
 import { computeTechnicalSnapshot } from '@/lib/technical';
@@ -20,8 +22,6 @@ import { AnalysisGrid } from '@/components/AnalysisGrid';
 import { TradingPlanCard } from '@/components/TradingPlanCard';
 import { StatBadge } from '@/components/StatBadge';
 
-// No generateStaticParams here on purpose — this page must always fetch
-// live prices/candles per request, not bake in build-time snapshots.
 export const dynamic = 'force-dynamic';
 
 const TIMEFRAMES = {
@@ -32,6 +32,16 @@ const TIMEFRAMES = {
 
 type Timeframe = keyof typeof TIMEFRAMES;
 
+async function AsyncCoinInfo({ coingeckoId }: { coingeckoId: string }) {
+  const coinInfo = coingeckoId ? await fetchCoinInfo(coingeckoId) : null;
+  return <CoinInfoPanel info={coinInfo} />;
+}
+
+async function AsyncCoinNews({ name, symbol }: { name: string; symbol: string }) {
+  const news = await fetchCoinNews(name, symbol);
+  return <CoinNewsPanel news={news} />;
+}
+
 export default async function PairPage({
   params,
   searchParams,
@@ -41,22 +51,29 @@ export default async function PairPage({
 }) {
   const { symbol } = await params;
   const { tf } = await searchParams;
+  const cleanSymbol = symbol.toLowerCase();
   const timeframe: Timeframe = tf === '1h' || tf === '4h' || tf === '1d' ? tf : '4h';
   const timeframeMeta = TIMEFRAMES[timeframe];
-  // Fast path: featured desk pairs. Fallback: Binance-supported bases that
-  // also exist in the local discovery list.
-  const pair = getPair(symbol) ?? (await findPairBySymbol(symbol));
-  if (!pair) notFound();
 
-  // .catch(() => []) covers both "no Binance Spot market for this pair" and
-  // transient REST failures — either way, degrade to the
-  // same empty-state message below instead of throwing an unhandled 500.
-  const [candles, dailyCandles, coinInfo, news] = await Promise.all([
-    fetchCoinOhlcv(pair.indodaxId, timeframe, timeframeMeta.candles).catch(() => []),
-    fetchCoinOhlcv(pair.indodaxId, '1d', 2).catch(() => []),
-    pair.coingeckoId ? fetchCoinInfo(pair.coingeckoId) : Promise.resolve(null),
-    fetchCoinNews(pair.name, pair.symbol),
+  // Fetch candles and 24h stats in parallel with metadata lookup so there is zero sequential waterfall!
+  const [resolvedPair, candles, stats24h] = await Promise.all([
+    Promise.resolve(getPair(cleanSymbol)).then((p) => p ?? findPairBySymbol(cleanSymbol)),
+    fetchCoinOhlcv(cleanSymbol, timeframe, timeframeMeta.candles).catch(() => []),
+    fetchBinance24hStats().catch(() => new Map()),
   ]);
+
+  const pair =
+    resolvedPair ??
+    (candles.length > 0
+      ? {
+          symbol: cleanSymbol,
+          name: cleanSymbol.toUpperCase(),
+          indodaxId: `${cleanSymbol}_idr`,
+          coingeckoId: '',
+        }
+      : undefined);
+
+  if (!pair) notFound();
 
   if (candles.length === 0) {
     return (
@@ -66,12 +83,10 @@ export default async function PairPage({
           <h1 className="mt-1 font-sans text-3xl font-semibold text-ink">{pair.name}</h1>
         </header>
         <div className="rounded-xl border border-border bg-surface p-5 text-sm text-ink-muted">
-          Couldn&apos;t load candle data for this pair right now — either its market source has no usable chart history, or
-          the request was rate-limited. Try again shortly, or
-          try another pair from{' '}
-          <a href="/explore" className="text-accent hover:underline">
-            Explore
-          </a>
+          Data candle untuk pasangan ini sedang tidak tersedia dari Binance Spot. Silakan coba beberapa saat lagi atau pilih koin lain dari{' '}
+          <Link href="/explore" className="text-accent hover:underline">
+            Market Scanner
+          </Link>
           .
         </div>
       </main>
@@ -84,9 +99,11 @@ export default async function PairPage({
   const breakout = computeBreakout(candles);
 
   const last = candles[candles.length - 1];
-  const prev = dailyCandles[dailyCandles.length - 2];
-  const dailyLast = dailyCandles[dailyCandles.length - 1];
-  const changePct = prev && dailyLast ? ((dailyLast.close - prev.close) / prev.close) * 100 : 0;
+  const prev = candles.length >= 2 ? candles[candles.length - 2] : last;
+  const ticker24h = stats24h.get(cleanSymbol);
+  const changePct =
+    ticker24h?.priceChangePct ??
+    (prev && last && prev.close > 0 ? ((last.close - prev.close) / prev.close) * 100 : 0);
 
   const hasFullAnalysis = snapshot && smc && fib && breakout;
   const composite = hasFullAnalysis
@@ -96,12 +113,21 @@ export default async function PairPage({
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
+      <div className="mb-4 flex items-center justify-between">
+        <Link href="/explore" className="font-mono text-xs text-accent hover:underline">
+          ← Kembali ke Market Scanner
+        </Link>
+        <Link href="/" className="font-mono text-xs text-ink-muted hover:text-ink">
+          Crypto Desk Overview →
+        </Link>
+      </div>
+
       <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-mono text-xs tracking-wide text-ink-muted uppercase">{pair.symbol.toUpperCase()}/USDT · Binance Spot</p>
+          <p className="font-mono text-xs tracking-wide text-blue-400 uppercase">{pair.symbol.toUpperCase()}/USDT · Binance Spot</p>
           <h1 className="mt-1 font-sans text-3xl font-semibold text-ink">{pair.name}</h1>
         </div>
-        <div className="text-right">
+        <div className="text-left sm:text-right">
           <p className="font-mono text-2xl font-semibold text-ink">
             {last.close.toLocaleString('en-US', { maximumFractionDigits: last.close >= 1000 ? 2 : last.close >= 1 ? 4 : 8 })} USDT
           </p>
@@ -113,7 +139,7 @@ export default async function PairPage({
       </header>
 
       <div className="mb-6 rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 font-sans text-xs leading-relaxed text-ink-muted">
-        Candle, indikator, dan trading plan memakai harga native Binance Spot USDT. Konversi USDT/IDR hanya dilakukan pada lapisan pembukuan untuk menghitung kas, nilai posisi, equity, fee, risiko, dan P&amp;L dalam rupiah.
+        Candle, indikator, dan trading plan memakai harga native Binance Spot USDT (di-cache 60 detik untuk pembukaan instan). Konversi USDT/IDR dilakukan otomatis pada pembukuan kas dan posisi.
       </div>
 
       <section className="rounded-xl border border-border bg-surface p-5">
@@ -132,7 +158,9 @@ export default async function PairPage({
 
       <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {snapshot ? <TechnicalPanel snapshot={snapshot} timeframe={timeframeMeta.label} /> : <div className="rounded-xl border border-border bg-surface p-5 text-sm text-ink-muted">Data candle belum cukup untuk analisis teknikal.</div>}
-        <CoinInfoPanel info={coinInfo} />
+        <Suspense fallback={<div className="rounded-xl border border-border bg-surface p-5 font-mono text-xs text-ink-faint animate-pulse">Memuat profil fundamental CoinGecko…</div>}>
+          <AsyncCoinInfo coingeckoId={pair.coingeckoId} />
+        </Suspense>
       </section>
 
       {hasFullAnalysis && composite && plan && (
@@ -150,7 +178,9 @@ export default async function PairPage({
       </section>
 
       <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <CoinNewsPanel news={news} />
+        <Suspense fallback={<div className="rounded-xl border border-border bg-surface p-5 font-mono text-xs text-ink-faint animate-pulse">Memuat berita pasar terkini…</div>}>
+          <AsyncCoinNews name={pair.name} symbol={pair.symbol} />
+        </Suspense>
         <div className="rounded-xl border border-border bg-surface p-5">
           <h3 className="font-sans text-lg font-semibold text-ink">Cara Membaca Halaman Ini</h3>
           <div className="mt-3 space-y-2 font-sans text-sm leading-relaxed text-ink-muted">

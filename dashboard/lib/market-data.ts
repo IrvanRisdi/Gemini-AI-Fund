@@ -47,29 +47,50 @@ function chunk<T>(items: T[], size: number): T[][] {
   return out;
 }
 
+let bulkIdrCache: { expiresAt: number; data: Record<string, number> } | null = null;
+let tickerStatsCache: { expiresAt: number; data: Record<string, IndodaxTickerStats> } | null = null;
+let marketDataCache: { expiresAt: number; data: Map<string, CoinGeckoMarketEntry> } | null = null;
+let exploreRowsCache: { expiresAt: number; data: ExplorePairRow[] } | null = null;
+
 /** All Indodax IDR last-trade prices in a single request, keyed by ticker_id (e.g. "btc_idr"). */
 export async function fetchBulkIdrPrices(): Promise<Record<string, number>> {
+  const now = Date.now();
+  if (bulkIdrCache && bulkIdrCache.expiresAt > now) {
+    return bulkIdrCache.data;
+  }
   try {
-    const res = await fetch('https://indodax.com/api/ticker_all', { next: { revalidate: 60 } });
-    if (!res.ok) return {};
+    const res = await fetch('https://indodax.com/api/ticker_all', {
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(2200),
+    });
+    if (!res.ok) return bulkIdrCache?.data ?? { usdt_idr: 16500 };
     const data = (await res.json()) as { tickers: Record<string, { last: string }> };
     const out: Record<string, number> = {};
     for (const [key, t] of Object.entries(data.tickers ?? {})) {
       const price = parseFloat(t.last);
       if (!Number.isNaN(price)) out[key] = price;
     }
+    if (!out.usdt_idr) out.usdt_idr = 16500;
+    bulkIdrCache = { expiresAt: now + 60_000, data: out };
     return out;
   } catch {
-    return {};
+    return bulkIdrCache?.data ?? { usdt_idr: 16500 };
   }
 }
 
 async function fetchExploreTickerStats(): Promise<Record<string, IndodaxTickerStats>> {
+  const now = Date.now();
+  if (tickerStatsCache && tickerStatsCache.expiresAt > now) {
+    return tickerStatsCache.data;
+  }
   try {
-    const res = await fetch('https://indodax.com/api/ticker_all', { next: { revalidate: 60 } });
-    if (!res.ok) return {};
+    const res = await fetch('https://indodax.com/api/ticker_all', {
+      next: { revalidate: 120 },
+      signal: AbortSignal.timeout(1800),
+    });
+    if (!res.ok) return tickerStatsCache?.data ?? {};
     const data = (await res.json()) as { tickers: Record<string, IndodaxTicker> };
-    return Object.fromEntries(
+    const out = Object.fromEntries(
       Object.entries(data.tickers ?? {}).map(([key, ticker]) => [
         key,
         {
@@ -80,71 +101,92 @@ async function fetchExploreTickerStats(): Promise<Record<string, IndodaxTickerSt
         },
       ]),
     );
+    tickerStatsCache = { expiresAt: now + 120_000, data: out };
+    return out;
   } catch {
-    return {};
+    return tickerStatsCache?.data ?? {};
   }
 }
 
 /** Market cap rank + USD market cap for a batch of CoinGecko ids, chunked to stay under URL length limits. */
 async function fetchMarketData(coingeckoIds: string[]): Promise<Map<string, CoinGeckoMarketEntry>> {
+  const now = Date.now();
+  if (marketDataCache && marketDataCache.expiresAt > now) {
+    return marketDataCache.data;
+  }
   const map = new Map<string, CoinGeckoMarketEntry>();
   const batches = chunk([...new Set(coingeckoIds.filter(Boolean))], 200);
 
   const results = await Promise.allSettled(
     batches.map(async (ids) => {
       const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids.join(',')}&order=market_cap_desc&per_page=250&sparkline=false`;
-      const res = await fetch(url, { next: { revalidate: 3600 } });
+      const res = await fetch(url, {
+        next: { revalidate: 3600 },
+        signal: AbortSignal.timeout(1500),
+      });
       if (!res.ok) return [];
       return (await res.json()) as CoinGeckoMarketEntry[];
-    })
+    }),
   );
 
   for (const r of results) {
     if (r.status !== 'fulfilled') continue;
     for (const entry of r.value) map.set(entry.id, entry);
   }
-  return map;
+  if (map.size > 0) {
+    marketDataCache = { expiresAt: now + 1800_000, data: map };
+    return map;
+  }
+  return marketDataCache?.data ?? map;
 }
 
 /**
  * Enriches the pair list with Binance USDT price and global market metadata —
- * sorted by CoinGecko market cap rank ascending. Pairs CoinGecko has no
- * rank for (thin/unlisted) sort to the bottom, alphabetically by symbol.
- * Degrades gracefully: if CoinGecko is unreachable, rank/marketCap come
- * back null for everything but the page still renders with symbol/name/price.
+ * sorted by CoinGecko market cap rank ascending (or 24h USDT quoteVolume when CoinGecko is skipped).
  */
 export async function fetchExplorePairs(pairs: PairMeta[]): Promise<ExplorePairRow[]> {
-  const [tickerStats, marketMap, binanceStats, supportedBases] = await Promise.all([
+  const now = Date.now();
+  if (exploreRowsCache && exploreRowsCache.expiresAt > now && exploreRowsCache.data.length > 0) {
+    return exploreRowsCache.data;
+  }
+
+  const [tickerStats, marketMap, binanceStats] = await Promise.all([
     fetchExploreTickerStats(),
     fetchMarketData(pairs.map((p) => p.coingeckoId)),
     fetchBinance24hStats().catch(() => new Map()),
-    fetchBinanceSpotBases(),
   ]);
 
-  const rows: ExplorePairRow[] = pairs.filter((p) => supportedBases?.has(p.symbol) ?? binanceStats.has(p.symbol)).map((p) => {
-    const market = marketMap.get(p.coingeckoId);
-    const ticker = tickerStats[`${p.symbol}_idr`];
-    const binance = binanceStats.get(p.symbol);
-    return {
-      ...p,
-      name: market?.name ?? p.name,
-      rank: market?.market_cap_rank ?? null,
-      marketCapUsd: market?.market_cap ?? null,
-      priceUsdt: binance?.lastPrice ?? market?.current_price ?? null,
-      // Do not compare CoinGecko's global volume with local Indodax turnover.
-      volumeIdr: ticker?.volumeIdr ?? null,
-      highUsdt: binance?.highPrice ?? null,
-      lowUsdt: binance?.lowPrice ?? null,
-      globalChangePct24h: binance?.priceChangePct ?? market?.price_change_percentage_24h ?? null,
-    };
-  });
+  const rows: ExplorePairRow[] = pairs
+    .filter((p) => binanceStats.size === 0 || binanceStats.has(p.symbol))
+    .map((p) => {
+      const market = marketMap.get(p.coingeckoId);
+      const ticker = tickerStats[`${p.symbol}_idr`];
+      const binance = binanceStats.get(p.symbol);
+      return {
+        ...p,
+        name: market?.name ?? p.name,
+        rank: market?.market_cap_rank ?? null,
+        marketCapUsd: market?.market_cap ?? null,
+        priceUsdt: binance?.lastPrice ?? market?.current_price ?? null,
+        volumeIdr: ticker?.volumeIdr ?? (binance?.quoteVolume ? binance.quoteVolume * 16500 : null),
+        highUsdt: binance?.highPrice ?? null,
+        lowUsdt: binance?.lowPrice ?? null,
+        globalChangePct24h: binance?.priceChangePct ?? market?.price_change_percentage_24h ?? null,
+      };
+    });
 
   rows.sort((a, b) => {
     if (a.rank != null && b.rank != null) return a.rank - b.rank;
     if (a.rank != null) return -1;
     if (b.rank != null) return 1;
+    const volA = binanceStats.get(a.symbol)?.quoteVolume ?? 0;
+    const volB = binanceStats.get(b.symbol)?.quoteVolume ?? 0;
+    if (volA !== volB) return volB - volA;
     return a.symbol.localeCompare(b.symbol);
   });
 
+  if (rows.length > 0) {
+    exploreRowsCache = { expiresAt: now + 120_000, data: rows };
+  }
   return rows;
 }

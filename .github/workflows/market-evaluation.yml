@@ -41,9 +41,15 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Run Gemini Strategy Evaluation
+      - name: Run Gemini Strategy Evaluation & Daily Delivery
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FONNTE_TOKEN: ${{ secrets.FONNTE_TOKEN }}
+          WHATSAPP_TARGET: ${{ secrets.WHATSAPP_TARGET }}
+          CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
+          WHATSAPP_WEBHOOK_URL: ${{ secrets.WHATSAPP_WEBHOOK_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: npx tsx scripts/daily-evaluation.ts
 
       - name: Commit Updated Briefings

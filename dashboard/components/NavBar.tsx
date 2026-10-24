@@ -97,6 +97,16 @@ export function NavBar() {
               >
                 Market Scanner
               </Link>
+              <Link
+                href="/saham/reports"
+                className={`rounded-md px-2.5 py-1 font-mono text-xs transition-colors ${
+                  pathname.startsWith('/saham/reports')
+                    ? 'bg-surface text-ink font-semibold border border-border'
+                    : 'text-ink-muted hover:bg-surface hover:text-ink'
+                }`}
+              >
+                Daily Report
+              </Link>
               <span className="mx-1 h-4 w-px bg-border" aria-hidden />
               {PAIRS.map((p) => {
                 const pairPath = `/pair/${p.symbol}`;
