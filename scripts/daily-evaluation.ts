@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getSmartestGeminiModelCandidates } from '../dashboard/lib/gemini-models.js';
+import { generateDailyReportPdf } from './pdf-report.js';
 
 const API_KEY = process.env.GEMINI_API_KEY;
 const REPO_ROOT = fs.existsSync(path.resolve(process.cwd(), '.desk'))
@@ -537,6 +538,21 @@ Kembalikan HANYA objek JSON valid (tanpa markdown codefence \`\`\`json) dengan 5
   return { digest: fallback, modelUsed: 'rule-based-analyst' };
 }
 
+function stripMarkdownAsterisks(text: string): string {
+  return String(text ?? '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/\*/g, '')
+    .trim();
+}
+
+function escapeHtml(text: string): string {
+  return stripMarkdownAsterisks(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 function buildWhatsAppMessage(report: UnifiedDailyReport): string {
   const cryptoLines =
     report.cryptoSummary.topSetups.length > 0
@@ -544,7 +560,7 @@ function buildWhatsAppMessage(report: UnifiedDailyReport): string {
           .slice(0, 3)
           .map(
             (s, idx) =>
-              `${idx + 1}. *${s.pair}* (${s.agent})\n   • Area Beli: ${s.entry}\n   • Stop: ${s.stop} | Target: ${s.target}\n   • Catatan: ${s.note}`,
+              `${idx + 1}. ${stripMarkdownAsterisks(s.pair)} (${stripMarkdownAsterisks(s.agent)})\n   • Area Beli: ${s.entry}\n   • Stop: ${s.stop} | Target: ${s.target}\n   • Catatan: ${stripMarkdownAsterisks(s.note)}`,
           )
           .join('\n')
       : '• Belum ada sinyal beli instan; tahan kas & pantau watchlist.';
@@ -555,42 +571,99 @@ function buildWhatsAppMessage(report: UnifiedDailyReport): string {
           .slice(0, 3)
           .map(
             (s, idx) =>
-              `${idx + 1}. *${s.symbol}* (${s.name})\n   • Entry: ${s.entry} | Stop: ${s.stop} | Target: ${s.target}\n   • Catatan: ${s.note}`,
+              `${idx + 1}. ${stripMarkdownAsterisks(s.symbol)} (${stripMarkdownAsterisks(s.name)})\n   • Entry: ${s.entry} | Stop: ${s.stop} | Target: ${s.target}\n   • Catatan: ${stripMarkdownAsterisks(s.note)}`,
           )
           .join('\n')
       : '• Menunggu pembukaan bursa sesi berikutnya.';
 
   return [
-    `📊 *LAPORAN HARIAN GEMINI AI-FUND*`,
+    `📊 LAPORAN HARIAN GEMINI AI-FUND`,
     `📅 Tanggal: ${report.dateWib} (${report.session === 'US_OPEN' ? 'Edisi Sore/Malam' : 'Edisi Pagi Terpadu'})`,
-    `🧠 Analis AI: *${report.modelUsed}*`,
+    `🧠 Analis AI: ${report.modelUsed}`,
     ``,
-    `💡 *Intisari Hari Ini:*`,
-    `${report.aiDigest.headline}`,
+    `💡 Intisari Hari Ini:`,
+    `${stripMarkdownAsterisks(report.aiDigest.headline)}`,
     ``,
-    `🌤️ *Cuaca Pasar (Kripto & Saham IDX):*`,
-    `${report.aiDigest.marketWeather}`,
+    `🌤️ Cuaca Pasar (Kripto & Saham IDX):`,
+    `${stripMarkdownAsterisks(report.aiDigest.marketWeather)}`,
     ``,
-    `🪙 *Rekomendasi & Pantauan Kripto Spot:*`,
-    `${report.aiDigest.cryptoRecommendation}`,
+    `🪙 Rekomendasi & Pantauan Kripto Spot:`,
+    `${stripMarkdownAsterisks(report.aiDigest.cryptoRecommendation)}`,
     `${cryptoLines}`,
     ``,
-    `📈 *Rekomendasi & Pantauan Saham IDX (BEI):*`,
-    `${report.aiDigest.stockRecommendation}`,
+    `📈 Rekomendasi & Pantauan Saham IDX (BEI):`,
+    `${stripMarkdownAsterisks(report.aiDigest.stockRecommendation)}`,
     `${stockLines}`,
     ``,
-    `💼 *Status Portofolio Paper Trading:*`,
-    `• Total Ekuitas Gabungan: *${formatIdr(report.portfolio.totalCombinedEquityIdr)}*`,
+    `💼 Status Portofolio Paper Trading:`,
+    `• Total Ekuitas Gabungan: ${formatIdr(report.portfolio.totalCombinedEquityIdr)}`,
     `• Desk Kripto (6 Agen): ${formatIdr(report.portfolio.cryptoEquityIdr)} (${report.portfolio.cryptoOpenPositions} posisi aktif)`,
     `• Desk Saham IDX (5 Agen): ${formatIdr(report.portfolio.stockEquityIdr)} (${report.portfolio.stockOpenPositions} posisi aktif)`,
     ``,
-    `🛡️ *Panduan Risiko:*`,
-    `${report.aiDigest.actionableTakeaway}`,
+    `🛡️ Panduan Risiko:`,
+    `${stripMarkdownAsterisks(report.aiDigest.actionableTakeaway)}`,
+  ].join('\n');
+}
+
+function buildTelegramHtmlMessage(report: UnifiedDailyReport): string {
+  const cryptoLines =
+    report.cryptoSummary.topSetups.length > 0
+      ? report.cryptoSummary.topSetups
+          .slice(0, 3)
+          .map(
+            (s, idx) =>
+              `${idx + 1}. <b>${escapeHtml(s.pair)}</b> (<i>${escapeHtml(s.agent)}</i>)\n   • Area Beli: <code>${escapeHtml(s.entry)}</code>\n   • Stop: <code>${escapeHtml(s.stop)}</code> | Target: <code>${escapeHtml(s.target)}</code>\n   • Catatan: ${escapeHtml(s.note)}`,
+          )
+          .join('\n')
+      : '• Belum ada sinyal beli instan; tahan kas &amp; pantau watchlist.';
+
+  const stockLines =
+    report.stockSummary.topSetups.length > 0
+      ? report.stockSummary.topSetups
+          .slice(0, 3)
+          .map(
+            (s, idx) =>
+              `${idx + 1}. <b>${escapeHtml(s.symbol)}</b> (${escapeHtml(s.name)})\n   • Entry: <code>${escapeHtml(s.entry)}</code> | Stop: <code>${escapeHtml(s.stop)}</code> | Target: <code>${escapeHtml(s.target)}</code>\n   • Catatan: ${escapeHtml(s.note)}`,
+          )
+          .join('\n')
+      : '• Menunggu pembukaan bursa sesi berikutnya.';
+
+  const edition = report.session === 'US_OPEN' ? 'Edisi Sore/Malam' : 'Edisi Pagi Terpadu';
+  return [
+    `📊 <b>LAPORAN HARIAN GEMINI AI-FUND</b>`,
+    `📅 Tanggal: <b>${escapeHtml(report.dateWib)}</b> (${edition})`,
+    `🧠 Analis AI: <code>${escapeHtml(report.modelUsed)}</code>`,
+    ``,
+    `💡 <b>Intisari Hari Ini:</b>`,
+    `${escapeHtml(report.aiDigest.headline)}`,
+    ``,
+    `🌤️ <b>Cuaca Pasar (Kripto &amp; Saham IDX):</b>`,
+    `${escapeHtml(report.aiDigest.marketWeather)}`,
+    ``,
+    `🪙 <b>Rekomendasi &amp; Pantauan Kripto Spot:</b>`,
+    `${escapeHtml(report.aiDigest.cryptoRecommendation)}`,
+    `${cryptoLines}`,
+    ``,
+    `📈 <b>Rekomendasi &amp; Pantauan Saham IDX (BEI):</b>`,
+    `${escapeHtml(report.aiDigest.stockRecommendation)}`,
+    `${stockLines}`,
+    ``,
+    `💼 <b>Status Portofolio Paper Trading:</b>`,
+    `• Total Ekuitas Gabungan: <b>${escapeHtml(formatIdr(report.portfolio.totalCombinedEquityIdr))}</b>`,
+    `• Desk Kripto (6 Agen): ${escapeHtml(formatIdr(report.portfolio.cryptoEquityIdr))} (${report.portfolio.cryptoOpenPositions} posisi aktif)`,
+    `• Desk Saham IDX (5 Agen): ${escapeHtml(formatIdr(report.portfolio.stockEquityIdr))} (${report.portfolio.stockOpenPositions} posisi aktif)`,
+    ``,
+    `🛡️ <b>Panduan Risiko:</b>`,
+    `${escapeHtml(report.aiDigest.actionableTakeaway)}`,
   ].join('\n');
 }
 
 export async function deliverDailyReportNotifications(
-  message: string,
+  htmlMessage: string,
+  plainMessage: string,
+  pdfBuffer: Buffer,
+  pdfFilename: string,
+  report: UnifiedDailyReport,
 ): Promise<NonNullable<UnifiedDailyReport['telegramDelivery']>> {
   const deliveredTo: string[] = [];
   const rawToken = (
@@ -643,24 +716,69 @@ export async function deliverDailyReportNotifications(
     console.warn('Telegram getMe warning:', err);
   }
 
-  const sendChunks = async (chatId: string | number): Promise<{ ok: boolean; error?: string }> => {
+  const sendToChat = async (chatId: string | number): Promise<{ ok: boolean; error?: string }> => {
+    // 1. Send the PDF Document first with a crisp Telegram HTML Executive Caption
+    let pdfSent = false;
+    try {
+      const caption = [
+        `📄 <b>LAPORAN HARIAN GEMINI AI-FUND (PDF)</b>`,
+        `📅 Tanggal: <b>${escapeHtml(report.dateWib)}</b>  |  🧠 AI: <code>${escapeHtml(report.modelUsed)}</code>`,
+        `💼 Total Ekuitas: <b>${escapeHtml(formatIdr(report.portfolio.totalCombinedEquityIdr))}</b>`,
+        ``,
+        `💡 <b>Intisari:</b> ${escapeHtml(report.aiDigest.headline).slice(0, 450)}`,
+      ].join('\n');
+
+      const form = new FormData();
+      form.append('chat_id', String(chatId));
+      form.append('caption', caption);
+      form.append('parse_mode', 'HTML');
+      form.append(
+        'document',
+        new Blob([new Uint8Array(pdfBuffer)], { type: 'application/pdf' }),
+        pdfFilename,
+      );
+
+      const docRes = await fetch(`https://api.telegram.org/bot${tgToken}/sendDocument`, {
+        method: 'POST',
+        body: form,
+      });
+      if (docRes.ok) {
+        pdfSent = true;
+      } else {
+        const detail = await docRes.text().catch(() => '');
+        console.warn(`Telegram sendDocument status ${docRes.status}: ${detail.slice(0, 160)}`);
+      }
+    } catch (err) {
+      console.warn('Telegram sendDocument warning:', err);
+    }
+
+    // 2. Also send the clean Telegram HTML message (without any * stars)
     const maxLen = 3900;
-    const chunks =
-      message.length <= maxLen
-        ? [message]
-        : [message.slice(0, maxLen) + '\n...(1/2)', '(2/2)...\n' + message.slice(maxLen)];
-    for (const chunk of chunks) {
+    const htmlChunks = htmlMessage.length <= maxLen ? [htmlMessage] : [plainMessage.slice(0, maxLen)];
+    for (const chunk of htmlChunks) {
       const res = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: chatId,
           text: chunk,
+          parse_mode: htmlMessage.length <= maxLen ? 'HTML' : undefined,
         }),
       });
       if (!res.ok) {
-        const detail = await res.text().catch(() => '');
-        return { ok: false, error: `HTTP ${res.status}: ${detail.slice(0, 160)}` };
+        // Fallback to plain message without asterisks if HTML parsing fails
+        const fallbackRes = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: plainMessage.slice(0, maxLen),
+          }),
+        });
+        if (!fallbackRes.ok && !pdfSent) {
+          const detail = await fallbackRes.text().catch(() => '');
+          return { ok: false, error: `HTTP ${fallbackRes.status}: ${detail.slice(0, 160)}` };
+        }
       }
     }
     return { ok: true };
@@ -669,9 +787,9 @@ export async function deliverDailyReportNotifications(
   let lastError = '';
   if (rawChatId) {
     try {
-      const result = await sendChunks(rawChatId);
+      const result = await sendToChat(rawChatId);
       if (result.ok) {
-        deliveredTo.push(`Telegram Bot (${botUsername ?? 'Bot'} -> chat_id: ${rawChatId})`);
+        deliveredTo.push(`Telegram Bot PDF + HTML (${botUsername ?? 'Bot'} -> chat_id: ${rawChatId})`);
       } else {
         lastError = result.error ?? 'Gagal mengirim ke TELEGRAM_CHAT_ID';
         console.warn(`Telegram direct chat_id (${rawChatId}) warning: ${lastError}`);
@@ -708,7 +826,6 @@ export async function deliverDailyReportNotifications(
             }
           }
         }
-        // If username filter didn't match, include all chats that messaged the bot
         if (chatIds.size === 0) {
           for (const item of updatesData.result ?? []) {
             const chat = item.message?.chat ?? item.my_chat_member?.chat ?? item.channel_post?.chat;
@@ -719,9 +836,9 @@ export async function deliverDailyReportNotifications(
         }
         autoDiscoveredChats = chatIds.size;
         for (const discoveredId of chatIds) {
-          const res = await sendChunks(discoveredId);
+          const res = await sendToChat(discoveredId);
           if (res.ok) {
-            deliveredTo.push(`Telegram Bot (${botUsername ?? 'Bot'} -> auto chat_id: ${discoveredId})`);
+            deliveredTo.push(`Telegram Bot PDF + HTML (${botUsername ?? 'Bot'} -> auto chat_id: ${discoveredId})`);
           } else if (res.error) {
             lastError = res.error;
           }
@@ -740,7 +857,7 @@ export async function deliverDailyReportNotifications(
       chatIdConfigured: Boolean(rawChatId),
       botUsername,
       autoDiscoveredChats,
-      diagnostic: `Berhasil dikirim ke Telegram melalui ${botUsername ?? 'Bot'}.`,
+      diagnostic: `PDF & Laporan Harian berhasil dikirim ke Telegram melalui ${botUsername ?? 'Bot'}.`,
     };
   }
 
@@ -856,24 +973,71 @@ async function main() {
       regimeLabel: facts.stockRegime?.label ?? 'SELECTIVE',
       topSetups: facts.stockTopSetups,
     },
-    aiDigest: digest,
+    aiDigest: {
+      headline: stripMarkdownAsterisks(digest.headline),
+      marketWeather: stripMarkdownAsterisks(digest.marketWeather),
+      cryptoRecommendation: stripMarkdownAsterisks(digest.cryptoRecommendation),
+      stockRecommendation: stripMarkdownAsterisks(digest.stockRecommendation),
+      actionableTakeaway: stripMarkdownAsterisks(digest.actionableTakeaway),
+    },
     whatsappText: '',
   };
   report.whatsappText = buildWhatsAppMessage(report);
-  const telegramDelivery = await deliverDailyReportNotifications(report.whatsappText);
+  const telegramHtml = buildTelegramHtmlMessage(report);
+
+  const sessionLabel = session === 'US_OPEN' ? 'Edisi Sore/Malam' : 'Edisi Pagi Terpadu';
+  const pdfFilename = `Laporan-Harian-Gemini-AI-Fund-${dateWib}.pdf`;
+  const pdfBuffer = generateDailyReportPdf({
+    dateWib,
+    sessionLabel,
+    modelUsed,
+    generatedAtWib: `${dateWib} WIB`,
+    portfolio: {
+      totalCombinedEquity: formatIdr(report.portfolio.totalCombinedEquityIdr),
+      cryptoEquity: formatIdr(report.portfolio.cryptoEquityIdr),
+      cryptoOpenPositions: report.portfolio.cryptoOpenPositions,
+      cryptoPendingOrders: report.portfolio.cryptoPendingOrders,
+      stockEquity: formatIdr(report.portfolio.stockEquityIdr),
+      stockOpenPositions: report.portfolio.stockOpenPositions,
+    },
+    cryptoSummary: {
+      posture: report.cryptoSummary.posture,
+      btcPrice: report.cryptoSummary.btcPriceUsdt ? formatUsdt(report.cryptoSummary.btcPriceUsdt) : '-',
+      pairsScanned: report.cryptoSummary.pairsScanned,
+      uptrendCount: report.cryptoSummary.uptrendCount,
+      topSetups: report.cryptoSummary.topSetups,
+    },
+    stockSummary: {
+      marketPhase: report.stockSummary.marketPhase,
+      ihsgTrend: report.stockSummary.ihsgTrend,
+      regimeLabel: report.stockSummary.regimeLabel,
+      topSetups: report.stockSummary.topSetups,
+    },
+    aiDigest: report.aiDigest,
+  });
+
+  const telegramDelivery = await deliverDailyReportNotifications(
+    telegramHtml,
+    report.whatsappText,
+    pdfBuffer,
+    pdfFilename,
+    report,
+  );
   report.telegramDelivery = telegramDelivery;
 
   fs.mkdirSync(BRIEFINGS_DIR, { recursive: true });
   fs.writeFileSync(UNIFIED_REPORT_FILE, JSON.stringify(report, null, 2) + '\n', 'utf8');
+  fs.writeFileSync(path.join(BRIEFINGS_DIR, pdfFilename), pdfBuffer);
 
   const filename = `session-review-${dateWib}-${session.toLowerCase()}.md`;
   const markdownOutput = `---\ndate: "${dateWib}"\ntime: "${now}"\nsession: "${session}"\nreport_version: "unified-v6"\nmodel: "${modelUsed}"\n---\n\n${buildMarkdownReport(report, facts, ledger, scan)}`;
   fs.writeFileSync(path.join(BRIEFINGS_DIR, filename), markdownOutput, 'utf8');
 
   console.log(`✓ Unified daily report written: ${UNIFIED_REPORT_FILE} (model: ${modelUsed})`);
+  console.log(`✓ PDF report generated: ${path.join(BRIEFINGS_DIR, pdfFilename)} (${pdfBuffer.length} bytes)`);
   console.log(`✓ Session briefing written: ${path.join(BRIEFINGS_DIR, filename)}`);
   if (telegramDelivery.delivered) {
-    console.log(`✓ Daily report delivered to: ${telegramDelivery.deliveredTo.join(', ')}`);
+    console.log(`✓ Daily report + PDF delivered to: ${telegramDelivery.deliveredTo.join(', ')}`);
   } else {
     console.log(`ℹ Telegram status: ${telegramDelivery.diagnostic}`);
   }

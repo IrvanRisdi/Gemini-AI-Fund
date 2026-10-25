@@ -132,22 +132,35 @@ export function TradeJournal({ cycles, pendingOrders, equity }: { cycles: Positi
         </section>
       )}
 
-      {closedCycles.length > 0 && (
-        <section>
-          <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2"><h3 className="font-sans text-sm font-medium text-ink">Riwayat Transaksi</h3><span className="font-mono text-[10px] text-ink-faint">Menampilkan {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, closedCycles.length)} dari {closedCycles.length} transaksi</span></div>
-          <PositionTable cycles={pageCycles} />
+      <section>
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="font-sans text-sm font-medium text-ink">Riwayat Transaksi Tertutup (Closed Positions)</h3>
+          <span className="font-mono text-[10px] text-ink-faint">
+            {closedCycles.length > 0 ? `Menampilkan ${pageStart + 1}–${Math.min(pageStart + PAGE_SIZE, closedCycles.length)} dari ${closedCycles.length} transaksi` : '0 transaksi selesai'}
+          </span>
+        </div>
+        {closedCycles.length > 0 ? (
+          <>
+            <PositionTable cycles={pageCycles} />
 
-          {totalPages > 1 && (
-            <nav className="mt-3 flex items-center justify-end gap-1.5 font-mono text-[11px]" aria-label="Pagination riwayat transaksi">
-              <button type="button" onClick={() => setPage((value) => Math.max(1, value - 1))} disabled={currentPage === 1} className="rounded border border-border px-2 py-1 text-ink-muted hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40">← Sebelumnya</button>
-              {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
-                <button key={pageNumber} type="button" onClick={() => setPage(pageNumber)} aria-current={currentPage === pageNumber ? 'page' : undefined} className={`rounded border px-2 py-1 ${currentPage === pageNumber ? 'border-accent bg-accent/10 text-accent' : 'border-border text-ink-muted hover:border-accent hover:text-accent'}`}>{pageNumber}</button>
-              ))}
-              <button type="button" onClick={() => setPage((value) => Math.min(totalPages, value + 1))} disabled={currentPage === totalPages} className="rounded border border-border px-2 py-1 text-ink-muted hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40">Berikutnya →</button>
-            </nav>
-          )}
-        </section>
-      )}
+            {totalPages > 1 && (
+              <nav className="mt-3 flex items-center justify-end gap-1.5 font-mono text-[11px]" aria-label="Pagination riwayat transaksi">
+                <button type="button" onClick={() => setPage((value) => Math.max(1, value - 1))} disabled={currentPage === 1} className="rounded border border-border px-2 py-1 text-ink-muted hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40">← Sebelumnya</button>
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+                  <button key={pageNumber} type="button" onClick={() => setPage(pageNumber)} aria-current={currentPage === pageNumber ? 'page' : undefined} className={`rounded border px-2 py-1 ${currentPage === pageNumber ? 'border-accent bg-accent/10 text-accent' : 'border-border text-ink-muted hover:border-accent hover:text-accent'}`}>{pageNumber}</button>
+                ))}
+                <button type="button" onClick={() => setPage((value) => Math.min(totalPages, value + 1))} disabled={currentPage === totalPages} className="rounded border border-border px-2 py-1 text-ink-muted hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40">Berikutnya →</button>
+              </nav>
+            )}
+          </>
+        ) : (
+          <div className="rounded-xl border border-border bg-surface p-5 text-center">
+            <p className="font-sans text-xs text-ink-muted">
+              Belum ada posisi yang ditutup (seluruh posisi saat ini masih aktif berjalan). Riwayat transaksi tertutup dan Realized P&amp;L akan tercatat otomatis begitu posisi menyentuh Target Profit atau Stop Loss.
+            </p>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
