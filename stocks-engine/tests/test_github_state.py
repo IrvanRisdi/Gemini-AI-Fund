@@ -70,5 +70,34 @@ class ChartPublisherTests(unittest.TestCase):
         self.assertGreater(payload["timeframes"]["5m"]["candles"][-1][0], 1_000_000_000_000)
 
 
+class ImportStateLegacyEquityTests(unittest.TestCase):
+    def test_legacy_as_of_rows_map_to_equity_date(self):
+        # Regression: a hand-written reset (Oct 2026) stored equity_history rows
+        # with `id`/`as_of` instead of `equity_date`, which crashed every IDX
+        # cycle with "NOT NULL constraint failed: equity_history.equity_date".
+        db = sqlite3.connect(":memory:")
+        db.execute("""CREATE TABLE equity_history (
+            agent_id TEXT NOT NULL, equity_date TEXT NOT NULL, equity REAL NOT NULL,
+            cash REAL NOT NULL, drawdown_pct REAL NOT NULL DEFAULT 0,
+            PRIMARY KEY(agent_id, equity_date))""")
+        payload = {"schema_version": 1, "tables": {"equity_history": [
+            {"id": 1, "agent_id": "swing", "as_of": "2026-10-25T00:00:00.000Z",
+             "equity": 100000000, "cash": 100000000, "drawdown_pct": 0},
+        ]}}
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "runtime-state.json"
+            source.write_text(json.dumps(payload), encoding="utf-8")
+            original = github_state.TABLE_QUERIES
+            github_state.TABLE_QUERIES = [("equity_history", "")]
+            try:
+                result = github_state.import_state(db, source)
+            finally:
+                github_state.TABLE_QUERIES = original
+        row = db.execute("SELECT agent_id, equity_date, equity FROM equity_history").fetchone()
+        db.close()
+        self.assertEqual(result["status"], "RESTORED")
+        self.assertEqual(row, ("swing", "2026-10-25", 100000000))
+
+
 if __name__ == "__main__":
     unittest.main()

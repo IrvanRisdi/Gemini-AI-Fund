@@ -195,6 +195,11 @@ def import_state(db: sqlite3.Connection, source: Path = STATE_PATH) -> dict:
                 continue
             known = {row[1] for row in db.execute(f"PRAGMA table_info({table})")}
             for item in reversed(incoming):
+                # Legacy/hand-written equity rows used `as_of` (ISO timestamp)
+                # instead of `equity_date` (YYYY-MM-DD). Map them rather than
+                # crash the whole cycle on a NOT NULL constraint.
+                if table == "equity_history" and not item.get("equity_date") and item.get("as_of"):
+                    item = {**item, "equity_date": str(item["as_of"])[:10]}
                 values = {key: value for key, value in item.items() if key in known}
                 if not values:
                     continue
