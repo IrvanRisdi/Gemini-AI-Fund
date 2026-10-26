@@ -220,8 +220,10 @@ class EngineFeatureTests(unittest.TestCase):
         self.db.execute("CREATE TABLE reports(report_date TEXT PRIMARY KEY,snapshot_json TEXT)")
         self.db.execute("INSERT INTO reports VALUES(?,?)", ("2026-09-23", '{"ihsg":{"status":"AVAILABLE","trend":"BEARISH"}}'))
         today = datetime(2026, 9, 24).date()
-        self.assertEqual(engine.market_regime_risk_factor(self.db, "swing", today), .75)
-        self.assertEqual(engine.market_regime_risk_factor(self.db, "fundamental", today), .85)
+        # Tightened in 496824a (IHSG bearish gate): .75 -> .50, .85 -> .60.
+        self.assertEqual(engine.market_regime_risk_factor(self.db, "swing", today), .50)
+        self.assertEqual(engine.market_regime_risk_factor(self.db, "breakout-retest", today), .50)
+        self.assertEqual(engine.market_regime_risk_factor(self.db, "fundamental", today), .60)
         self.assertEqual(engine.market_regime_risk_factor(self.db, "scalping", today), 1)
         self.assertEqual(engine.market_regime_risk_factor(self.db, "swing", datetime(2026, 9, 28).date()), 1)
 
