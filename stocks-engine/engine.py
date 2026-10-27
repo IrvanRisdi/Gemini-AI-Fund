@@ -865,12 +865,17 @@ def evaluate_agents(features: dict, fundamental_quality: int | None, timeframe: 
 
 def round_to_tick(price: float) -> float:
     tick = server.tick_size(price)
-    return math.floor(price/tick)*tick
+    floored = math.floor(price / tick) * tick
+    tick2 = server.tick_size(floored)
+    res = math.floor(price / tick2) * tick2
+    return max(50, res) if price >= 50 else res
 
 
 def round_up_to_tick(price: float) -> float:
     tick = server.tick_size(price)
-    return math.ceil(price/tick)*tick
+    ceiled = math.ceil(price / tick) * tick
+    tick2 = server.tick_size(ceiled)
+    return math.ceil(price / tick2) * tick2
 
 
 def net_risk_reward(entry: float, stop: float, target: float) -> float:

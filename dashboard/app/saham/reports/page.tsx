@@ -41,12 +41,12 @@ export default async function ReportsPage() {
       {/* Panduan Pengiriman Otomatis ke Telegram Bot */}
       <details className="mb-8 rounded-xl border border-border bg-surface">
         <summary className="cursor-pointer list-none px-5 py-4 font-sans text-sm font-semibold text-ink">
-          ✈️ Cara Mengaktifkan Pengiriman Harian Otomatis ke Telegram Bot (07:00 &amp; 20:30 WIB)
+          ✈️ Cara Mengaktifkan Pengiriman Harian Otomatis ke Telegram Bot (07:00 WIB · PDF + Ringkasan HTML)
           <span className="ml-2 font-mono text-[10px] font-normal text-ink-faint">klik untuk panduan 1 menit</span>
         </summary>
         <div className="border-t border-border p-5 font-sans text-xs leading-relaxed text-ink-muted space-y-3">
           <p>
-            Workflow otomatis (<code className="text-ink">market-evaluation.yml</code>) berjalan setiap hari pukul <strong>07:00 WIB</strong> dan <strong>20:30 WIB</strong> menggunakan prioritas model <strong>Gemini 4.0 Argon → Gemini 3.1 Pro → Gemini 3.8 Flash</strong>. Untuk menerima laporan ini otomatis di Telegram Anda:
+            Workflow otomatis (<code className="text-ink">market-evaluation.yml</code>) berjalan setiap hari pukul <strong>07:00 WIB</strong> menggunakan prioritas model <strong>Gemini 4.0 Argon → Gemini 3.1 Pro → Gemini 3.8 Flash</strong> dan mengirimkan dokumen <strong>PDF A4</strong> beserta ringkasan HTML dengan harga Entry, SL, dan TP saham yang sudah disesuaikan dengan <strong>Fraksi Harga (Tick Size) BEI</strong>. Untuk menerima laporan ini otomatis di Telegram Anda:
           </p>
           <ol className="space-y-1.5 list-decimal list-inside text-ink">
             <li>

@@ -56,6 +56,42 @@ export interface PdfReportInput {
 }
 
 /**
+ * Official Bursa Efek Indonesia (BEI / IDX) equity tick size (Fraksi Harga Saham):
+ * - Harga < Rp 200          -> Fraksi Rp 1
+ * - Harga Rp 200 - < 500    -> Fraksi Rp 2
+ * - Harga Rp 500 - < 2.000  -> Fraksi Rp 5
+ * - Harga Rp 2.000 - < 5.000-> Fraksi Rp 10
+ * - Harga >= Rp 5.000       -> Fraksi Rp 25
+ */
+export function getIdxTickSize(price: number): number {
+  const p = Math.max(1, price);
+  if (p < 200) return 1;
+  if (p < 500) return 2;
+  if (p < 2000) return 5;
+  if (p < 5000) return 10;
+  return 25;
+}
+
+/**
+ * Rounds a raw Rupiah stock price to a valid IDX tick multiple.
+ * - 'nearest': closest valid IDX tick (used for Entry / Reference price)
+ * - 'down'   : floor to valid IDX tick (used for Stop Loss so stop is not tighter than intended)
+ * - 'up'     : ceil to valid IDX tick (used for Target Profit so R/R is preserved)
+ */
+export function roundToIdxTick(
+  price: number,
+  mode: 'nearest' | 'down' | 'up' = 'nearest',
+): number {
+  if (!Number.isFinite(price) || price <= 0) return 0;
+  const fn = mode === 'down' ? Math.floor : mode === 'up' ? Math.ceil : Math.round;
+  const cleanRatio = (val: number, tick: number) => Math.round((val / tick) * 1e6) / 1e6;
+  const tick1 = getIdxTickSize(price);
+  const pass1 = Math.max(50, fn(cleanRatio(price, tick1)) * tick1);
+  const tick2 = getIdxTickSize(pass1);
+  return Math.max(50, fn(cleanRatio(pass1, tick2)) * tick2);
+}
+
+/**
  * Clean text for PDF WinAnsi / Helvetica rendering (removes markdown asterisks,
  * normalizes non-breaking spaces, dashes, and strips unsupported emoji glyphs).
  */

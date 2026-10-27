@@ -16,7 +16,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
 endobj
 6 0 obj
-<< /Length 7026 >>
+<< /Length 7035 >>
 stream
 q
 0.060 0.090 0.160 rg
@@ -42,7 +42,7 @@ BT
 /F2 8.50 Tf
 0.350 0.920 0.730 rg
 48.00 754.89 Td
-(Tanggal: 2026-10-25 \(Edisi Pagi Terpadu\) | Model Analis AI: gemini-4-argon | Update: 2026-10-25 WIB) Tj
+(Tanggal: 2026-10-27 \(Edisi Pagi Terpadu\) | Model Analis AI: rule-based-analyst | Update: 2026-10-27 WIB) Tj
 ET
 q
 0.970 0.980 1.000 rg
@@ -98,7 +98,7 @@ BT
 /F1 7.50 Tf
 0.350 0.420 0.520 rg
 221.43 688.89 Td
-(BTC: 80599.41 USDT | 2/40 pair uptrend) Tj
+(BTC: 80,599.41 USDT | 2/40 pair uptrend) Tj
 ET
 q
 0.970 0.980 1.000 rg
@@ -342,7 +342,7 @@ BT
 /F2 8.60 Tf
 0.050 0.420 0.300 rg
 44.00 153.89 Td
-(Area Beli \(Entry\): Rp 9.625 | Stop Loss: Rp 9.240 | Target Profit: Rp 10.395) Tj
+(Area Beli \(Entry\): Rp 9.625 | Stop Loss: Rp 9.225 | Target Profit: Rp 10.400) Tj
 ET
 BT
 /F1 8.40 Tf
@@ -366,7 +366,7 @@ BT
 /F2 8.60 Tf
 0.050 0.420 0.300 rg
 44.00 100.39 Td
-(Area Beli \(Entry\): Rp 840 | Stop Loss: Rp 806 | Target Profit: Rp 907) Tj
+(Area Beli \(Entry\): Rp 840 | Stop Loss: Rp 805 | Target Profit: Rp 910) Tj
 ET
 BT
 /F1 8.40 Tf
@@ -382,7 +382,7 @@ BT
 /F1 7.80 Tf
 0.450 0.520 0.620 rg
 34.00 22.00 Td
-(Gemini AI-Fund Daily Intelligence Report | Model: gemini-4-argon | Paper Trading & Research Desk) Tj
+(Gemini AI-Fund Daily Intelligence Report | Model: rule-based-analyst | Paper Trading & Research Desk) Tj
 ET
 BT
 /F2 7.80 Tf
@@ -396,7 +396,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 8 0 R >>
 endobj
 8 0 obj
-<< /Length 2748 >>
+<< /Length 2752 >>
 stream
 q
 0.060 0.090 0.160 rg
@@ -406,7 +406,7 @@ BT
 /F2 8.50 Tf
 0.900 0.950 1.000 rg
 44.00 787.89 Td
-(GEMINI AI-FUND | LAPORAN HARIAN TERPADU \(2026-10-25\) - Lanjutan) Tj
+(GEMINI AI-FUND | LAPORAN HARIAN TERPADU \(2026-10-27\) - Lanjutan) Tj
 ET
 q
 0.995 0.990 1.000 rg
@@ -424,7 +424,7 @@ BT
 /F2 8.60 Tf
 0.050 0.420 0.300 rg
 44.00 742.89 Td
-(Area Beli \(Entry\): Rp 1.065 | Stop Loss: Rp 1.022 | Target Profit: Rp 1.150) Tj
+(Area Beli \(Entry\): Rp 1.065 | Stop Loss: Rp 1.020 | Target Profit: Rp 1.155) Tj
 ET
 BT
 /F1 8.40 Tf
@@ -534,7 +534,7 @@ BT
 /F1 7.80 Tf
 0.450 0.520 0.620 rg
 34.00 22.00 Td
-(Gemini AI-Fund Daily Intelligence Report | Model: gemini-4-argon | Paper Trading & Research Desk) Tj
+(Gemini AI-Fund Daily Intelligence Report | Model: rule-based-analyst | Paper Trading & Research Desk) Tj
 ET
 BT
 /F2 7.80 Tf
@@ -553,10 +553,10 @@ xref
 0000000224 00000 n 
 0000000326 00000 n 
 0000000468 00000 n 
-0000007546 00000 n 
-0000007688 00000 n 
+0000007555 00000 n 
+0000007697 00000 n 
 trailer
 << /Size 9 /Root 1 0 R >>
 startxref
-10488
+10501
 %%EOF

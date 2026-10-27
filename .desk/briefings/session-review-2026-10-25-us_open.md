@@ -31,9 +31,9 @@ Pasar Kripto saat ini berada pada fase Selektif / Konsolidasi dengan harga acuan
 
 | Emiten | Strategi Agen | Area Beli (Entry) | Batas Rugi (Stop) | Target Profit | Catatan Analisis |
 | --- | --- | --- | --- | --- | --- |
-| AALI (Astra Agro Lestari Tbk.) | Top Screener IDX | Rp 9.625 | Rp 9.240 | Rp 10.395 | Sektor  · Skor teknikal & likuiditas 100/100 |
-| SGER (Sumber Global Energy Tbk.) | Actionable Setup | Rp 840 | Rp 806 | Rp 907 | Sektor  · Skor teknikal & likuiditas 94/100 |
-| INPS (Indah Prakasa Sentosa Tbk.) | Top Screener IDX | Rp 1.065 | Rp 1.022 | Rp 1.150 | Sektor  · Skor teknikal & likuiditas 85/100 |
+| AALI (Astra Agro Lestari Tbk.) | Top Screener IDX | Rp 9.625 | Rp 9.225 | Rp 10.400 | Sektor  · Skor teknikal & likuiditas 100/100 |
+| SGER (Sumber Global Energy Tbk.) | Actionable Setup | Rp 840 | Rp 805 | Rp 910 | Sektor  · Skor teknikal & likuiditas 94/100 |
+| INPS (Indah Prakasa Sentosa Tbk.) | Top Screener IDX | Rp 1.065 | Rp 1.020 | Rp 1.155 | Sektor  · Skor teknikal & likuiditas 85/100 |
 | ISSP (Steel Pipe Industry of Indones) | Top Screener IDX | Rp 450 | Rp 432 | Rp 486 | Sektor  · Skor teknikal & likuiditas 85/100 |
 | PTSP (Pioneerindo Gourmet Internatio) | Top Screener IDX | Rp 2.250 | Rp 2.160 | Rp 2.430 | Sektor  · Skor teknikal & likuiditas 85/100 |
 

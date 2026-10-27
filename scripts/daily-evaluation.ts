@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getSmartestGeminiModelCandidates } from '../dashboard/lib/gemini-models.js';
-import { generateDailyReportPdf } from './pdf-report.js';
+import { generateDailyReportPdf, roundToIdxTick } from './pdf-report.js';
 
 const API_KEY = process.env.GEMINI_API_KEY;
 const REPO_ROOT = fs.existsSync(path.resolve(process.cwd(), '.desk'))
@@ -361,10 +361,10 @@ function buildFacts(ledger: Ledger, scan: Scan, stockDash: StockDashboard) {
       symbol: sym,
       name: info?.name ?? sym,
       agent: String(s.owner_agent_name ?? 'NusaQuant'),
-      price: info?.price ? formatIdr(info.price) : '-',
-      entry: s.entry_low ? formatIdr(Number(s.entry_low)) : '-',
-      stop: s.stop_price ? formatIdr(Number(s.stop_price)) : '-',
-      target: s.target_price ? formatIdr(Number(s.target_price)) : '-',
+      price: info?.price ? formatIdr(roundToIdxTick(Number(info.price), 'nearest')) : '-',
+      entry: s.entry_low ? formatIdr(roundToIdxTick(Number(s.entry_low), 'nearest')) : '-',
+      stop: s.stop_price ? formatIdr(roundToIdxTick(Number(s.stop_price), 'down')) : '-',
+      target: s.target_price ? formatIdr(roundToIdxTick(Number(s.target_price), 'up')) : '-',
       score: info?.score ?? null,
       note: String(s.rationale ?? 'Setup prioritas harian BEI'),
     });
@@ -380,10 +380,10 @@ function buildFacts(ledger: Ledger, scan: Scan, stockDash: StockDashboard) {
         symbol: row.symbol,
         name: row.name,
         agent: row.evaluation_status === 'ACTIONABLE' ? 'Actionable Setup' : 'Top Screener IDX',
-        price: px > 0 ? formatIdr(px) : '-',
-        entry: px > 0 ? formatIdr(Math.round(px)) : '-',
-        stop: px > 0 ? formatIdr(Math.round(px * 0.96)) : '-',
-        target: px > 0 ? formatIdr(Math.round(px * 1.08)) : '-',
+        price: px > 0 ? formatIdr(roundToIdxTick(px, 'nearest')) : '-',
+        entry: px > 0 ? formatIdr(roundToIdxTick(px, 'nearest')) : '-',
+        stop: px > 0 ? formatIdr(roundToIdxTick(px * 0.96, 'down')) : '-',
+        target: px > 0 ? formatIdr(roundToIdxTick(px * 1.08, 'up')) : '-',
         score: row.evaluation_score ?? null,
         note: `Sektor ${row.sector ?? 'BEI'} · Skor teknikal & likuiditas ${row.evaluation_score ?? '-'}/100`,
       });
@@ -482,7 +482,7 @@ Kembalikan HANYA objek JSON valid (tanpa markdown codefence \`\`\`json) dengan 5
   "headline": "Judul ringkas 1 kalimat yang merangkum sikap terbaik hari ini untuk Kripto & Saham IDX",
   "marketWeather": "Penjelasan 2-3 kalimat tentang kondisi pasar Kripto (BTC) dan Saham Indonesia (IHSG) hari ini dengan bahasa sehari-hari yang mudah dipahami",
   "cryptoRecommendation": "Rekomendasi jelas 2-4 kalimat untuk Kripto Spot hari ini: sebutkan koin di topSetups beserta area beli/stop/target dan cara menyikapinya",
-  "stockRecommendation": "Rekomendasi jelas 2-4 kalimat untuk Saham IDX hari ini: sebutkan saham di topSetups beserta level harga dan alasan mengapa menarik",
+  "stockRecommendation": "Rekomendasi jelas 2-4 kalimat untuk Saham IDX hari ini: sebutkan saham di topSetups beserta level harga Entry, Stop Loss, dan Target PERSIS mengikuti angka di topSetups (yang sudah dibulatkan sesuai Fraksi Harga BEI: <200=Rp1, 200-498=Rp2, 500-1995=Rp5, 2000-4990=Rp10, >=5000=Rp25) dan alasan mengapa menarik",
   "actionableTakeaway": "Panduan praktis pengelolaan modal dan manajemen risiko hari ini dalam 2 kalimat yang menenangkan dan tegas"
 }`;
 

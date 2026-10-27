@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-24T17:00:12.659Z",
-  "dateWib": "2026-10-25",
-  "session": "US_OPEN",
+  "generatedAt": "2026-10-27T11:48:28.889Z",
+  "dateWib": "2026-10-27",
+  "session": "ASIA_OPEN",
   "modelUsed": "gemini-4-argon",
   "portfolio": {
     "cryptoEquityIdr": 300000000,
@@ -51,8 +51,8 @@
         "agent": "Top Screener IDX",
         "price": "Rp 9.625",
         "entry": "Rp 9.625",
-        "stop": "Rp 9.240",
-        "target": "Rp 10.395",
+        "stop": "Rp 9.225",
+        "target": "Rp 10.400",
         "score": 100,
         "note": "Sektor  · Skor teknikal & likuiditas 100/100"
       },
@@ -62,8 +62,8 @@
         "agent": "Actionable Setup",
         "price": "Rp 840",
         "entry": "Rp 840",
-        "stop": "Rp 806",
-        "target": "Rp 907",
+        "stop": "Rp 805",
+        "target": "Rp 910",
         "score": 94,
         "note": "Sektor  · Skor teknikal & likuiditas 94/100"
       },
@@ -73,8 +73,8 @@
         "agent": "Top Screener IDX",
         "price": "Rp 1.065",
         "entry": "Rp 1.065",
-        "stop": "Rp 1.022",
-        "target": "Rp 1.150",
+        "stop": "Rp 1.020",
+        "target": "Rp 1.155",
         "score": 85,
         "note": "Sektor  · Skor teknikal & likuiditas 85/100"
       },
@@ -109,5 +109,5 @@
     "stockRecommendation": "Di Bursa Efek Indonesia (BEI), saham dengan skor dan struktur terbaik hari ini adalah AALI, SGER, INPS. Seluruh order harian menggunakan aturan NEXT_OPEN (eksekusi pada pembukaan sesi berikutnya jika tidak terjadi gap >2%) serta dilindungi buffer 30 menit pertama (09:00–09:30 WIB) agar tidak terkena gocekan jarum bawah pembukaan pasar.",
     "actionableTakeaway": "Total modal kelolaan gabungan saat ini adalah Rp 800.000.000 (Rp 300.000.000 di Kripto Spot & Rp 500.000.000 di Saham IDX). Gunakan maksimal 1–3% risiko per transaksi dan biarkan sistem mengeksekusi hanya peluang dengan rasio untung-rugi (Reward/Risk) minimal 1,8x hingga 3,0x setelah biaya."
   },
-  "whatsappText": "📊 LAPORAN HARIAN GEMINI AI-FUND\n📅 Tanggal: 2026-10-25 (Sesi Malam / US Open)\n🧠 Analis AI: rule-based-analyst\n\n💡 Intisari Hari Ini:\nFokus Selektif: Pantau BMT/USDT, BOME/USDT di Kripto & AALI, SGER, INPS di Saham IDX dengan Disiplin Stop-Loss Ketat\n\n🌤️ Cuaca Pasar (Kripto & Saham IDX):\nPasar Kripto saat ini berada pada fase Selektif / Konsolidasi dengan harga acuan BTC di 80,599.41 USDT (2 pair dalam tren naik 4H). Sementara itu, indeks saham Indonesia (IHSG) berada di level menunggu penutupan BEI dengan kecenderungan NEUTRAL (fase pasar: POSTCLOSE). Artinya, kita tidak perlu terburu-buru mengejar harga yang sudah naik tinggi; fokuslah pada aset yang sedang berada di area beli (pullback/breakout valid).\n\n🪙 Rekomendasi & Pantauan Kripto Spot:\nPrioritaskan pemantauan pada BMT/USDT, BOME/USDT. Gunakan strategi antre beli (limit/pullback) atau tunggu penutupan candle 4H yang kuat. Pastikan batas rugi (stop-loss) selalu terpasang sekitar 3,5%–5% di bawah harga beli dan geser stop ke titik impas (breakeven) segera setelah profit berjalan +1,25R.\n1. BMT/USDT (Watchlist 4H Uptrend)\n   • Area Beli: -\n   • Stop: - | Target: -\n   • Catatan: Struktur 4H Uptrend (RSI -, RVOL 1.2x) — pantau breakout/pullback\n2. BOME/USDT (Watchlist 4H Uptrend)\n   • Area Beli: -\n   • Stop: - | Target: -\n   • Catatan: Struktur 4H Uptrend (RSI -, RVOL 1.1x) — pantau breakout/pullback\n\n📈 Rekomendasi & Pantauan Saham IDX (BEI):\nDi Bursa Efek Indonesia (BEI), saham dengan skor dan struktur terbaik hari ini adalah AALI, SGER, INPS. Seluruh order harian menggunakan aturan NEXT_OPEN (eksekusi pada pembukaan sesi berikutnya jika tidak terjadi gap >2%) serta dilindungi buffer 30 menit pertama (09:00–09:30 WIB) agar tidak terkena gocekan jarum bawah pembukaan pasar.\n1. AALI (Astra Agro Lestari Tbk.)\n   • Entry: Rp 9.625 | Stop: Rp 9.240 | Target: Rp 10.395\n   • Catatan: Sektor  · Skor teknikal & likuiditas 100/100\n2. SGER (Sumber Global Energy Tbk.)\n   • Entry: Rp 840 | Stop: Rp 806 | Target: Rp 907\n   • Catatan: Sektor  · Skor teknikal & likuiditas 94/100\n3. INPS (Indah Prakasa Sentosa Tbk.)\n   • Entry: Rp 1.065 | Stop: Rp 1.022 | Target: Rp 1.150\n   • Catatan: Sektor  · Skor teknikal & likuiditas 85/100\n\n💼 Status Portofolio Paper Trading:\n• Total Ekuitas Gabungan: Rp 800.000.000\n• Desk Kripto (6 Agen): Rp 300.000.000 (0 posisi aktif)\n• Desk Saham IDX (5 Agen): Rp 500.000.000 (0 posisi aktif)\n\n🛡️ Panduan Risiko:\nTotal modal kelolaan gabungan saat ini adalah Rp 800.000.000 (Rp 300.000.000 di Kripto Spot & Rp 500.000.000 di Saham IDX). Gunakan maksimal 1–3% risiko per transaksi dan biarkan sistem mengeksekusi hanya peluang dengan rasio untung-rugi (Reward/Risk) minimal 1,8x hingga 3,0x setelah biaya."
+  "whatsappText": "📊 LAPORAN HARIAN GEMINI AI-FUND\n📅 Tanggal: 2026-10-27 (Edisi Pagi Terpadu)\n🧠 Analis AI: gemini-4-argon\n\n💡 Intisari Hari Ini:\nFokus Selektif: Pantau BMT/USDT, BOME/USDT di Kripto & AALI, SGER, INPS di Saham IDX dengan Disiplin Stop-Loss Ketat\n\n🌤️ Cuaca Pasar (Kripto & Saham IDX):\nPasar Kripto saat ini berada pada fase Selektif / Konsolidasi dengan harga acuan BTC di 80,599.41 USDT (2 pair dalam tren naik 4H). Sementara itu, indeks saham Indonesia (IHSG) berada di level menunggu penutupan BEI dengan kecenderungan NEUTRAL (fase pasar: POSTCLOSE). Artinya, kita tidak perlu terburu-buru mengejar harga yang sudah naik tinggi; fokuslah pada aset yang sedang berada di area beli (pullback/breakout valid).\n\n🪙 Rekomendasi & Pantauan Kripto Spot:\nPrioritaskan pemantauan pada BMT/USDT, BOME/USDT. Gunakan strategi antre beli (limit/pullback) atau tunggu penutupan candle 4H yang kuat. Pastikan batas rugi (stop-loss) selalu terpasang sekitar 3,5%–5% di bawah harga beli dan geser stop ke titik impas (breakeven) segera setelah profit berjalan +1,25R.\n1. BMT/USDT (Watchlist 4H Uptrend)\n   • Area Beli: -\n   • Stop: - | Target: -\n   • Catatan: Struktur 4H Uptrend (RSI -, RVOL 1.2x) — pantau breakout/pullback\n2. BOME/USDT (Watchlist 4H Uptrend)\n   • Area Beli: -\n   • Stop: - | Target: -\n   • Catatan: Struktur 4H Uptrend (RSI -, RVOL 1.1x) — pantau breakout/pullback\n\n📈 Rekomendasi & Pantauan Saham IDX (BEI):\nDi Bursa Efek Indonesia (BEI), saham dengan skor dan struktur terbaik hari ini adalah AALI, SGER, INPS. Seluruh order harian menggunakan aturan NEXT_OPEN (eksekusi pada pembukaan sesi berikutnya jika tidak terjadi gap >2%) serta dilindungi buffer 30 menit pertama (09:00–09:30 WIB) agar tidak terkena gocekan jarum bawah pembukaan pasar.\n1. AALI (Astra Agro Lestari Tbk.)\n   • Entry: Rp 9.625 | Stop: Rp 9.225 | Target: Rp 10.400\n   • Catatan: Sektor  · Skor teknikal & likuiditas 100/100\n2. SGER (Sumber Global Energy Tbk.)\n   • Entry: Rp 840 | Stop: Rp 805 | Target: Rp 910\n   • Catatan: Sektor  · Skor teknikal & likuiditas 94/100\n3. INPS (Indah Prakasa Sentosa Tbk.)\n   • Entry: Rp 1.065 | Stop: Rp 1.020 | Target: Rp 1.155\n   • Catatan: Sektor  · Skor teknikal & likuiditas 85/100\n\n💼 Status Portofolio Paper Trading:\n• Total Ekuitas Gabungan: Rp 800.000.000\n• Desk Kripto (6 Agen): Rp 300.000.000 (0 posisi aktif)\n• Desk Saham IDX (5 Agen): Rp 500.000.000 (0 posisi aktif)\n\n🛡️ Panduan Risiko:\nTotal modal kelolaan gabungan saat ini adalah Rp 800.000.000 (Rp 300.000.000 di Kripto Spot & Rp 500.000.000 di Saham IDX). Gunakan maksimal 1–3% risiko per transaksi dan biarkan sistem mengeksekusi hanya peluang dengan rasio untung-rugi (Reward/Risk) minimal 1,8x hingga 3,0x setelah biaya."
 }
