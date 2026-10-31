@@ -3,8 +3,8 @@
   "timezone": "Asia/Jakarta",
   "points": [
     {
-      "date": "2026-10-25",
-      "capturedAt": "2026-10-25T00:00:00.000Z",
+      "date": "2026-10-24",
+      "capturedAt": "2026-10-24T16:45:41.500Z",
       "kind": "snapshot",
       "totalEquity": 300000000,
       "agents": {
@@ -22,6 +22,214 @@
         },
         "aggressive-breakout-trader": {
           "equity": 50000000
+        },
+        "asymmetry-journal-trader": {
+          "equity": 50000000
+        }
+      }
+    },
+    {
+      "date": "2026-10-25",
+      "capturedAt": "2026-10-25T16:45:44.936Z",
+      "kind": "snapshot",
+      "totalEquity": 299905325.6,
+      "agents": {
+        "breakout-specialist": {
+          "equity": 50000000
+        },
+        "mean-reversion-trader": {
+          "equity": 49905325.6
+        },
+        "smc-trader": {
+          "equity": 50000000
+        },
+        "wyckoff-trader": {
+          "equity": 50000000
+        },
+        "aggressive-breakout-trader": {
+          "equity": 50000000
+        },
+        "asymmetry-journal-trader": {
+          "equity": 50000000
+        }
+      }
+    },
+    {
+      "date": "2026-10-26",
+      "capturedAt": "2026-10-26T16:45:46.960Z",
+      "kind": "snapshot",
+      "totalEquity": 299375330.43,
+      "agents": {
+        "breakout-specialist": {
+          "equity": 50000000
+        },
+        "mean-reversion-trader": {
+          "equity": 49652278.86
+        },
+        "smc-trader": {
+          "equity": 50000000
+        },
+        "wyckoff-trader": {
+          "equity": 49723051.57
+        },
+        "aggressive-breakout-trader": {
+          "equity": 50000000
+        },
+        "asymmetry-journal-trader": {
+          "equity": 50000000
+        }
+      }
+    },
+    {
+      "date": "2026-10-27",
+      "capturedAt": "2026-10-27T16:45:42.998Z",
+      "kind": "snapshot",
+      "totalEquity": 298459736.62,
+      "agents": {
+        "breakout-specialist": {
+          "equity": 50000000
+        },
+        "mean-reversion-trader": {
+          "equity": 49608385.37
+        },
+        "smc-trader": {
+          "equity": 49505308.07
+        },
+        "wyckoff-trader": {
+          "equity": 49346043.18
+        },
+        "aggressive-breakout-trader": {
+          "equity": 50000000
+        },
+        "asymmetry-journal-trader": {
+          "equity": 50000000
+        }
+      }
+    },
+    {
+      "date": "2026-10-28",
+      "capturedAt": "2026-10-28T16:45:47.323Z",
+      "kind": "snapshot",
+      "totalEquity": 298423399.96,
+      "agents": {
+        "breakout-specialist": {
+          "equity": 49991312.38
+        },
+        "mean-reversion-trader": {
+          "equity": 50016233.44
+        },
+        "smc-trader": {
+          "equity": 49088790.85
+        },
+        "wyckoff-trader": {
+          "equity": 48978659.6
+        },
+        "aggressive-breakout-trader": {
+          "equity": 50348403.69
+        },
+        "asymmetry-journal-trader": {
+          "equity": 50000000
+        }
+      }
+    },
+    {
+      "date": "2026-10-29",
+      "capturedAt": "2026-10-29T16:45:44.739Z",
+      "kind": "snapshot",
+      "totalEquity": 296698239.26,
+      "agents": {
+        "breakout-specialist": {
+          "equity": 48993772.14
+        },
+        "mean-reversion-trader": {
+          "equity": 49340563.96
+        },
+        "smc-trader": {
+          "equity": 49088790.85
+        },
+        "wyckoff-trader": {
+          "equity": 48730257.75
+        },
+        "aggressive-breakout-trader": {
+          "equity": 50544854.56
+        },
+        "asymmetry-journal-trader": {
+          "equity": 50000000
+        }
+      }
+    },
+    {
+      "date": "2026-10-30",
+      "capturedAt": "2026-10-30T16:45:46.874Z",
+      "kind": "snapshot",
+      "totalEquity": 290652347.68,
+      "agents": {
+        "breakout-specialist": {
+          "equity": 47157189.51
+        },
+        "mean-reversion-trader": {
+          "equity": 49340563.96
+        },
+        "smc-trader": {
+          "equity": 49088790.85
+        },
+        "wyckoff-trader": {
+          "equity": 46909627.55
+        },
+        "aggressive-breakout-trader": {
+          "equity": 48156175.81
+        },
+        "asymmetry-journal-trader": {
+          "equity": 50000000
+        }
+      }
+    },
+    {
+      "date": "2026-10-31",
+      "capturedAt": "2026-10-31T16:45:38.837Z",
+      "kind": "snapshot",
+      "totalEquity": 290637562.31,
+      "agents": {
+        "breakout-specialist": {
+          "equity": 47157189.51
+        },
+        "mean-reversion-trader": {
+          "equity": 49340563.96
+        },
+        "smc-trader": {
+          "equity": 49088790.85
+        },
+        "wyckoff-trader": {
+          "equity": 47767450.24
+        },
+        "aggressive-breakout-trader": {
+          "equity": 47283567.75
+        },
+        "asymmetry-journal-trader": {
+          "equity": 50000000
+        }
+      }
+    },
+    {
+      "date": "2026-11-01",
+      "capturedAt": "2026-10-31T19:00:46.924Z",
+      "kind": "snapshot",
+      "totalEquity": 290224550.27,
+      "agents": {
+        "breakout-specialist": {
+          "equity": 47157189.51
+        },
+        "mean-reversion-trader": {
+          "equity": 49340563.96
+        },
+        "smc-trader": {
+          "equity": 49088790.85
+        },
+        "wyckoff-trader": {
+          "equity": 47354438.2
+        },
+        "aggressive-breakout-trader": {
+          "equity": 47283567.75
         },
         "asymmetry-journal-trader": {
           "equity": 50000000

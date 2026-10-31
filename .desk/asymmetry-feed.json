@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "source": "asymmetry-screen",
+  "reportDate": "2026-10-31",
+  "generatedAt": "2026-10-31T00:00:47.324Z",
+  "headline": "Screen otomatis: PUMP, CRV, SKY",
+  "btcFilter": {
+    "greenAbove": 80583,
+    "redBelow": 76529
+  },
+  "assets": [
+    {
+      "ticker": "PUMP",
+      "name": "Pump.fun",
+      "score": null,
+      "verdict": "Tren harian turun · ditahan sampai struktur berbalik naik",
+      "thesis": "MC/HR 5.5x · holder revenue 348 jt USD/thn (+21% 30h) · harga 30h -30%",
+      "invalidation": "Close harian di bawah 0.003694 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.003779575,
+            0.0039785
+          ],
+          "stop": 0.00369375,
+          "targets": [
+            0.00461982848545637,
+            0.004864,
+            0.004867
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "CRV",
+      "name": "Curve DAO",
+      "score": 6.6,
+      "verdict": "Finalis screen otomatis · tren harian campuran",
+      "thesis": "MC/HR 20.0x · holder revenue 23 jt USD/thn (+27% 30h) · harga 30h -27%",
+      "invalidation": "Close harian di bawah 0.2318 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.26109325,
+            0.274835
+          ],
+          "stop": 0.23177050000000002,
+          "targets": [
+            0.2931,
+            0.3537,
+            0.36592591574724165
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "SKY",
+      "name": "Sky",
+      "score": null,
+      "verdict": "Tren harian turun · ditahan sampai struktur berbalik naik",
+      "thesis": "MC/HR 22.9x · holder revenue 69 jt USD/thn (+13% 30h) · harga 30h -14%",
+      "invalidation": "Close harian di bawah 0.05498 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.060675074999999995,
+            0.0638685
+          ],
+          "stop": 0.054983752965,
+          "targets": [
+            0.069,
+            0.06936,
+            0.07052
+          ]
+        }
+      ]
+    }
+  ]
+}
