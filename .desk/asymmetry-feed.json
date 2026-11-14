@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "source": "asymmetry-screen",
+  "reportDate": "2026-11-14",
+  "generatedAt": "2026-11-14T00:00:46.872Z",
+  "headline": "Screen otomatis: CRV, SKY",
+  "btcFilter": {
+    "greenAbove": 78209,
+    "redBelow": 76372
+  },
+  "assets": [
+    {
+      "ticker": "CRV",
+      "name": "Curve DAO",
+      "score": null,
+      "verdict": "Tren harian turun · ditahan sampai struktur berbalik naik",
+      "thesis": "MC/HR 11.6x · holder revenue 32 jt USD/thn (+39% 30h) · harga 30h -30%",
+      "invalidation": "Close harian di bawah 0.1891 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.20865799999999995,
+            0.21963999999999997
+          ],
+          "stop": 0.18908587959999998,
+          "targets": [
+            0.2314,
+            0.2415,
+            0.2453
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "SKY",
+      "name": "Sky",
+      "score": null,
+      "verdict": "Tren harian turun · ditahan sampai struktur berbalik naik",
+      "thesis": "MC/HR 20.0x · holder revenue 67 jt USD/thn (-7% 30h) · harga 30h -20%",
+      "invalidation": "Close harian di bawah 0.04679 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.05163202499999999,
+            0.054349499999999995
+          ],
+          "stop": 0.04678894105499999,
+          "targets": [
+            0.05872,
+            0.06,
+            0.06069
+          ]
+        }
+      ]
+    }
+  ]
+}
