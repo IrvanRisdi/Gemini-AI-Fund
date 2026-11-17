@@ -94,3 +94,46 @@ test('withdraws pending orders when the report revises levels or the filter turn
   assert.equal(staleJournalOrder(order, journalCandidates(null, { ...OPTIONS, pricesUsdt: PRICES })), false);
   assert.equal(staleJournalOrder(order, journalCandidates(feed(), { ...OPTIONS, pricesUsdt: {} })), false);
 });
+
+
+test('allows defensive pullback limit candidates when allowDefensivePullback is enabled and BTC is stabilized', () => {
+  const correctiveFeed: JournalFeed = {
+    version: 1,
+    source: 'asymmetry-screen',
+    reportDate: '2026-10-01',
+    generatedAt: '2026-10-01T01:27:00Z',
+    btcFilter: { greenAbove: 77_657, redBelow: 76_330 },
+    assets: [
+      {
+        ticker: 'CRV',
+        name: 'Curve DAO',
+        score: null,
+        verdict: 'Tren harian turun · ditahan sampai struktur berbalik naik',
+        thesis: 'MC/HR 10.8x · holder revenue 30 jt USD/thn (+23% 30h)',
+        setups: [{ name: 'A · Pullback (draf otomatis)', kind: 'pullback', primary: true, entry: [0.1837, 0.1934], stop: 0.1665, targets: [0.2172, 0.2195, 0.2303] }],
+      },
+      {
+        ticker: 'JUP',
+        name: 'Jupiter',
+        score: null,
+        verdict: 'Tren harian turun · ditahan sampai struktur berbalik naik',
+        thesis: 'MC/HR 22.2x · holder revenue 37 jt USD/thn (+44% 30h)',
+        setups: [{ name: 'A · Pullback (draf otomatis)', kind: 'pullback', primary: true, entry: [0.2355, 0.2479], stop: 0.2223, targets: [0.2525, 0.2582, 0.2662] }],
+      },
+    ],
+  };
+  const scan = journalCandidates(correctiveFeed, {
+    ...OPTIONS,
+    pricesUsdt: { btc_usdt: 64_947, crv_usdt: 0.20, jup_usdt: 0.25 },
+    allowDefensivePullback: true,
+    btcStabilized: true,
+  });
+  assert.equal(scan.status, 'active');
+  assert.equal(scan.btcFilter, 'red');
+  assert.deepEqual(scan.candidates.map((item) => item.pair), ['crvidr', 'jupidr']);
+  for (const candidate of scan.candidates) {
+    assert.equal(candidate.allocationPct, 0.15);
+    assert.ok(validNetPlan(candidate.entryHigh, candidate.stopPrice, candidate.targetPrice, candidate.rewardMultiple));
+    assert.equal(staleJournalOrder(candidate, scan), false);
+  }
+});

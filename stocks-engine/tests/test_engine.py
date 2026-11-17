@@ -148,8 +148,8 @@ class EngineFeatureTests(unittest.TestCase):
             {**complete, "operating_cash_flow":-1}, datetime(2026,9,24).date())))
         self.assertTrue(any("laporan belum lengkap" in reason for reason in engine.fundamental_entry_blockers(
             {**complete, "coverage":["INCOME_STATEMENT"]}, datetime(2026,9,24).date())))
-        self.assertTrue(any("210 hari" in reason for reason in engine.fundamental_entry_blockers(
-            {**complete, "period_end":"2025-Q4"}, datetime(2026,9,24).date())))
+        self.assertTrue(any("365 hari" in reason for reason in engine.fundamental_entry_blockers(
+            {**complete, "period_end":"2025-Q2"}, datetime(2026,9,24).date())))
 
     def test_fundamental_guard_turns_accumulate_into_explained_watch(self):
         features = engine.feature_set(engine.yahoo_rows(yahoo_fixture()))

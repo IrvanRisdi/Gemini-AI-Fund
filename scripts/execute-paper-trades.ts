@@ -48,10 +48,30 @@ function currentQuotePrice(pair: string, currency: QuoteCurrency | undefined, pr
   const priceUsdt = priceForUsdt(pair, pricesUsdt);
   return currency === 'USDT' ? priceUsdt : priceUsdt * usdtIdr;
 }
-function hasLiveCampaign(book: Book, pair: string) { return Boolean(book.positions[pair]) || book.pendingOrders.some((order) => order.pair === pair && order.status === 'pending'); }
+const GOLD_EQUIVALENT_PAIRS = new Set(['xautidr', 'paxgidr']);
+function hasLiveCampaign(book: Book, pair: string) {
+  const samePair = Boolean(book.positions[pair]) || book.pendingOrders.some((order) => order.pair === pair && order.status === 'pending');
+  if (samePair) return true;
+  if (GOLD_EQUIVALENT_PAIRS.has(pair)) {
+    return [...GOLD_EQUIVALENT_PAIRS].some((goldPair) =>
+      Boolean(book.positions[goldPair]) || book.pendingOrders.some((order) => order.pair === goldPair && order.status === 'pending'),
+    );
+  }
+  return false;
+}
 function hasRecentAttempt(book: Book, pair: string, timestamp: string) {
   const cutoff = Date.parse(timestamp) - ATTEMPT_COOLDOWN_MS;
   return book.pendingOrders.some((order) => order.pair === pair && ACTIVE_STRATEGY_VERSIONS.has(order.strategyVersion ?? '') && Date.parse(order.createdAt) >= cutoff);
+}
+function hasRecentMeanReversionCluster(book: Book, agent: string, timestamp: string) {
+  if (agent !== 'mean-reversion-trader') return false;
+  const cutoff = Date.parse(timestamp) - 4 * 3_600_000;
+  return book.pendingOrders.some(
+    (order) =>
+      ACTIVE_STRATEGY_VERSIONS.has(order.strategyVersion ?? '')
+      && (order.status === 'pending' || order.status === 'filled')
+      && Date.parse(order.createdAt) >= cutoff,
+  );
 }
 function accountEquity(book: Book, pricesUsdt: Record<string, number>, usdtIdr: number) {
   return book.balance.IDR + Object.entries(book.positions).reduce((total, [pair, position]) => {
@@ -136,6 +156,8 @@ function isAgent(order: AllocationContext, agent: string) {
 }
 function allocationCap(order: AllocationContext) {
   if (isAgent(order, 'breakout-specialist')) return BREAKOUT_INITIAL_ALLOCATION;
+  if (isAgent(order, 'aggressive-breakout-trader')) return Math.min(0.50, Math.max(0.25, order.allocationPct ?? 0.50));
+  if (isAgent(order, JOURNAL_AGENT)) return Math.min(0.25, Math.max(0.15, order.allocationPct ?? 0.25));
   return Math.min(1, Math.max(.25, order.allocationPct ?? DEFAULT_MAX_NOTIONAL_PER_PAIR));
 }
 function cashReservePct(order: AllocationContext) {
@@ -205,7 +227,7 @@ function agentCircuitBreakerActive(book: Book, timestamp: string): boolean {
 function reserveCandidate(book: Book, candidate: Candidate, timestamp: string, pricesUsdt: Record<string, number>, usdtIdr: number): Pending | null {
   const equity = accountEquity(book, pricesUsdt, usdtIdr);
   const policy = paperRiskPolicy(equity);
-  if (agentCircuitBreakerActive(book, timestamp) || !valid(candidate) || hasLiveCampaign(book, candidate.pair) || hasRecentAttempt(book, candidate.pair, timestamp) || activeCampaigns(book) >= policy.maxCampaigns) return null;
+  if (agentCircuitBreakerActive(book, timestamp) || !valid(candidate) || hasLiveCampaign(book, candidate.pair) || hasRecentAttempt(book, candidate.pair, timestamp) || hasRecentMeanReversionCluster(book, candidate.agent, timestamp) || activeCampaigns(book) >= policy.maxCampaigns) return null;
   const riskPerUnit = netRewardRisk(candidate.entryHigh, candidate.stopPrice, candidate.targetPrice).netRisk * usdtIdr;
   const cap = allocationCap(candidate);
   const cashAvailable = Math.max(0, book.balance.IDR - equity * cashReservePct(candidate) - reservedCash(book));

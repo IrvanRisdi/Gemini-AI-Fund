@@ -78,8 +78,9 @@ async function scanPair(universePair: UniversePair, market: MarketRegime): Promi
   // 1. Breakout Specialist v6: 4H Relative-Strength Breakout vs BTC (Backtest: PF 1.94, H1 2.28, H2 1.65, WR 40.7%).
   // Enters on 4H 24-bar high breakout with RVOL >= 2.5, close strength >= 0.75, EMA9 > EMA21, and >= +2% 24h RS vs BTC.
   const fourExtension = (four.last.close - four.resistance) / four.atr;
+  const breakoutRegimeOk = market.riskOn || (market.btcReturn24h >= -0.01 && relativeStrengthVsBtc >= 0.035);
   const breakoutScore = Number(four.vol >= 2.5) + Number(fourCloseStrength >= 0.75) + Number(four.ema9 > four.ema21) + Number(relativeStrengthVsBtc >= 0.02) + Number(fourExtension <= 1.2);
-  if (liquid && four.last.close > four.resistance && breakoutScore >= 5) {
+  if (liquid && breakoutRegimeOk && four.last.close > four.resistance && breakoutScore >= 5) {
     const entry = four.last.high * 1.0003;
     const structuralStop = Math.min(four.last.low, four.resistance - four.atr * 0.25);
     const stop = stopForRiskBand(entry, structuralStop, four.atr, 0.04, 0.05);
@@ -92,10 +93,10 @@ async function scanPair(universePair: UniversePair, market: MarketRegime): Promi
           `Relative strength 24j +${(relativeStrengthVsBtc * 100).toFixed(1)}% vs BTC`,
           `Close 4H menembus high 24 bar dengan RVOL ${four.vol.toFixed(1)}x`,
           `Close strength ${(fourCloseStrength * 100).toFixed(0)}% · EMA9 > EMA21`,
-          'Alokasi tunggal 30% tanpa inverted pyramid · target 3R bersih',
+          'Alokasi tunggal 30% · breakeven +1,35R · target 3R bersih',
         ],
         score: breakoutScore, volumeRatio: four.vol, allocationPct: 0.30, rewardMultiple: 3.0,
-        validationStatus: 'validated', strategyVersion: COIN_STRATEGY_VERSION, timeStopHours: 384, breakevenAtR: null,
+        validationStatus: 'validated', strategyVersion: COIN_STRATEGY_VERSION, timeStopHours: 384, breakevenAtR: 1.35,
         reason: 'Breakout 4H dengan relative strength di atas BTC dan lonjakan volume >=2,5x.',
       });
     }
@@ -120,10 +121,10 @@ async function scanPair(universePair: UniversePair, market: MarketRegime): Promi
           `Relative strength 24j +${(relativeStrengthVsBtc * 100).toFixed(1)}% vs BTC`,
           'Trend 4H EMA9 > EMA21',
           `Close 1H menembus high 24 jam dengan volume ${plan.relativeVolume.toFixed(1)}x`,
-          `Stop ${(((plan.entry - plan.stop) / plan.entry) * 100).toFixed(1)}% · target 3R bersih · time stop ${AGGRESSIVE_TIME_STOP_HOURS} jam`,
+          `Stop ${(((plan.entry - plan.stop) / plan.entry) * 100).toFixed(1)}% · breakeven +1,5R · target 3R bersih · time stop ${AGGRESSIVE_TIME_STOP_HOURS} jam`,
         ],
         score: 5, volumeRatio: plan.relativeVolume, allocationPct, rewardMultiple: AGGRESSIVE_REWARD_MULTIPLE,
-        validationStatus: 'validated', strategyVersion: AGGRESSIVE_STRATEGY_VERSION, timeStopHours: AGGRESSIVE_TIME_STOP_HOURS, breakevenAtR: null,
+        validationStatus: 'validated', strategyVersion: AGGRESSIVE_STRATEGY_VERSION, timeStopHours: AGGRESSIVE_TIME_STOP_HOURS, breakevenAtR: 1.5,
         reason: 'Momentum ignition 1H: breakout 24 jam dengan RVOL >=3,5x dan relative strength terhadap BTC.',
       });
     }
@@ -133,24 +134,26 @@ async function scanPair(universePair: UniversePair, market: MarketRegime): Promi
   // Decoupled from bull-only market.riskOn so oversold washouts can be captured in corrective/ranging markets.
   const prevFour = four.closed.at(-2)!;
   const washedOut4h = (four.rsi <= 30 || four.previousRsi <= 30) && (four.last.low <= four.lower || prevFour.low <= four.lower * 1.005);
-  const bullishReclaim4h = four.last.close > four.last.open && fourCloseStrength >= 0.60 && four.last.close > prevFour.high;
+  const bullishReclaim4h = four.last.close > four.last.open && fourCloseStrength >= 0.60 && four.last.close > prevFour.high && four.vol >= 1.15 && market.btcReturn24h >= -0.05;
   if (liquid && washedOut4h && bullishReclaim4h) {
     const entryHigh = four.last.close;
     const entryLow = entryHigh * 0.995;
     const stop = stopForRiskBand(entryHigh, Math.min(four.last.low, prevFour.low) - four.atr * 0.2, four.atr, 0.04, 0.05);
-    const target = Math.max(four.mid, targetForNetReward(entryHigh, stop, 2.0));
-    if (validNetPlan(entryHigh, stop, target, 2.0)) {
+    const minTarget = targetForNetReward(entryHigh, stop, 1.6);
+    const maxTarget = targetForNetReward(entryHigh, stop, 2.2);
+    const target = Math.min(maxTarget, Math.max(minTarget, four.mid));
+    if (validNetPlan(entryHigh, stop, target, 1.6)) {
       candidates.push({
         id: id('mean-reversion-trader'), pair, agent: 'mean-reversion-trader', side: 'long', quoteCurrency: 'USDT', type: 'limit', timeframe: '4h',
         entryLow, entryHigh, stopPrice: stop, targetPrice: target, expiresAt: expiry(16),
         confirmations: [
-          `Kapitulasi 4H RSI ${Math.min(four.rsi, four.previousRsi).toFixed(1)} ≤ 30`,
+          `Kapitulasi 4H RSI ${Math.min(four.rsi, four.previousRsi).toFixed(1)} ≤ 30 · RVOL ${four.vol.toFixed(1)}x`,
           'Pierce Bollinger Band bawah 4H lalu bullish engulfing di atas high candle sebelumnya',
           `Close strength ${(fourCloseStrength * 100).toFixed(0)}% ≥ 60%`,
-          'Target 2R bersih / Bollinger tengah',
+          'Target 1,6R–2,2R bersih / Bollinger tengah · breakeven +1,0R',
         ],
-        score: 6, volumeRatio: four.vol, allocationPct: 0.25, rewardMultiple: 2.0,
-        validationStatus: 'validated', strategyVersion: COIN_STRATEGY_VERSION, timeStopHours: 384, breakevenAtR: 1.25,
+        score: 6, volumeRatio: four.vol, allocationPct: 0.25, rewardMultiple: 1.6,
+        validationStatus: 'validated', strategyVersion: COIN_STRATEGY_VERSION, timeStopHours: 384, breakevenAtR: 1.0,
         reason: 'Rebound kapitulasi 4H: RSI ekstrem <=30 di bawah Bollinger bawah dengan konfirmasi candle pembalikan.',
       });
     }
@@ -164,41 +167,45 @@ async function scanPair(universePair: UniversePair, market: MarketRegime): Promi
     const prior20Vol = four.closed.slice(-21, -1).reduce((s, b) => s + b.volume, 0) / 20;
     const wyckoffRvol = prior20Vol > 0 ? four.last.volume / prior20Vol : 0;
     const compactRange = (rangeHigh - rangeLow) / four.atr <= 6.5;
+    const wyckoffRegimeOk = four.ema9 > four.ema21 && (market.riskOn || relativeStrengthVsBtc >= 0.015);
     const sosScore = Number(four.last.close > rangeHigh) + Number(wyckoffRvol >= 1.6) + Number(fourCloseStrength >= 0.70) + Number(compactRange) + Number(four.last.close > four.ema21);
-    const band = orderedLimitBand(rangeHigh, four.atr, rangeHigh - four.atr * 0.3, four.last.close);
+    const retestCeiling = Math.min(four.last.close, rangeHigh + four.atr * 0.15);
+    const band = orderedLimitBand(rangeHigh, four.atr, rangeHigh - four.atr * 0.25, retestCeiling);
     const structuralStop = Math.min(rangeHigh - four.atr * 1.1, band.low - four.atr * 0.7);
     const stop = stopForRiskBand(band.high, structuralStop, four.atr, 0.03, 0.05);
-    const target = targetForNetReward(band.high, stop, 2.5);
-    if (liquid && four.last.close > rangeHigh && sosScore >= 5 && validNetPlan(band.high, stop, target, 2.5)) {
+    const target = targetForNetReward(band.high, stop, 2.2);
+    if (liquid && wyckoffRegimeOk && four.last.close > rangeHigh && sosScore >= 5 && validNetPlan(band.high, stop, target, 2.2)) {
       candidates.push({
         id: id('wyckoff-trader'), pair, agent: 'wyckoff-trader', side: 'long', quoteCurrency: 'USDT', type: 'limit', timeframe: '4h',
         entryLow: band.low, entryHigh: band.high, stopPrice: stop, targetPrice: target, expiresAt: expiry(32),
         confirmations: [
           'Konsolidasi Wyckoff 45 bar 4H (lebar <= 6,5 ATR)',
           `Breakout Sign of Strength (SoS) dengan RVOL ${wyckoffRvol.toFixed(1)}x`,
-          `Close strength ${(fourCloseStrength * 100).toFixed(0)}% di atas EMA21 4H`,
-          'Entry limit pada retest atap range (LPS) · target 2,5R bersih',
+          `Close strength ${(fourCloseStrength * 100).toFixed(0)}% · EMA9 > EMA21 4H`,
+          'Entry limit murni pada retest atap range (LPS) · breakeven +1,15R · target 2,2R bersih',
         ],
-        score: sosScore, volumeRatio: wyckoffRvol, allocationPct: 0.25, rewardMultiple: 2.5,
-        validationStatus: 'validated', strategyVersion: COIN_STRATEGY_VERSION, timeStopHours: 480, breakevenAtR: 1.25,
-        reason: 'Wyckoff 4H Phase-D SoS: breakout dari akumulasi padat, entry limit pada retest LPS dengan target 2,5R bersih.',
+        score: sosScore, volumeRatio: wyckoffRvol, allocationPct: 0.25, rewardMultiple: 2.2,
+        validationStatus: 'validated', strategyVersion: COIN_STRATEGY_VERSION, timeStopHours: 480, breakevenAtR: 1.15,
+        reason: 'Wyckoff 4H Phase-D SoS: breakout dari akumulasi padat, entry limit pada retest LPS dengan target 2,2R bersih.',
       });
     }
   }
 
   // 5. SMC v6: 15m 24-Bar Liquidity Sweep + Strong Reclaim Close inside 15m/4H Uptrend (Backtest: PF 1.21, H1 1.14, H2 1.32, WR 45.5%).
-  const smc = liquid ? smcPullbackPlan({ closed: one.closed, ema9: one.ema9, ema21: one.ema21, atr: one.atr, fourHourClose: four.last.close, fourHourEma21: four.ema21 }) : null;
+  const smc = liquid && one.vol >= 1.2 && market.btcReturn24h >= -0.035
+    ? smcPullbackPlan({ closed: one.closed, ema9: one.ema9, ema21: one.ema21, atr: one.atr, fourHourClose: four.last.close, fourHourEma21: four.ema21 })
+    : null;
   if (smc) {
     candidates.push({
       id: id('smc-trader'), pair, agent: 'smc-trader', side: 'long', quoteCurrency: 'USDT', type: 'limit', timeframe: '15m',
       entryLow: smc.entryLow, entryHigh: smc.entryHigh, stopPrice: smc.stop, targetPrice: smc.target, expiresAt: expiry(SMC_ORDER_TTL_HOURS),
       confirmations: [
-        'Sweep low 24 candle (6 jam) lalu reclaim kuat (close strength ≥ 65%)',
+        `Sweep low 24 candle (6 jam) lalu reclaim kuat (close strength ≥ 65% · RVOL ${one.vol.toFixed(1)}x)`,
         'Tren 15m (EMA9 > EMA21, di atas EMA50) dan 4H di atas EMA21',
-        'Entry limit di tengah candle reclaim · target 3R bersih · tanpa breakeven dini',
+        'Entry limit di tengah candle reclaim · breakeven +1,5R · target 3R bersih',
       ],
       score: 5, volumeRatio: one.vol, allocationPct: 0.25, rewardMultiple: SMC_REWARD_MULTIPLE,
-      validationStatus: 'validated', strategyVersion: SMC_STRATEGY_VERSION, timeStopHours: SMC_TIME_STOP_HOURS, breakevenAtR: null,
+      validationStatus: 'validated', strategyVersion: SMC_STRATEGY_VERSION, timeStopHours: SMC_TIME_STOP_HOURS, breakevenAtR: 1.5,
       reason: 'SMC v6: sweep likuiditas 6 jam yang langsung direbut kembali dalam tren naik 15m/4H; entry limit pada retracement.',
     });
   }
@@ -278,11 +285,18 @@ function readJournalFeed(): JournalFeed | null {
   catch { return null; }
 }
 
-// The journal agent ignores the BTC 4H regime above: its research applies its
-// own BTC filter, so it is evaluated independently of the technical agents.
-async function scanAsymmetryJournal(errors: string[]) {
+// The journal agent applies its own BTC filter and supports defensive
+// pullback accumulation when BTC is stabilizing in a corrective regime.
+async function scanAsymmetryJournal(errors: string[], marketRegime: MarketRegime) {
+  const btcStabilized = marketRegime.btcReturn24h > -0.035;
   try {
-    return journalCandidates(readJournalFeed(), { now: new Date(), pricesUsdt: await fetchBulkCoinPricesUsdt(), strategyVersion: COIN_STRATEGY_VERSION });
+    return journalCandidates(readJournalFeed(), {
+      now: new Date(),
+      pricesUsdt: await fetchBulkCoinPricesUsdt(),
+      strategyVersion: COIN_STRATEGY_VERSION,
+      allowDefensivePullback: true,
+      btcStabilized,
+    });
   } catch (error) {
     errors.push(`asymmetry-journal: ${String(error)}`);
     return journalCandidates(null, { now: new Date(), pricesUsdt: {}, strategyVersion: COIN_STRATEGY_VERSION });
@@ -296,7 +310,7 @@ async function main() {
     if (result.status === 'fulfilled') { candidates.push(...result.value.candidates); diagnostics.push(result.value.diagnostic); }
     else errors.push(`${universe[index]?.pair ?? 'unknown'}: ${String(result.reason)}`);
   });
-  const asymmetryJournal = await scanAsymmetryJournal(errors);
+  const asymmetryJournal = await scanAsymmetryJournal(errors, marketRegime);
   const allCandidates: Array<Candidate | JournalCandidate> = [...candidates, ...asymmetryJournal.candidates];
   const output = { timestamp: new Date().toISOString(), mode: 'spot-only-v6-usdt', quoteCurrency: 'USDT', accountingCurrency: 'IDR', strategyVersion: COIN_STRATEGY_VERSION, marketRegime, pairsScanned: universe.length, universe, diagnostics, candidates: allCandidates, asymmetryJournal, errors };
   fs.writeFileSync(path.join(process.cwd(), '.desk', 'latest-scan.json'), JSON.stringify(output, null, 2) + '\n'); console.log(JSON.stringify(output, null, 2));

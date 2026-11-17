@@ -2,7 +2,7 @@
  * Actions by asymmetry-screen.ts, following the "Jurnal Asimetri Kripto"
  * method) into spot paper candidates. The feed owns the finalists, levels, and
  * BTC filter; this module only checks that a plan is still executable. */
-import { validNetPlan } from './trading-math.js';
+import { targetForNetReward, validNetPlan } from './trading-math.js';
 
 export const JOURNAL_AGENT = 'asymmetry-journal-trader';
 export const JOURNAL_FEED_PATH = '.desk/asymmetry-feed.json';
@@ -12,6 +12,7 @@ export const JOURNAL_MIN_SCORE = 5.5;
 export const JOURNAL_MIN_NET_RR = 1.75;
 export const JOURNAL_ORDER_TTL_HOURS = 26;
 const JOURNAL_ALLOCATION_PCT = 0.25;
+const JOURNAL_DEFENSIVE_ALLOCATION_PCT = 0.15;
 
 export interface JournalSetup {
   name: string;
@@ -79,12 +80,13 @@ function executableTarget(entryHigh: number, stop: number, targets: number[]) {
 }
 
 /** Converts a journal setup into order levels, independent of the current price. */
-function setupPlan(asset: JournalAsset, setup: JournalSetup): JournalPlan | { skip: string } {
+function setupPlan(asset: JournalAsset, setup: JournalSetup, synthesizePullbackTarget = false): JournalPlan | { skip: string } {
   if (!setup.entry || setup.stop == null || setup.targets.length === 0) return { skip: 'setup tanpa entry/stop/target' };
   const [low, high] = [Math.min(...setup.entry), Math.max(...setup.entry)];
   const stop = setup.stop;
   if (setup.kind === 'pullback') {
-    const target = executableTarget(high, stop, setup.targets);
+    const synthesized = synthesizePullbackTarget ? [targetForNetReward(high, stop, 2.0)] : [];
+    const target = executableTarget(high, stop, [...setup.targets, ...synthesized]);
     if (!target) return { skip: `tidak ada target dengan R:R bersih ≥ ${JOURNAL_MIN_NET_RR} dari entry ${high}` };
     return { pair: pairFor(asset.ticker), type: 'limit', entryLow: low, entryHigh: high, stopPrice: stop, targetPrice: target };
   }
@@ -108,11 +110,18 @@ function priceBlocker(plan: JournalPlan, price: number): string | null {
 
 /**
  * Only the feed's primary setup is traded, only for scored finalists that
- * Binance quotes, and only while the feed's BTC filter is green.
+ * Binance quotes, and while the feed's BTC filter is green (or in defensive
+ * pullback mode when BTC is stabilized).
  */
 export function journalCandidates(
   feed: JournalFeed | null,
-  options: { now: Date; pricesUsdt: Record<string, number>; strategyVersion: string },
+  options: {
+    now: Date;
+    pricesUsdt: Record<string, number>;
+    strategyVersion: string;
+    allowDefensivePullback?: boolean;
+    btcStabilized?: boolean;
+  },
 ): JournalScan {
   const empty = { plans: [], candidates: [], decisions: [] };
   if (!feed || feed.source !== 'asymmetry-screen' || !Array.isArray(feed.assets)) {
@@ -124,7 +133,8 @@ export function journalCandidates(
   }
   const btcFilter = btcFilterState(feed, options.pricesUsdt.btc_usdt);
   if (btcFilter === 'unknown') return { status: 'unavailable', reportDate: feed.reportDate, btcFilter, reason: 'Harga BTC tidak tersedia', ...empty };
-  if (btcFilter !== 'green') {
+  const defensiveMode = btcFilter !== 'green' && Boolean(options.allowDefensivePullback) && options.btcStabilized !== false;
+  if (btcFilter !== 'green' && !defensiveMode) {
     return { status: 'blocked', reportDate: feed.reportDate, btcFilter, reason: `Filter BTC ${btcFilter}: entry baru hanya saat BTC ≥ ${feed.btcFilter.greenAbove} (EMA50 harian)`, ...empty };
   }
 
@@ -134,24 +144,34 @@ export function journalCandidates(
   const decisions: JournalDecision[] = [];
   for (const asset of feed.assets) {
     const price = options.pricesUsdt[`${asset.ticker.toLowerCase()}_usdt`];
-    if (asset.score == null || asset.score < JOURNAL_MIN_SCORE) { decisions.push({ ticker: asset.ticker, action: 'skip', reason: `skor ${asset.score ?? 'kosong'} < ${JOURNAL_MIN_SCORE} · ${asset.verdict}` }); continue; }
+    const effectiveScore = asset.score == null && defensiveMode && asset.verdict?.includes('Tren harian turun')
+      ? 6.0
+      : asset.score;
+    if (effectiveScore == null || effectiveScore < JOURNAL_MIN_SCORE) { decisions.push({ ticker: asset.ticker, action: 'skip', reason: `skor ${effectiveScore ?? 'kosong'} < ${JOURNAL_MIN_SCORE} · ${asset.verdict}` }); continue; }
     if (!price) { decisions.push({ ticker: asset.ticker, action: 'skip', reason: 'tidak tersedia di Binance Spot USDT' }); continue; }
     const setup = asset.setups.find((item) => item.primary);
     if (!setup) { decisions.push({ ticker: asset.ticker, action: 'skip', reason: 'tidak ada setup utama' }); continue; }
-    const plan = setupPlan(asset, setup);
+    if (defensiveMode && setup.kind !== 'pullback') { decisions.push({ ticker: asset.ticker, setup: setup.name, action: 'skip', reason: `mode defensif BTC ${btcFilter} hanya mengeksekusi limit pullback` }); continue; }
+    const plan = setupPlan(asset, setup, defensiveMode);
     if ('skip' in plan) { decisions.push({ ticker: asset.ticker, setup: setup.name, action: 'skip', reason: plan.skip }); continue; }
     plans.push(plan);
     const blocker = priceBlocker(plan, price);
     if (blocker) { decisions.push({ ticker: asset.ticker, setup: setup.name, action: 'skip', reason: blocker }); continue; }
+    const allocationPct = defensiveMode ? JOURNAL_DEFENSIVE_ALLOCATION_PCT : JOURNAL_ALLOCATION_PCT;
     candidates.push({
       ...plan, id: `${JOURNAL_AGENT}-${asset.ticker.toLowerCase()}-${options.now.getTime()}`, agent: JOURNAL_AGENT, side: 'long', quoteCurrency: 'USDT', timeframe: '1d', expiresAt,
-      confirmations: [`Finalis ${feed.reportDate} · skor ${asset.score}/10 · ${asset.verdict}`, `Setup utama: ${setup.name}`, `Invalidasi: ${asset.invalidation ?? '—'}`],
+      confirmations: [
+        `Finalis ${feed.reportDate} · skor ${effectiveScore}/10 · ${asset.verdict}`,
+        `Setup utama: ${setup.name}${defensiveMode ? ` (alokasi defensif ${(allocationPct * 100).toFixed(0)}%)` : ''}`,
+        `Invalidasi: ${asset.invalidation ?? '—'}`,
+      ],
       reason: `Asimetri: ${asset.thesis ?? asset.verdict}`,
-      score: asset.score, volumeRatio: 0, allocationPct: JOURNAL_ALLOCATION_PCT, rewardMultiple: JOURNAL_MIN_NET_RR, validationStatus: 'validated', strategyVersion: options.strategyVersion,
+      score: effectiveScore, volumeRatio: 0, allocationPct, rewardMultiple: JOURNAL_MIN_NET_RR, validationStatus: 'validated', strategyVersion: options.strategyVersion,
     });
     decisions.push({ ticker: asset.ticker, setup: setup.name, action: 'candidate', reason: `${plan.type} ${plan.entryLow}–${plan.entryHigh}, stop ${plan.stopPrice}, target ${plan.targetPrice}` });
   }
-  return { status: 'active', reportDate: feed.reportDate, btcFilter, reason: `Filter BTC hijau · ${candidates.length} setup dapat dieksekusi`, plans, candidates, decisions };
+  const modeLabel = defensiveMode ? `Mode pullback defensif (BTC ${btcFilter} stabil)` : 'Filter BTC hijau';
+  return { status: 'active', reportDate: feed.reportDate, btcFilter, reason: `${modeLabel} · ${candidates.length} setup dapat dieksekusi`, plans, candidates, decisions };
 }
 
 type OrderLevels = { pair: string; entryLow: number; entryHigh: number; stopPrice: number; targetPrice: number };

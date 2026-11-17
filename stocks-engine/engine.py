@@ -601,11 +601,18 @@ def feature_set(rows: list[dict]) -> dict | None:
         previous_breakout = previous["close"] > prior_breakout_level
         for age in range(1, min(5, len(rows) - 21) + 1):
             breakout_index = len(rows) - age - 1
-            level = max(row["high"] for row in rows[breakout_index-20:breakout_index])
+            level20 = max(row["high"] for row in rows[breakout_index-20:breakout_index])
+            level10 = max(row["high"] for row in rows[breakout_index-10:breakout_index])
             breakout_candle = rows[breakout_index]
-            if (breakout_candle["close"] > level and latest["low"] <= level * 1.02
-                    and latest["close"] >= level):
-                prior_breakout_level = level
+            matched_level = None
+            if (breakout_candle["close"] > level20 and latest["low"] <= level20 * 1.025
+                    and latest["close"] >= level20 * 0.995):
+                matched_level = level20
+            elif (breakout_candle["close"] > level10 and latest["low"] <= level10 * 1.02
+                    and latest["close"] >= level10):
+                matched_level = level10
+            if matched_level is not None:
+                prior_breakout_level = matched_level
                 retest_confirmed = True
                 retest_age_sessions = age
                 break
@@ -689,7 +696,7 @@ def local_liquidity_shortlist(staged: list[tuple[str, dict]], arjum_symbols: set
     # the same ADV/ATR gates, so this is discovery, not a liquidity bypass.
     reserve_limit = min(5, settings.challenger_universe_limit)
     retest_challengers = [item for item in challenger_pool if item[1].get("retest_confirmed")
-        and float(item[1].get("relative_volume") or 0) >= 1.25][:reserve_limit]
+        and float(item[1].get("relative_volume") or 0) >= 0.75][:reserve_limit]
     reserved_symbols = {item[0] for item in retest_challengers}
     challengers = retest_challengers + [item for item in challenger_pool if item[0] not in reserved_symbols][
         :max(0, settings.challenger_universe_limit - len(retest_challengers))]
@@ -704,7 +711,7 @@ def local_liquidity_shortlist(staged: list[tuple[str, dict]], arjum_symbols: set
             technical.append((symbol, features, score))
     technical.sort(key=lambda item: item[2], reverse=True)
     retest_candidates = [item for item in technical if item[1].get("retest_confirmed")
-        and float(item[1].get("relative_volume") or 0) >= 1.25][:min(5, settings.technical_candidate_limit)]
+        and float(item[1].get("relative_volume") or 0) >= 0.75][:min(5, settings.technical_candidate_limit)]
     retest_symbols = {item[0] for item in retest_candidates}
     remaining = [item for item in technical if item[0] not in retest_symbols][
         :max(0, settings.technical_candidate_limit - len(retest_candidates))]
@@ -743,8 +750,8 @@ def fundamental_entry_blockers(snapshot: dict | None, today: date | None = None)
         period_date = date(int(year), int(quarter) * 3, 1)
         # End of the stated quarter, not the day the API was fetched.
         period_date = (period_date + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-        if ((today or now_wib().date()) - period_date).days > 210:
-            blockers.append(f"laporan {period} melewati batas usia 210 hari")
+        if ((today or now_wib().date()) - period_date).days > 365:
+            blockers.append(f"laporan {period} melewati batas usia 365 hari")
     except (ValueError, TypeError):
         blockers.append("periode laporan tidak valid")
     if snapshot.get("quality_score") is None or float(snapshot["quality_score"]) < 70:
@@ -760,25 +767,25 @@ def breakout_entry_blockers(features: dict) -> list[str]:
     close = float(features["close"])
     ema20, ema50 = features.get("ema20"), features.get("ema50")
     blockers = []
-    if not (ema20 and ema50 and close > ema20 > ema50):
+    if not (ema20 and ema50 and close > ema20 and close > ema50 and ema20 >= ema50 * 0.985):
         blockers.append("trend EMA20/50 belum bullish")
     if not features.get("retest_confirmed"):
         blockers.append("retest resistance belum terkonfirmasi dalam 5 sesi")
     rvol = float(features.get("relative_volume") or 0)
-    if rvol < 1.25:
-        blockers.append(f"RVOL {rvol:.2f}x < 1,25x")
+    if rvol < 0.75:
+        blockers.append(f"RVOL {rvol:.2f}x < 0,75x")
     rsi_value = float(features.get("rsi14") or 0)
-    if not 50 <= rsi_value <= 68:
-        blockers.append(f"RSI {rsi_value:.1f} di luar 50–68")
+    if not 48 <= rsi_value <= 75:
+        blockers.append(f"RSI {rsi_value:.1f} di luar 48–75")
     change = float(features.get("change_pct") or 0)
-    if not 0 < change <= 5:
-        blockers.append(f"perubahan harian {change:.2f}% di luar 0–5%")
+    if not -1.5 <= change <= 7.5:
+        blockers.append(f"perubahan harian {change:.2f}% di luar -1,5–7,5%")
     close_strength = float(features.get("close_strength", 1.0) if features.get("close_strength") is not None else 1.0)
-    if close_strength < 0.60:
-        blockers.append(f"close strength {close_strength:.2f} < 0,60")
+    if close_strength < 0.50:
+        blockers.append(f"close strength {close_strength:.2f} < 0,50")
     atr_pct = float(features.get("atr_pct") or 0)
-    if atr_pct > 4.5:
-        blockers.append(f"ATR {atr_pct:.2f}% > 4,50%")
+    if atr_pct > 6.0:
+        blockers.append(f"ATR {atr_pct:.2f}% > 6,00%")
     return blockers
 
 
@@ -794,13 +801,15 @@ def evaluate_agents(features: dict, fundamental_quality: int | None, timeframe: 
         vwap_distance = (close - f["vwap20"]) / f["vwap20"] * 100 if f.get("vwap20") else 99
         intraday_trend = bool(f.get("ema20") and f.get("ema50") and close > f["ema20"] > f["ema50"])
         breakout_5m = bool(f.get("breakout", True))
-        scalp_ok = bool(intraday_trend and breakout_5m and .15 <= vwap_distance <= 1.50
+        scalp_session_ok = f.get("session_trading_minutes") is None or f["session_trading_minutes"] <= 240
+        scalp_ok = bool(close >= 200 and scalp_session_ok and intraday_trend and breakout_5m
+                        and .15 <= vwap_distance <= 1.50
                         and f["relative_volume"] >= 2.2 and close_strength >= 0.60
                         and 55 <= (f.get("rsi14") or 0) <= 72)
         scalp_stop_distance = max(1.8 * volatility, close * .015)
-        scalp_target_distance = 2.2 * scalp_stop_distance + close * (BUY_FEE + SELL_FEE)
+        scalp_target_distance = 1.75 * scalp_stop_distance + close * (BUY_FEE + SELL_FEE)
         proposals.append(Proposal("scalping", "BUY" if scalp_ok else "WAIT", 80 if scalp_ok else 40,
-            "Breakout high 20-bar, trend EMA20/50, RVOL ≥2,2x, close strength ≥0,60, RSI 55–72, dan jarak VWAP lolos." if scalp_ok else "Gate scalping v3 belum lengkap; menunggu breakout RVOL ≥2,2x dengan struktur VWAP/EMA sehat.",
+            "Breakout high 20-bar, harga ≥Rp200, trend EMA20/50, RVOL ≥2,2x, close strength ≥0,60, RSI 55–72, dan jarak VWAP lolos." if scalp_ok else "Gate scalping v3 belum lengkap; menunggu breakout RVOL ≥2,2x (harga ≥Rp200, sebelum 14:30 WIB) dengan struktur VWAP/EMA sehat.",
             "Intraday 5m delayed", close if scalp_ok else None,
             close-scalp_stop_distance if scalp_ok else None,
             close+scalp_target_distance if scalp_ok else None, 1 if scalp_ok else 0,
@@ -808,37 +817,37 @@ def evaluate_agents(features: dict, fundamental_quality: int | None, timeframe: 
         opening_window = f.get("session_trading_minutes") is not None and 5 <= f["session_trading_minutes"] <= 60
         session_gain = (close / f["session_open"] - 1) * 100 if f.get("session_open") else 0
         ema20_ok = not f.get("ema20") or close > f["ema20"]
-        open_ok = bool(opening_window and f["open_is_low"] and close > f["vwap20"] and ema20_ok
+        open_ok = bool(close >= 200 and opening_window and f["open_is_low"] and close > f["vwap20"] and ema20_ok
                        and f["relative_volume"] >= 1.6 and .50 <= session_gain <= 3.0
                        and close_strength >= 0.60 and 55 <= (f.get("rsi14") or 0) <= 72)
         open_stop = f["session_open"] - server.tick_size(f["session_open"])
         open_risk = max(close-open_stop, close*.02)
         proposals.append(Proposal("open-low", "BUY" if open_ok else "NOT_APPLICABLE", 76 if open_ok else None,
-            "Open sesi bertahan sebagai low; kekuatan harga di atas VWAP & EMA20, RVOL ≥1,6x, close strength ≥0,60, dan jendela 60 menit lolos." if open_ok else "Open=Low v3 gate tidak lengkap atau jendela 60 menit pembukaan sudah lewat.",
+            "Open sesi bertahan sebagai low (harga ≥Rp200); kekuatan harga di atas VWAP & EMA20, RVOL ≥1,6x, close strength ≥0,60, dan jendela 60 menit lolos." if open_ok else "Open=Low v3 gate tidak lengkap atau jendela 60 menit pembukaan sudah lewat.",
             "Hari ini · 5m delayed", close if open_ok else None, open_stop if open_ok else None,
-            close + 2.4*open_risk + close*(BUY_FEE+SELL_FEE) if open_ok else None,
+            close + 1.85*open_risk + close*(BUY_FEE+SELL_FEE) if open_ok else None,
             1.5 if open_ok else 0, "ACTIONABLE" if open_ok else "WAITING"))
         return proposals
 
-    trend = f["ema20"] and f["ema50"] and close > f["ema20"] > f["ema50"]
-    vwap_ok = not f.get("vwap20") or close >= f["vwap20"]
-    bull_candle = not f.get("open") or close > float(f["open"])
-    swing_ok = bool(trend and vwap_ok and bull_candle and close_strength >= 0.55
-                    and (atr_pct <= 3.5 or atr_pct == 0)
-                    and 52 <= (f["rsi14"] or 0) <= 66 and f["relative_volume"] >= 1.25
-                    and 0.5 <= float(f.get("change_pct") or 0) <= 4.0 and close <= f["ema20"] * 1.06)
+    trend = bool(f["ema20"] and f["ema50"] and close > f["ema20"] and close > f["ema50"] and f["ema20"] >= f["ema50"] * 0.985)
+    vwap_ok = not f.get("vwap20") or close >= f["vwap20"] * 0.995
+    bull_candle = not f.get("open") or close >= float(f["open"])
+    swing_ok = bool(trend and vwap_ok and bull_candle and close_strength >= 0.50
+                    and (atr_pct <= 5.5 or atr_pct == 0)
+                    and 48 <= (f["rsi14"] or 0) <= 74 and f["relative_volume"] >= 0.60
+                    and 0.0 <= float(f.get("change_pct") or 0) <= 6.5 and close <= f["ema20"] * 1.08)
     swing_stop_dist = 1.2 * volatility
     proposals.append(Proposal("swing", "BUY" if swing_ok else "WAIT", 82 if swing_ok else 45,
-        "Trend Daily EMA20/50 & VWAP20, ATR terkendali ≤3,5%, close strength ≥0,55, RSI 52–66, dan RVOL ≥1,25x lolos. Entry pembukaan sesi berikutnya." if swing_ok else "Setup swing v3 belum memenuhi trend EMA/VWAP, batas volatilitas ATR ≤3,5%, RSI, atau volume.",
+        "Trend Daily EMA20/50 & VWAP20, ATR terkendali ≤5,5%, close strength ≥0,50, RSI 48–74, dan RVOL ≥0,60x lolos. Entry pembukaan sesi berikutnya." if swing_ok else "Setup swing v3 belum memenuhi trend EMA/VWAP, batas volatilitas ATR ≤5,5%, RSI, atau volume.",
         "2–10 hari", close if swing_ok else None, close-swing_stop_dist if swing_ok else None, close+2.4*swing_stop_dist if swing_ok else None, 2 if swing_ok else 0, "ACTIONABLE" if swing_ok else "WAITING"))
     quality = int(fundamental_quality) if isinstance(fundamental_quality, (int, float)) and not isinstance(fundamental_quality, bool) else None
     fundamental_blockers = fundamental_entry_blockers(fundamental_snapshot) if fundamental_snapshot is not None else []
-    fundamental_trend = bool(f.get("ema20") and (not f.get("ema50") or f["ema20"] >= f["ema50"])
-                             and close >= f["ema20"] and close <= f["ema20"] * 1.06 and vwap_ok)
+    fundamental_trend = bool(f.get("ema20") and (not f.get("ema50") or f["ema20"] >= f["ema50"] * 0.97)
+                             and close >= f["ema20"] * 0.995 and close <= f["ema20"] * 1.08 and vwap_ok)
     fundamental_timing = bool(quality is not None and quality >= 70 and fundamental_trend
-                              and close_strength >= 0.55 and (atr_pct <= 4.0 or atr_pct == 0)
-                              and float(f.get("relative_volume") or 0) >= 1.05
-                              and 48 <= (f.get("rsi14") or 100) <= 66)
+                              and close_strength >= 0.45 and (atr_pct <= 5.5 or atr_pct == 0)
+                              and float(f.get("relative_volume") or 0) >= 0.50
+                              and 45 <= (f.get("rsi14") or 100) <= 72)
     if quality is None:
         fundamental = Proposal("fundamental", "WATCH", None,
             "DATA NOT AVAILABLE; menunggu snapshot fundamental tervalidasi.", "1–3 minggu", status="INCOMPLETE")
@@ -857,7 +866,7 @@ def evaluate_agents(features: dict, fundamental_quality: int | None, timeframe: 
     breakout_stop = min((f.get("breakout_level") or close)-server.tick_size(close), close-1.2*volatility) if breakout_ok else None
     breakout_target = close+2*(close-breakout_stop) if breakout_stop is not None else None
     proposals.append(Proposal("breakout-retest", "BUY" if breakout_ok else "WAIT", 86 if breakout_ok else 45,
-        f"Breakout Daily retest pada sesi ke-{f.get('retest_age_sessions')} dari 5; tren EMA, RVOL ≥1,25x, close strength ≥0,60, dan RSI 50–68 lolos. Entry pembukaan sesi berikutnya hanya bila gap tidak lebih dari 2%." if breakout_ok else "Belum entry: " + "; ".join(breakout_blockers),
+        f"Breakout Daily retest pada sesi ke-{f.get('retest_age_sessions')} dari 5; tren EMA, RVOL ≥0,75x, close strength ≥0,50, dan RSI 48–75 lolos. Entry pembukaan sesi berikutnya hanya bila gap tidak lebih dari 2%." if breakout_ok else "Belum entry: " + "; ".join(breakout_blockers),
         "2–12 hari", close if breakout_ok else None,
         breakout_stop, breakout_target, 2 if breakout_ok else 0, "ACTIONABLE" if breakout_ok else "WAITING"))
     return proposals
@@ -899,47 +908,53 @@ def recovery_risk_factor(equity: float, starting_equity: float) -> float:
     return 1.0
 
 
+def _latest_ihsg_regime(db, today: date | None = None) -> dict:
+    current_date = today or now_wib().date()
+    current = current_date.isoformat()
+    try:
+        has_today_candle = db.execute(
+            "SELECT 1 FROM market_candles WHERE symbol='^JKSE' AND timeframe='1d' AND date(candle_at)=? LIMIT 1",
+            (current,),
+        ).fetchone()
+        if has_today_candle:
+            live = ihsg_report_snapshot(db, current_date)
+            if live.get("status") == "AVAILABLE":
+                return live
+    except sqlite3.OperationalError:
+        pass
+    try:
+        row = db.execute("SELECT report_date,snapshot_json FROM reports ORDER BY report_date DESC LIMIT 1").fetchone()
+    except sqlite3.OperationalError:
+        return {}
+    if not row or not (row["report_date"] == current or is_prior_trading_session(row["report_date"], current)):
+        return {}
+    try:
+        return json.loads(row["snapshot_json"]).get("ihsg") or {}
+    except (TypeError, ValueError):
+        return {}
+
+
 def market_regime_risk_factor(db, agent_id: str, today: date | None = None) -> float:
     """Reduce only new multi-day long exposure when the last IHSG close is bearish."""
     if agent_id not in {"swing", "fundamental", "breakout-retest"}:
         return 1.0
-    row = db.execute("SELECT report_date,snapshot_json FROM reports ORDER BY report_date DESC LIMIT 1").fetchone()
-    current = (today or now_wib().date()).isoformat()
-    if not row or not (row["report_date"] == current or is_prior_trading_session(row["report_date"], current)):
-        return 1.0
-    try:
-        ihsg = json.loads(row["snapshot_json"]).get("ihsg") or {}
-    except (TypeError, ValueError):
-        return 1.0
-    if ihsg.get("status") == "DATA_NOT_AVAILABLE" or ihsg.get("trend") != "BEARISH":
+    ihsg = _latest_ihsg_regime(db, today)
+    if not ihsg or ihsg.get("status") == "DATA_NOT_AVAILABLE" or ihsg.get("trend") != "BEARISH":
         return 1.0
     return .60 if agent_id == "fundamental" else .50
 
 
 def ihsg_bearish_blocks_new_entry(db, agent_id: str, today: date | None = None) -> bool:
-    """Block new swing/breakout-retest entries when IHSG is in a confirmed bearish breakdown."""
-    if agent_id not in {"swing", "breakout-retest"}:
+    """Block new entries when IHSG is in an active bearish selloff."""
+    if agent_id not in {"swing", "breakout-retest", "scalping", "open-low"}:
         return False
-    try:
-        row = db.execute("SELECT report_date,snapshot_json FROM reports ORDER BY report_date DESC LIMIT 1").fetchone()
-    except sqlite3.OperationalError:
-        return False
-    current = (today or now_wib().date()).isoformat()
-    if not row or not (row["report_date"] == current or is_prior_trading_session(row["report_date"], current)):
-        return False
-    try:
-        ihsg = json.loads(row["snapshot_json"]).get("ihsg") or {}
-    except (TypeError, ValueError):
-        return False
-    if ihsg.get("status") == "DATA_NOT_AVAILABLE" or ihsg.get("trend") != "BEARISH":
+    ihsg = _latest_ihsg_regime(db, today)
+    if not ihsg or ihsg.get("status") == "DATA_NOT_AVAILABLE" or ihsg.get("trend") != "BEARISH":
         return False
     change_pct = float(ihsg.get("change_pct") or 0)
-    close_px = float(ihsg.get("close") or 0)
-    sma20 = float(ihsg.get("sma20") or 0)
-    sma50 = float(ihsg.get("sma50") or 0)
-    if sma20 > 0 and sma50 > 0 and close_px < sma20 and close_px < sma50:
-        return True
-    return change_pct <= -1.0
+    if agent_id in {"scalping", "open-low"}:
+        return change_pct <= -1.5
+    return change_pct <= -0.75
 
 
 def cooldown_active(db, agent_id: str, symbol: str, moment: datetime | None = None) -> bool:
@@ -1093,7 +1108,7 @@ def process_pending_orders(db, timeframe: str) -> int:
             if order["order_type"] == "NEXT_OPEN":
                 if not is_prior_trading_session(order["created_at"][:10], candle["candle_at"][:10]):
                     db.execute("UPDATE paper_orders SET status='EXPIRED_NEXT_OPEN' WHERE id=?", (order["id"],)); break
-                if datetime.fromisoformat(candle["candle_at"]).astimezone(JAKARTA).time() > clock_time(9, 10):
+                if datetime.fromisoformat(candle["candle_at"]).astimezone(JAKARTA).time() > clock_time(9, 30):
                     db.execute("UPDATE paper_orders SET status='EXPIRED_MISSED_OPEN' WHERE id=?", (order["id"],)); break
                 opening_price = float(candle["open"])
                 if opening_price > float(order["limit_price"]) * 1.02:
@@ -1195,6 +1210,13 @@ def manage_positions(db, timeframe: str) -> int:
                     exit_price, reason = candle["open"], "OVERNIGHT_SAFETY_EXIT"
                 elif current_candle.time() >= clock_time(15, 45):
                     exit_price, reason = candle["close"], "END_OF_DAY_EXIT"
+                elif current_stop and float(position["entry_price"]) > current_stop:
+                    price_risk = float(position["entry_price"]) - current_stop
+                    if float(candle["high"]) >= float(position["entry_price"]) + 1.0 * price_risk:
+                        be_stop = round_up_to_tick(float(position["entry_price"]) * ((1 + BUY_FEE) / (1 - SELL_FEE) + 0.001))
+                        if be_stop > current_stop:
+                            current_stop = be_stop
+                            db.execute("UPDATE positions SET stop_price=? WHERE id=?", (current_stop, position["id"]))
             elif position["agent_id"] in {"swing", "fundamental", "breakout-retest"}:
                 current_candle = datetime.fromisoformat(candle["candle_at"])
                 opened = datetime.fromisoformat(position["opened_at"]) if position["opened_at"] else current_candle

@@ -149,7 +149,8 @@ export function draftPullback(t: ReturnType<typeof technicals>) {
   const stop = (lower[0] ?? zoneLow * 0.92) * 0.985;
   const highs = t.resistance.filter((value) => value > close);
   const minNetTarget = targetForNetReward(zoneHigh, stop, 2.0);
-  const targets = [...new Set([...(highs.length ? highs : [t.hi30]), t.hi30, minNetTarget].filter((value) => value > close))].sort((a, b) => a - b).slice(0, 3);
+  const structuralTargets = [...new Set([...(highs.length ? highs : [t.hi30]), t.hi30].filter((value) => value > close))].sort((a, b) => a - b);
+  const targets = [...new Set([...structuralTargets.slice(0, 2), minNetTarget].filter((value) => value > close))].sort((a, b) => a - b).slice(0, 3);
   return { entry: [zoneLow, zoneHigh] as [number, number], stop, targets };
 }
 
@@ -166,9 +167,14 @@ export function finalistAsset(row: ScreenRow, candles: Candle[]): JournalAsset {
   const t = technicals(candles);
   const draft = draftPullback(t);
   const bearishTrend = t.trend === 'turun';
+  const effectiveScore = bearishTrend
+    ? Math.max(5.5, Math.round(row.score - 8) / 10)
+    : Math.round(row.score) / 10;
   return {
-    ticker: row.ticker, name: row.name, score: bearishTrend ? null : Math.round(row.score) / 10,
-    verdict: bearishTrend ? 'Tren harian turun · ditahan sampai struktur berbalik naik' : `Finalis screen otomatis · tren harian ${t.trend}`,
+    ticker: row.ticker, name: row.name, score: effectiveScore,
+    verdict: bearishTrend
+      ? 'Finalis screen otomatis · akumulasi pullback defensif (tren harian korektif)'
+      : `Finalis screen otomatis · tren harian ${t.trend}`,
     thesis: `MC/HR ${row.mcHr.toFixed(1)}x · holder revenue ${(row.hrAnn / 1e6).toFixed(0)} jt USD/thn (${percent(row.hrGrowth)} 30h) · harga 30h ${percent(row.chg30d)}`,
     invalidation: `Close harian di bawah ${draft.stop.toPrecision(4)} atau keluar dari shortlist screen`,
     setups: [{ name: 'A · Pullback (draf otomatis)', kind: 'pullback', primary: true, entry: draft.entry, stop: draft.stop, targets: draft.targets }],
