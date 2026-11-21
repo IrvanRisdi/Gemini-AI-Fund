@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "source": "asymmetry-screen",
+  "reportDate": "2026-11-21",
+  "generatedAt": "2026-11-21T00:00:49.195Z",
+  "headline": "Screen otomatis: JUP, SKY, CRV, UNI",
+  "btcFilter": {
+    "greenAbove": 74541,
+    "redBelow": 74541
+  },
+  "assets": [
+    {
+      "ticker": "JUP",
+      "name": "Jupiter",
+      "score": 6.8,
+      "verdict": "Finalis screen otomatis · akumulasi pullback defensif (tren harian korektif)",
+      "thesis": "MC/HR 15.5x · holder revenue 49 jt USD/thn (+121% 30h) · harga 30h -31%",
+      "invalidation": "Close harian di bawah 0.1862 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.20549925,
+            0.216315
+          ],
+          "stop": 0.18622342035,
+          "targets": [
+            0.2331,
+            0.2391,
+            0.28040354545847546
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "SKY",
+      "name": "Sky",
+      "score": 6,
+      "verdict": "Finalis screen otomatis · akumulasi pullback defensif (tren harian korektif)",
+      "thesis": "MC/HR 15.1x · holder revenue 68 jt USD/thn (-4% 30h) · harga 30h -43%",
+      "invalidation": "Close harian di bawah 0.03938 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.0414105,
+            0.043590000000000004
+          ],
+          "stop": 0.0393803,
+          "targets": [
+            0.05279638094282849,
+            0.05872,
+            0.06
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "CRV",
+      "name": "Curve DAO",
+      "score": 6,
+      "verdict": "Finalis screen otomatis · akumulasi pullback defensif (tren harian korektif)",
+      "thesis": "MC/HR 12.6x · holder revenue 23 jt USD/thn (+0% 30h) · harga 30h -55%",
+      "invalidation": "Close harian di bawah 0.1472 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.16244999999999998,
+            0.17099999999999999
+          ],
+          "stop": 0.14721219,
+          "targets": [
+            0.2172,
+            0.2195,
+            0.22166288178535604
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "UNI",
+      "name": "Uniswap",
+      "score": 5.5,
+      "verdict": "Finalis screen otomatis · akumulasi pullback defensif (tren harian korektif)",
+      "thesis": "MC/HR 27.6x · holder revenue 98 jt USD/thn (-8% 30h) · harga 30h -41%",
+      "invalidation": "Close harian di bawah 3.729 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            4.03959,
+            4.2522
+          ],
+          "stop": 3.72921,
+          "targets": [
+            4.577,
+            4.588,
+            5.374949909729188
+          ]
+        }
+      ]
+    }
+  ]
+}

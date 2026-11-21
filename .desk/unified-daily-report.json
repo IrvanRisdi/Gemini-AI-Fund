@@ -1,40 +1,40 @@
 {
-  "generatedAt": "2026-10-27T11:48:28.889Z",
-  "dateWib": "2026-10-27",
+  "generatedAt": "2026-11-21T05:45:24.815Z",
+  "dateWib": "2026-11-21",
   "session": "ASIA_OPEN",
   "modelUsed": "gemini-4-argon",
   "portfolio": {
-    "cryptoEquityIdr": 300000000,
-    "cryptoCashIdr": 300000000,
-    "cryptoOpenPositions": 0,
+    "cryptoEquityIdr": 293382371.05939054,
+    "cryptoCashIdr": 286144490.61280036,
+    "cryptoOpenPositions": 1,
     "cryptoPendingOrders": 0,
-    "stockEquityIdr": 500000000,
-    "stockOpenPositions": 0,
-    "totalCombinedEquityIdr": 800000000
+    "stockEquityIdr": 490539481.1,
+    "stockOpenPositions": 7,
+    "totalCombinedEquityIdr": 783921852.1593906
   },
   "cryptoSummary": {
-    "posture": "WAIT / SELEKTIF — menunggu konfirmasi setup probabilitas tinggi",
-    "regimeReason": "BTC 4H belum memenuhi EMA9/21, harga, dan ADX",
-    "btcPriceUsdt": 80599.41,
-    "btcChange24hPct": null,
-    "pairsScanned": 40,
+    "posture": "AKTIF SELEKTIF — pantau area entry & manajemen stop",
+    "regimeReason": "BTC 4H netral/korektif; strategi selektif tetap berjalan sesuai filter masing-masing",
+    "btcPriceUsdt": 56740.43,
+    "btcChange24hPct": -0.08713337597850068,
+    "pairsScanned": 35,
     "uptrendCount": 2,
     "topSetups": [
       {
-        "pair": "BMT/USDT",
+        "pair": "TON/USDT",
         "agent": "Watchlist 4H Uptrend",
         "entry": "-",
         "stop": "-",
         "target": "-",
-        "note": "Struktur 4H Uptrend (RSI -, RVOL 1.2x) — pantau breakout/pullback"
+        "note": "Struktur 4H Uptrend (RSI -, RVOL 1.0x) — pantau breakout/pullback"
       },
       {
-        "pair": "BOME/USDT",
+        "pair": "RARE/USDT",
         "agent": "Watchlist 4H Uptrend",
         "entry": "-",
         "stop": "-",
         "target": "-",
-        "note": "Struktur 4H Uptrend (RSI -, RVOL 1.1x) — pantau breakout/pullback"
+        "note": "Struktur 4H Uptrend (RSI -, RVOL 0.5x) — pantau breakout/pullback"
       }
     ]
   },
@@ -45,28 +45,6 @@
     "ihsgChangePct": null,
     "regimeLabel": "SELECTIVE",
     "topSetups": [
-      {
-        "symbol": "AALI",
-        "name": "Astra Agro Lestari Tbk.",
-        "agent": "Top Screener IDX",
-        "price": "Rp 9.625",
-        "entry": "Rp 9.625",
-        "stop": "Rp 9.225",
-        "target": "Rp 10.400",
-        "score": 100,
-        "note": "Sektor  · Skor teknikal & likuiditas 100/100"
-      },
-      {
-        "symbol": "SGER",
-        "name": "Sumber Global Energy Tbk.",
-        "agent": "Actionable Setup",
-        "price": "Rp 840",
-        "entry": "Rp 840",
-        "stop": "Rp 805",
-        "target": "Rp 910",
-        "score": 94,
-        "note": "Sektor  · Skor teknikal & likuiditas 94/100"
-      },
       {
         "symbol": "INPS",
         "name": "Indah Prakasa Sentosa Tbk.",
@@ -79,35 +57,68 @@
         "note": "Sektor  · Skor teknikal & likuiditas 85/100"
       },
       {
-        "symbol": "ISSP",
-        "name": "Steel Pipe Industry of Indones",
+        "symbol": "MANG",
+        "name": "Manggung Polahraya Tbk.",
         "agent": "Top Screener IDX",
-        "price": "Rp 450",
-        "entry": "Rp 450",
-        "stop": "Rp 432",
-        "target": "Rp 486",
+        "price": "Rp 50",
+        "entry": "Rp 50",
+        "stop": "Rp 50",
+        "target": "Rp 50",
         "score": 85,
         "note": "Sektor  · Skor teknikal & likuiditas 85/100"
       },
       {
-        "symbol": "PTSP",
-        "name": "Pioneerindo Gourmet Internatio",
+        "symbol": "NTBK",
+        "name": "Nusatama Berkah Tbk.",
         "agent": "Top Screener IDX",
-        "price": "Rp 2.250",
-        "entry": "Rp 2.250",
-        "stop": "Rp 2.160",
-        "target": "Rp 2.430",
+        "price": "Rp 64",
+        "entry": "Rp 64",
+        "stop": "Rp 61",
+        "target": "Rp 70",
         "score": 85,
         "note": "Sektor  · Skor teknikal & likuiditas 85/100"
+      },
+      {
+        "symbol": "GIAA",
+        "name": "Garuda Indonesia (Persero) Tbk",
+        "agent": "Top Screener IDX",
+        "price": "Rp 50",
+        "entry": "Rp 50",
+        "stop": "Rp 50",
+        "target": "Rp 50",
+        "score": 82,
+        "note": "Sektor  · Skor teknikal & likuiditas 82/100"
+      },
+      {
+        "symbol": "IDEA",
+        "name": "Idea Indonesia Akademi Tbk.",
+        "agent": "Top Screener IDX",
+        "price": "Rp 386",
+        "entry": "Rp 386",
+        "stop": "Rp 370",
+        "target": "Rp 418",
+        "score": 81,
+        "note": "Sektor  · Skor teknikal & likuiditas 81/100"
       }
     ]
   },
   "aiDigest": {
-    "headline": "Fokus Selektif: Pantau BMT/USDT, BOME/USDT di Kripto & AALI, SGER, INPS di Saham IDX dengan Disiplin Stop-Loss Ketat",
-    "marketWeather": "Pasar Kripto saat ini berada pada fase Selektif / Konsolidasi dengan harga acuan BTC di 80,599.41 USDT (2 pair dalam tren naik 4H). Sementara itu, indeks saham Indonesia (IHSG) berada di level menunggu penutupan BEI dengan kecenderungan NEUTRAL (fase pasar: POSTCLOSE). Artinya, kita tidak perlu terburu-buru mengejar harga yang sudah naik tinggi; fokuslah pada aset yang sedang berada di area beli (pullback/breakout valid).",
-    "cryptoRecommendation": "Prioritaskan pemantauan pada BMT/USDT, BOME/USDT. Gunakan strategi antre beli (limit/pullback) atau tunggu penutupan candle 4H yang kuat. Pastikan batas rugi (stop-loss) selalu terpasang sekitar 3,5%–5% di bawah harga beli dan geser stop ke titik impas (breakeven) segera setelah profit berjalan +1,25R.",
-    "stockRecommendation": "Di Bursa Efek Indonesia (BEI), saham dengan skor dan struktur terbaik hari ini adalah AALI, SGER, INPS. Seluruh order harian menggunakan aturan NEXT_OPEN (eksekusi pada pembukaan sesi berikutnya jika tidak terjadi gap >2%) serta dilindungi buffer 30 menit pertama (09:00–09:30 WIB) agar tidak terkena gocekan jarum bawah pembukaan pasar.",
-    "actionableTakeaway": "Total modal kelolaan gabungan saat ini adalah Rp 800.000.000 (Rp 300.000.000 di Kripto Spot & Rp 500.000.000 di Saham IDX). Gunakan maksimal 1–3% risiko per transaksi dan biarkan sistem mengeksekusi hanya peluang dengan rasio untung-rugi (Reward/Risk) minimal 1,8x hingga 3,0x setelah biaya."
+    "headline": "Saatnya bermain sangat selektif dan menjaga kesabaran ketika pasar Kripto maupun Saham Indonesia sedang bergerak datar mencari arah baru.",
+    "marketWeather": "Pasar Kripto hari ini terpantau tenang dengan harga Bitcoin berada di kisaran $56.740 (koreksi sangat tipis -0,09%), menandakan pasar sedang beristirahat dan bergerak menyamping. Dari total 35 aset kripto yang dipindai, hanya ada 2 koin yang menunjukkan tren naik dalam jangka pendek. Kondisi serupa juga terjadi di Bursa Efek Indonesia (BEI) yang telah tutup perdagangan dalam fase netral, sehingga kita hanya perlu fokus pada saham-saham pilihan yang memiliki pergerakan mandiri.",
+    "cryptoRecommendation": "Untuk Kripto Spot, saat ini belum ada sinyal beli langsung yang matang sehingga strategi terbaik adalah menahan diri dan menunggu momentum. Masukkan TON/USDT dan RARE/USDT ke dalam daftar pantauan utama Anda karena keduanya masih mempertahankan struktur tren naik pada grafik 4 jam. Karena titik beli (entry), batas rugi (stop), dan target keuntungan belum terbentuk sempurna, jangan terburu-buru masuk sebelum ada lonjakan harga disertai volume yang kuat atau koreksi sehat ke area pertahanan.",
+    "stockRecommendation": "Di pasar saham IDX, fokuskan perhatian pada tiga saham dengan skor teknikal dan likuiditas tinggi (81-85/100) yang memiliki ruang gerak aktif: INPS (Entry Rp 1.065, Stop Loss Rp 1.020, Target Rp 1.155), NTBK (Entry Rp 64, Stop Loss Rp 61, Target Rp 70), serta IDEA (Entry Rp 386, Stop Loss Rp 370, Target Rp 418). Ketiga saham ini menarik karena menawarkan rasio potensi keuntungan yang sehat dibandingkan risiko batas ruginya di tengah pasar yang sedang netral. Sementara itu, meskipun MANG dan GIAA masuk dalam daftar pemindaian di harga Rp 50 (dengan Entry Rp 50, Stop Loss Rp 50, dan Target Rp 50), sebaiknya Anda hindari terlebih dahulu karena harganya sedang terkunci di batas bawah tanpa ruang gerak yang menguntungkan.",
+    "actionableTakeaway": "Dengan total aset saat ini sekitar Rp 293,3 juta di Kripto (1 posisi berjalan) dan Rp 490,5 juta di Saham (7 posisi berjalan), prioritas utama kita adalah menjaga kualitas portofolio dan tidak memaksakan transaksi baru jika belum sesuai rencana. Tetaplah tenang, patuhi batas Stop Loss secara disiplin pada setiap posisi yang aktif, dan biarkan uang tunai Anda menjadi pelindung terbaik sambil menunggu peluang paling matang."
   },
-  "whatsappText": "📊 LAPORAN HARIAN GEMINI AI-FUND\n📅 Tanggal: 2026-10-27 (Edisi Pagi Terpadu)\n🧠 Analis AI: gemini-4-argon\n\n💡 Intisari Hari Ini:\nFokus Selektif: Pantau BMT/USDT, BOME/USDT di Kripto & AALI, SGER, INPS di Saham IDX dengan Disiplin Stop-Loss Ketat\n\n🌤️ Cuaca Pasar (Kripto & Saham IDX):\nPasar Kripto saat ini berada pada fase Selektif / Konsolidasi dengan harga acuan BTC di 80,599.41 USDT (2 pair dalam tren naik 4H). Sementara itu, indeks saham Indonesia (IHSG) berada di level menunggu penutupan BEI dengan kecenderungan NEUTRAL (fase pasar: POSTCLOSE). Artinya, kita tidak perlu terburu-buru mengejar harga yang sudah naik tinggi; fokuslah pada aset yang sedang berada di area beli (pullback/breakout valid).\n\n🪙 Rekomendasi & Pantauan Kripto Spot:\nPrioritaskan pemantauan pada BMT/USDT, BOME/USDT. Gunakan strategi antre beli (limit/pullback) atau tunggu penutupan candle 4H yang kuat. Pastikan batas rugi (stop-loss) selalu terpasang sekitar 3,5%–5% di bawah harga beli dan geser stop ke titik impas (breakeven) segera setelah profit berjalan +1,25R.\n1. BMT/USDT (Watchlist 4H Uptrend)\n   • Area Beli: -\n   • Stop: - | Target: -\n   • Catatan: Struktur 4H Uptrend (RSI -, RVOL 1.2x) — pantau breakout/pullback\n2. BOME/USDT (Watchlist 4H Uptrend)\n   • Area Beli: -\n   • Stop: - | Target: -\n   • Catatan: Struktur 4H Uptrend (RSI -, RVOL 1.1x) — pantau breakout/pullback\n\n📈 Rekomendasi & Pantauan Saham IDX (BEI):\nDi Bursa Efek Indonesia (BEI), saham dengan skor dan struktur terbaik hari ini adalah AALI, SGER, INPS. Seluruh order harian menggunakan aturan NEXT_OPEN (eksekusi pada pembukaan sesi berikutnya jika tidak terjadi gap >2%) serta dilindungi buffer 30 menit pertama (09:00–09:30 WIB) agar tidak terkena gocekan jarum bawah pembukaan pasar.\n1. AALI (Astra Agro Lestari Tbk.)\n   • Entry: Rp 9.625 | Stop: Rp 9.225 | Target: Rp 10.400\n   • Catatan: Sektor  · Skor teknikal & likuiditas 100/100\n2. SGER (Sumber Global Energy Tbk.)\n   • Entry: Rp 840 | Stop: Rp 805 | Target: Rp 910\n   • Catatan: Sektor  · Skor teknikal & likuiditas 94/100\n3. INPS (Indah Prakasa Sentosa Tbk.)\n   • Entry: Rp 1.065 | Stop: Rp 1.020 | Target: Rp 1.155\n   • Catatan: Sektor  · Skor teknikal & likuiditas 85/100\n\n💼 Status Portofolio Paper Trading:\n• Total Ekuitas Gabungan: Rp 800.000.000\n• Desk Kripto (6 Agen): Rp 300.000.000 (0 posisi aktif)\n• Desk Saham IDX (5 Agen): Rp 500.000.000 (0 posisi aktif)\n\n🛡️ Panduan Risiko:\nTotal modal kelolaan gabungan saat ini adalah Rp 800.000.000 (Rp 300.000.000 di Kripto Spot & Rp 500.000.000 di Saham IDX). Gunakan maksimal 1–3% risiko per transaksi dan biarkan sistem mengeksekusi hanya peluang dengan rasio untung-rugi (Reward/Risk) minimal 1,8x hingga 3,0x setelah biaya."
+  "whatsappText": "📊 LAPORAN HARIAN GEMINI AI-FUND\n📅 Tanggal: 2026-11-21 (Edisi Pagi Terpadu)\n🧠 Analis AI: gemini-4-argon\n\n💡 Intisari Hari Ini:\nSaatnya bermain sangat selektif dan menjaga kesabaran ketika pasar Kripto maupun Saham Indonesia sedang bergerak datar mencari arah baru.\n\n🌤️ Cuaca Pasar (Kripto & Saham IDX):\nPasar Kripto hari ini terpantau tenang dengan harga Bitcoin berada di kisaran $56.740 (koreksi sangat tipis -0,09%), menandakan pasar sedang beristirahat dan bergerak menyamping. Dari total 35 aset kripto yang dipindai, hanya ada 2 koin yang menunjukkan tren naik dalam jangka pendek. Kondisi serupa juga terjadi di Bursa Efek Indonesia (BEI) yang telah tutup perdagangan dalam fase netral, sehingga kita hanya perlu fokus pada saham-saham pilihan yang memiliki pergerakan mandiri.\n\n🪙 Rekomendasi & Pantauan Kripto Spot:\nUntuk Kripto Spot, saat ini belum ada sinyal beli langsung yang matang sehingga strategi terbaik adalah menahan diri dan menunggu momentum. Masukkan TON/USDT dan RARE/USDT ke dalam daftar pantauan utama Anda karena keduanya masih mempertahankan struktur tren naik pada grafik 4 jam. Karena titik beli (entry), batas rugi (stop), dan target keuntungan belum terbentuk sempurna, jangan terburu-buru masuk sebelum ada lonjakan harga disertai volume yang kuat atau koreksi sehat ke area pertahanan.\n1. TON/USDT (Watchlist 4H Uptrend)\n   • Area Beli: -\n   • Stop: - | Target: -\n   • Catatan: Struktur 4H Uptrend (RSI -, RVOL 1.0x) — pantau breakout/pullback\n2. RARE/USDT (Watchlist 4H Uptrend)\n   • Area Beli: -\n   • Stop: - | Target: -\n   • Catatan: Struktur 4H Uptrend (RSI -, RVOL 0.5x) — pantau breakout/pullback\n\n📈 Rekomendasi & Pantauan Saham IDX (BEI):\nDi pasar saham IDX, fokuskan perhatian pada tiga saham dengan skor teknikal dan likuiditas tinggi (81-85/100) yang memiliki ruang gerak aktif: INPS (Entry Rp 1.065, Stop Loss Rp 1.020, Target Rp 1.155), NTBK (Entry Rp 64, Stop Loss Rp 61, Target Rp 70), serta IDEA (Entry Rp 386, Stop Loss Rp 370, Target Rp 418). Ketiga saham ini menarik karena menawarkan rasio potensi keuntungan yang sehat dibandingkan risiko batas ruginya di tengah pasar yang sedang netral. Sementara itu, meskipun MANG dan GIAA masuk dalam daftar pemindaian di harga Rp 50 (dengan Entry Rp 50, Stop Loss Rp 50, dan Target Rp 50), sebaiknya Anda hindari terlebih dahulu karena harganya sedang terkunci di batas bawah tanpa ruang gerak yang menguntungkan.\n1. INPS (Indah Prakasa Sentosa Tbk.)\n   • Entry: Rp 1.065 | Stop: Rp 1.020 | Target: Rp 1.155\n   • Catatan: Sektor  · Skor teknikal & likuiditas 85/100\n2. MANG (Manggung Polahraya Tbk.)\n   • Entry: Rp 50 | Stop: Rp 50 | Target: Rp 50\n   • Catatan: Sektor  · Skor teknikal & likuiditas 85/100\n3. NTBK (Nusatama Berkah Tbk.)\n   • Entry: Rp 64 | Stop: Rp 61 | Target: Rp 70\n   • Catatan: Sektor  · Skor teknikal & likuiditas 85/100\n\n💼 Status Portofolio Paper Trading:\n• Total Ekuitas Gabungan: Rp 783.921.852\n• Desk Kripto (6 Agen): Rp 293.382.371 (1 posisi aktif)\n• Desk Saham IDX (5 Agen): Rp 490.539.481 (7 posisi aktif)\n\n🛡️ Panduan Risiko:\nDengan total aset saat ini sekitar Rp 293,3 juta di Kripto (1 posisi berjalan) dan Rp 490,5 juta di Saham (7 posisi berjalan), prioritas utama kita adalah menjaga kualitas portofolio dan tidak memaksakan transaksi baru jika belum sesuai rencana. Tetaplah tenang, patuhi batas Stop Loss secara disiplin pada setiap posisi yang aktif, dan biarkan uang tunai Anda menjadi pelindung terbaik sambil menunggu peluang paling matang.",
+  "telegramDelivery": {
+    "delivered": true,
+    "deliveredTo": [
+      "Telegram Bot PDF + HTML (@NusaQuantBot -> chat_id: 944112243)"
+    ],
+    "tokenConfigured": true,
+    "chatIdConfigured": true,
+    "botUsername": "@NusaQuantBot",
+    "autoDiscoveredChats": 0,
+    "diagnostic": "PDF & Laporan Harian berhasil dikirim ke Telegram melalui @NusaQuantBot."
+  }
 }
