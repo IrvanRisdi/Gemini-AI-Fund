@@ -1,9 +1,7 @@
 name: Futures Engine 24/7 Paper Loop
 
 on:
-  schedule:
-    # Runs every 30 minutes (minute :02 and :32 so 1H/4H candles have closed cleanly)
-    - cron: '2,32 * * * *'
+  # Dipicu rutin oleh cron-job.org via Vercel /api/cron/futures-paper-loop (setiap 30 menit)
   workflow_dispatch:
 
 permissions:

@@ -1,9 +1,7 @@
 name: Futures Engine Weekly Forensic Review & Telegram Delivery (Gemini 4 Carbon)
 
 on:
-  schedule:
-    # Every Sunday at 14:00 UTC (21:00 WIB)
-    - cron: '0 14 * * 0'
+  # Dipicu rutin oleh cron-job.org via Vercel /api/cron/futures-weekly-review (Minggu 21:00 WIB)
   workflow_dispatch:
 
 permissions:
