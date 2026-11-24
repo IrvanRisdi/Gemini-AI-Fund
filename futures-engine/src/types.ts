@@ -34,7 +34,8 @@ export interface PrecisionPlan {
 
 export interface BtcMacroRegime {
   timestamp: number;
-  close: number;
+  close: number; // Last CLOSED 4H bar close (non-repainting regime calculation)
+  livePrice?: number; // Latest forming BTCUSDT price at cycle time
   ema9: number;
   ema21: number;
   ema200: number;

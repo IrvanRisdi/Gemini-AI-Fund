@@ -664,12 +664,14 @@ async function main() {
       console.log(`[LLM Health] ${ledger.llmHealth.ok ? 'OK' : 'FAIL'} (${ledger.llmHealth.modelUsed}): ${ledger.llmHealth.detail}`);
     }
 
-    // 2. Fetch BTC 4H Macro Regime
+    // 2. Fetch BTC 4H Macro Regime (indicators on closed 4H bar; livePrice from forming candle)
     const btc4Raw = await fetchKlines('BTCUSDT', '4h', 260);
     const btc4Closed = extractLatestClosedBars(btc4Raw);
     const btc4Ind = computeIndicators(btc4Closed);
     const btcRegime = computeBtcRegimeAt(btc4Ind, btc4Closed.length - 1);
     if (!btcRegime) throw new Error('Insufficient BTCUSDT 4H data to compute macro regime.');
+    const btcLivePrice = btc4Raw.at(-1)?.close ?? btcRegime.close;
+    btcRegime.livePrice = btcLivePrice;
     ledger.btcRegime = btcRegime;
 
     // 3. Collect all symbols we need 5m replay candles for (active positions, pending orders, shadow vetoes)
@@ -685,7 +687,7 @@ async function main() {
     const lastCycleMs = Date.parse(ledger.lastCycleAt);
     const replayStartMs = Math.max(nowMs - 48 * 3_600_000, lastCycleMs - 15 * 60_000);
     const bars5mBySymbol = new Map<string, OHLCV[]>();
-    const markPrices: Record<string, number> = { BTCUSDT: btcRegime.close };
+    const markPrices: Record<string, number> = { BTCUSDT: btcRegime.livePrice ?? btcRegime.close };
 
     for (const sym of replaySymbols) {
       try {

@@ -135,6 +135,7 @@ export interface FuturesDashboardSummary {
   btcRegime: {
     timestamp: number;
     close: number;
+    livePrice?: number;
     ema9: number;
     ema21: number;
     ema200: number;

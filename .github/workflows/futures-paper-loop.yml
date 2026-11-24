@@ -59,4 +59,4 @@ jobs:
             exit 0
           fi
           git commit -m "chore(futures-bot): update futures paper desk [skip ci]"
-          git push --force-with-lease origin HEAD:futures-data
+          git push --force origin HEAD:futures-data

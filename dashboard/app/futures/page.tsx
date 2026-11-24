@@ -126,15 +126,22 @@ export default async function FuturesDeskPage() {
             Kompas Rezim BTC (4H EMA200)
           </div>
           <div className="mt-1 font-mono text-xl font-bold text-ink">
-            {summary.btcRegime ? fmtPrice(summary.btcRegime.close) : '—'}
+            {summary.btcRegime
+              ? fmtPrice(summary.btcRegime.livePrice ?? summary.btcRegime.close)
+              : '—'}
           </div>
           <div className="mt-1 font-mono text-xs text-ink-muted">
             {summary.btcRegime ? (
-              <span className={summary.btcRegime.macroBull ? 'text-positive' : 'text-amber-300'}>
-                {summary.btcRegime.macroBull
-                  ? 'BULL MACRO (Wyckoff Core)'
-                  : 'BEAR MACRO (Core + SMC-1H Aktif)'}
-              </span>
+              <>
+                <span className={summary.btcRegime.macroBull ? 'text-positive' : 'text-amber-300'}>
+                  {summary.btcRegime.macroBull
+                    ? 'BULL MACRO (Wyckoff Core)'
+                    : 'BEAR MACRO (Core + SMC-1H Aktif)'}
+                </span>
+                <span className="block text-[10px] text-ink-faint">
+                  Close 4H: {fmtPrice(summary.btcRegime.close)} · EMA200: {fmtPrice(summary.btcRegime.ema200)}
+                </span>
+              </>
             ) : (
               'Menunggu data siklus pertama'
             )}
