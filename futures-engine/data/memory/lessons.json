@@ -1,0 +1,27 @@
+{
+  "updatedAt": "2026-11-24T00:00:00.000Z",
+  "maxLessons": 10,
+  "lessons": [
+    {
+      "id": "seed-1-macro-blackout",
+      "lesson": "Turunkan leverage minimal 1 tingkat jika jadwal rilis FOMC, CPI, atau NFP kurang dari 12 jam.",
+      "evidence": "Volatilitas rilis makro AS sering memicu wick dua arah yang menyapu SL ketat dalam hitungan menit.",
+      "addedAt": "2026-11-24T00:00:00.000Z",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "seed-2-correlation-cluster",
+      "lesson": "Lakukan DOWNGRADE leverage jika portofolio sudah memegang >= 2 posisi terbuka di arah yang sama pada altcoin berkorelasi tinggi.",
+      "evidence": "Altcoin major (SOL, SUI, DOGE, ADA, LINK) memiliki korelasi >0.80 saat BTC bergerak tajam.",
+      "addedAt": "2026-11-24T00:00:00.000Z",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "seed-3-no-fud-overveto",
+      "lesson": "Jangan mem-VETO setup Wyckoff Short dengan RVOL >= 2.5x hanya karena narasi berita umum masih tampak netral/optimis.",
+      "evidence": "Backtest 3 tahun menunjukkan breakdown bervolume tinggi (Skor 4-5) memiliki Profit Factor 1.67 dan Win Rate 60.1%.",
+      "addedAt": "2026-11-24T00:00:00.000Z",
+      "confidence": "MEDIUM"
+    }
+  ]
+}

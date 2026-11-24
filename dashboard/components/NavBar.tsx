@@ -7,6 +7,8 @@ import { PAIRS } from '@/lib/pairs';
 export function NavBar() {
   const pathname = usePathname();
   const isStock = pathname === '/saham' || pathname.startsWith('/saham/');
+  const isFutures = pathname === '/futures' || pathname.startsWith('/futures/');
+  const isSpot = !isStock && !isFutures;
 
   return (
     <nav className="sticky top-0 z-40 border-b border-border bg-bg/95 backdrop-blur">
@@ -24,14 +26,25 @@ export function NavBar() {
         <div className="flex shrink-0 items-center rounded-lg border border-border bg-surface/60 p-1" aria-label="Pilih kelas aset">
           <Link
             href="/"
-            aria-current={isStock ? undefined : 'page'}
+            aria-current={isSpot ? 'page' : undefined}
             className={`rounded-md px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-wide transition-colors ${
-              isStock
-                ? 'text-ink-muted hover:bg-surface hover:text-ink'
-                : 'bg-blue-500/15 text-blue-300 ring-1 ring-inset ring-blue-500/30'
+              isSpot
+                ? 'bg-blue-500/15 text-blue-300 ring-1 ring-inset ring-blue-500/30'
+                : 'text-ink-muted hover:bg-surface hover:text-ink'
             }`}
           >
             🪙 Kripto Spot
+          </Link>
+          <Link
+            href="/futures"
+            aria-current={isFutures ? 'page' : undefined}
+            className={`rounded-md px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-wide transition-colors ${
+              isFutures
+                ? 'bg-amber-500/15 text-amber-300 ring-1 ring-inset ring-amber-500/30'
+                : 'text-ink-muted hover:bg-surface hover:text-ink'
+            }`}
+          >
+            ⚡ Kripto Futures
           </Link>
           <Link
             href="/saham"
@@ -46,7 +59,29 @@ export function NavBar() {
           </Link>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          {isStock ? (
+          {isFutures ? (
+            <>
+              <Link
+                href="/futures"
+                className={`rounded-md px-2.5 py-1 font-mono text-xs transition-colors ${
+                  pathname === '/futures'
+                    ? 'bg-surface text-ink font-semibold border border-border'
+                    : 'text-ink-muted hover:bg-surface hover:text-ink'
+                }`}
+              >
+                Overview
+              </Link>
+              <Link href="/futures#agents" className="rounded-md px-2.5 py-1 font-mono text-xs text-ink-muted hover:bg-surface hover:text-ink">
+                Agen (2)
+              </Link>
+              <Link href="/futures#positions" className="rounded-md px-2.5 py-1 font-mono text-xs text-ink-muted hover:bg-surface hover:text-ink">
+                Posisi &amp; Order
+              </Link>
+              <Link href="/futures#weekly" className="rounded-md px-2.5 py-1 font-mono text-xs text-ink-muted hover:bg-surface hover:text-ink">
+                Weekly Report
+              </Link>
+            </>
+          ) : isStock ? (
             <>
               <Link
                 href="/saham"

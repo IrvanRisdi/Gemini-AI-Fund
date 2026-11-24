@@ -161,7 +161,7 @@ function renderFormattedText(text: string) {
   );
 }
 
-type AiConsoleProps = { scope?: 'coin' | 'stock' };
+type AiConsoleProps = { scope?: 'coin' | 'stock' | 'futures' };
 
 const CONSOLE_COPY = {
   coin: {
@@ -172,6 +172,16 @@ const CONSOLE_COPY = {
       'Buat ringkasan kondisi desk dan risiko utamanya saat ini.',
       'Analisis sinyal terbaru: mana yang saling mengonfirmasi atau bertentangan?',
       'Jelaskan seluruh posisi terbuka dan level risiko yang perlu dipantau.',
+    ],
+  },
+  futures: {
+    title: 'Futures Console (Gemini 4 Neon)',
+    placeholder: 'Tanya tentang Wyckoff-4H, SMC-1H-Bear, leverage conviction, Shadow A/B, atau lessons...',
+    loading: 'Sedang menganalisis desk Futures (Long & Short) dengan Gemini 4 Neon...',
+    prompts: [
+      'Evaluasi kinerja Wyckoff-4H vs SMC-1H-Bear dan status rezim BTC 4H EMA200.',
+      'Apakah keputusan Veto & Downgrade Gemini membantu dibanding Quant-Only (Shadow A/B)?',
+      'Periksa risiko posisi terbuka, Directional Cap, dan jadwal makro FOMC/CPI/NFP terdekat.',
     ],
   },
   stock: {

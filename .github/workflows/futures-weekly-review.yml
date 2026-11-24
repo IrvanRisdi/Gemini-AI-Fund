@@ -1,0 +1,63 @@
+name: Futures Engine Weekly Forensic Review & Telegram Delivery (Gemini 4 Carbon)
+
+on:
+  schedule:
+    # Every Sunday at 14:00 UTC (21:00 WIB)
+    - cron: '0 14 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: futures-paper-state-writer
+  cancel-in-progress: false
+
+jobs:
+  weekly-forensic-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore Latest Futures Paper State
+        run: |
+          git fetch origin futures-data || true
+          if git rev-parse --verify origin/futures-data >/dev/null 2>&1; then
+            git checkout origin/futures-data -- futures-engine/.futures-desk || true
+            git reset
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: futures-engine/package.json
+
+      - name: Install Futures Engine Dependencies
+        working-directory: futures-engine
+        run: npm install --no-audit --no-fund
+
+      - name: Run Weekly Forensic Review (Gemini 4 Carbon) & Deliver to Telegram
+        working-directory: futures-engine
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_WEEKLY_MODELS: gemini-4-carbon,gemini-4-neon,gemini-4-argon
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN || secrets.TELEGRAM_TOKEN || secrets.BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID || secrets.CHAT_ID || secrets.TELEGRAM_CHAT }}
+        run: npm run run:weekly
+
+      - name: Commit and Push Distilled Lessons & Weekly Report
+        run: |
+          git config user.name "Gemini AI-Fund Futures Bot"
+          git config user.email "futures-bot@gemini-ai-fund.local"
+          git add futures-engine/.futures-desk/
+          if git diff --cached --quiet; then
+            echo "No weekly review changes"
+            exit 0
+          fi
+          git commit -m "chore(futures-bot): weekly Gemini 4 Carbon forensic review [skip ci]"
+          git push --force-with-lease origin HEAD:futures-data

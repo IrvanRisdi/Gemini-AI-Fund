@@ -1,0 +1,64 @@
+name: Futures Engine 24/7 Paper Loop
+
+on:
+  schedule:
+    # Runs every 30 minutes (minute :02 and :32 so 1H/4H candles have closed cleanly)
+    - cron: '2,32 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: futures-paper-state-writer
+  cancel-in-progress: false
+
+jobs:
+  run-futures-paper-loop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore Latest Futures Paper State
+        run: |
+          git fetch origin futures-data || true
+          if git rev-parse --verify origin/futures-data >/dev/null 2>&1; then
+            git checkout origin/futures-data -- futures-engine/.futures-desk || true
+            git reset
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: futures-engine/package.json
+
+      - name: Install Futures Engine Dependencies
+        working-directory: futures-engine
+        run: npm install --no-audit --no-fund
+
+      - name: Run 5m Replay + Signal Scan + Gemini 4 Neon Entry Evaluation
+        working-directory: futures-engine
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_PRETRADE_MODELS: gemini-4-neon,gemini-4-argon,gemini-4-hydrogen,gemini-3.8-flash
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN || secrets.TELEGRAM_TOKEN || secrets.BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID || secrets.CHAT_ID || secrets.TELEGRAM_CHAT }}
+          FUTURES_STARTING_CAPITAL_USD: ${{ vars.FUTURES_STARTING_CAPITAL_USD || '10000' }}
+        run: npm run run:cycle
+
+      - name: Commit and Push Updated Futures State
+        run: |
+          git config user.name "Gemini AI-Fund Futures Bot"
+          git config user.email "futures-bot@gemini-ai-fund.local"
+          git add futures-engine/.futures-desk/
+          if git diff --cached --quiet; then
+            echo "No futures state change"
+            exit 0
+          fi
+          git commit -m "chore(futures-bot): update futures paper desk [skip ci]"
+          git push --force-with-lease origin HEAD:futures-data

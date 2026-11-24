@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getDeskSnapshot } from '@/lib/desk-data';
+import {
+  getFuturesDashboard,
+  getFuturesLessons,
+  getFuturesWeeklyReport,
+  getUpcomingMacroEvents,
+} from '@/lib/futures-data';
 import { getStockDashboard, getStockRuntime, type Row, type RuntimeState, type StockDashboard } from '@/lib/stock-data';
 import { getGeminiModelCandidates } from '@/lib/gemini-models';
 import {
@@ -192,7 +198,8 @@ export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
     const question = typeof body.question === 'string' ? body.question.trim() : '';
-    const scope = body.scope === 'stock' ? 'stock' : 'coin';
+    const scope =
+      body.scope === 'stock' ? 'stock' : body.scope === 'futures' ? 'futures' : 'coin';
     const requestedAgentId = typeof body.agentId === 'string' ? body.agentId.trim() : '';
 
     if (!question || question.length > MAX_QUESTION_LENGTH) {
@@ -220,10 +227,43 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Agen saham tidak ditemukan pada snapshot tersimpan.' }, { status: 400 });
       }
       context = buildStockContext(stockSnapshot, stockState, focusAgent?.id);
+    } else if (scope === 'futures') {
+      const [futuresSummary, weeklyReport, lessons, macroEvents] = await Promise.all([
+        getFuturesDashboard(),
+        getFuturesWeeklyReport(),
+        getFuturesLessons(),
+        getUpcomingMacroEvents(5),
+      ]);
+      context = JSON.stringify(
+        {
+          futuresSummary,
+          weeklyReport: weeklyReport
+            ? {
+                dateWib: weeklyReport.dateWib,
+                modelUsed: weeklyReport.modelUsed,
+                headline: weeklyReport.headline,
+                keyFindings: weeklyReport.keyFindings,
+                vetoAssessment: weeklyReport.vetoAssessment,
+              }
+            : null,
+          distilledLessons: lessons,
+          upcomingMacroEvents: macroEvents,
+        },
+        null,
+        2,
+      );
     } else {
       context = buildDeskContext(await getDeskSnapshot());
     }
-    const modelCandidates = getGeminiModelCandidates(process.env.GEMINI_MODELS || '');
+    const modelCandidates =
+      scope === 'futures'
+        ? [
+            'gemini-4-neon',
+            'gemini-4-argon',
+            'gemini-4-hydrogen',
+            ...getGeminiModelCandidates(process.env.GEMINI_MODELS || ''),
+          ].filter((m, idx, arr) => arr.indexOf(m) === idx)
+        : getGeminiModelCandidates(process.env.GEMINI_MODELS || '');
     const stockResponseFormat = focusAgent ? `
 FOKUS ANALISIS: ${focusAgent.name} (${focusAgent.id}). Analisis hanya agen ini; jangan mengulang perbandingan semua agen.
 Gunakan format berikut dan batasi sekitar 700–1.000 kata:
@@ -256,6 +296,16 @@ Gunakan Bahasa Indonesia profesional, langsung, dan Markdown yang mudah dibaca. 
 ${stockResponseFormat}
 
 KONTEKS SAHAM TERSIMPAN
+${context}
+`.trim() : scope === 'futures' ? `
+Anda adalah Gemini Futures Desk Analyst untuk modul Kripto Futures (Long & Short, Isolated Margin 1x–3x) pada Gemini AI-Fund.
+Modul ini terpisah sepenuhnya dari Kripto Spot IDR. Agen aktifnya adalah Wyckoff-4H (Core 70%, All-Weather) dan SMC-1H-Bear (Booster 30%, aktif saat BTC < 4H EMA200).
+Jawab HANYA berdasarkan konteks JSON tersimpan di bawah (termasuk Shadow A/B calibration, MFE/MAE, distilled lessons, dan jadwal makro FOMC/CPI/NFP).
+Jangan mengarang harga live atau trade yang tidak ada. Semua waktu ditulis dalam WIB. Tegaskan bahwa ini paper trading, bukan nasihat keuangan.
+
+Gunakan Bahasa Indonesia profesional, langsung, dan Markdown yang rapi.
+
+KONTEKS FUTURES DESK TERSIMPAN
 ${context}
 `.trim() : `
 Anda adalah Gemini Desk Analyst untuk Gemini AI-Fund, sebuah dashboard paper-trading kripto dengan harga pasar Binance USDT dan pembukuan kas, posisi, equity, fee, risiko, serta P&L dalam IDR.
