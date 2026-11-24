@@ -1,11 +1,13 @@
 import { clamp, computeIndicators, type ComputedIndicators } from './indicators.js';
 import type {
+  AgentDiagnosticDetail,
   BtcMacroRegime,
   ConvictionBreakdown,
   LeverageTier,
   OHLCV,
   Side,
   SignalCandidate,
+  UniverseCoinDiagnostic,
 } from './types.js';
 
 export const DEFAULT_FEE_PER_SIDE = 0.0006; // 0.06% Futures taker + slippage assumption
@@ -450,4 +452,168 @@ export function evaluateSmc1HBearAt(
 export function extractLatestClosedBars(rawBars: OHLCV[]): OHLCV[] {
   // Drop the currently forming live bar so signals never repaint
   return rawBars.length > 1 ? rawBars.slice(0, -1) : rawBars;
+}
+
+/**
+ * Produces human-readable pass/fail diagnostics for BOTH Wyckoff-4H and SMC-1H-Bear
+ * on a given coin so the dashboard can transparently display WHY a coin did or did not trigger.
+ */
+export function diagnoseCoinAt(
+  symbol: string,
+  d4: ComputedIndicators,
+  d1: ComputedIndicators,
+  btcRegime: BtcMacroRegime,
+  livePrice?: number,
+): UniverseCoinDiagnostic {
+  const i4 = d4.bars.length - 1;
+  const i1 = d1.bars.length - 1;
+  const b4 = d4.bars[i4]!;
+  const a4 = d4.atr14[i4] ?? 0;
+  const e9 = d4.ema9[i4] ?? b4.close;
+  const e21 = d4.ema21[i4] ?? b4.close;
+  const lastPrice = livePrice && livePrice > 0 ? livePrice : b4.close;
+  const change24hPct = i4 >= 6 ? (b4.close / d4.bars[i4 - 6]!.close - 1) * 100 : 0;
+  const rsVsBtc = change24hPct / 100 - btcRegime.return24h;
+  const atr4hPct = b4.close > 0 ? (a4 / b4.close) * 100 : 0;
+
+  let rangeHigh = -Infinity;
+  let rangeLow = Infinity;
+  for (let k = Math.max(0, i4 - 45); k < i4; k++) {
+    if (d4.bars[k]!.high > rangeHigh) rangeHigh = d4.bars[k]!.high;
+    if (d4.bars[k]!.low < rangeLow) rangeLow = d4.bars[k]!.low;
+  }
+  let v20 = 0;
+  for (let k = Math.max(0, i4 - 20); k < i4; k++) v20 += d4.bars[k]!.volume;
+  const rvol4h = v20 > 0 ? b4.volume / (v20 / 20) : 0;
+  const cs4 = (b4.close - b4.low) / Math.max(b4.high - b4.low, 1e-12);
+  const rangeWidthAtr = a4 > 0 ? (rangeHigh - rangeLow) / a4 : 99;
+
+  const trend4h: UniverseCoinDiagnostic['trend4h'] =
+    e9 > e21 && b4.close > e21 ? 'UPTREND' : e9 < e21 && b4.close < e21 ? 'DOWNTREND' : 'SIDEWAYS';
+
+  // --- Wyckoff-4H Diagnostic ---
+  const wykSig = evaluateWyckoff4HAt(symbol, d4, i4, btcRegime);
+  const wykBias: Side | 'neutral' = e9 > e21 ? 'long' : e9 < e21 ? 'short' : 'neutral';
+  const wykPass: string[] = [];
+  const wykFail: string[] = [];
+
+  if (atr4hPct <= 8) wykPass.push(`Volatilitas aman (ATR ${atr4hPct.toFixed(2)}% ≤ 8%)`);
+  else wykFail.push(`Volatilitas ekstrem (ATR ${atr4hPct.toFixed(2)}% > 8%)`);
+
+  if (rangeWidthAtr <= 6.5) wykPass.push(`Range 45-bar padat (${rangeWidthAtr.toFixed(1)} ATR ≤ 6.5)`);
+  else wykFail.push(`Range 45-bar terlalu lebar (${rangeWidthAtr.toFixed(1)} ATR > 6.5)`);
+
+  if (rvol4h >= 1.6) wykPass.push(`Volume kuat (RVOL ${rvol4h.toFixed(2)}x ≥ 1.6x)`);
+  else wykFail.push(`Volume kurang (RVOL ${rvol4h.toFixed(2)}x < 1.6x)`);
+
+  if (wykBias === 'long') {
+    wykPass.push('Tren 4H bullish (EMA9 > EMA21)');
+    if (b4.close > rangeHigh) wykPass.push(`Breakout di atas Range High`);
+    else wykFail.push(`Close belum tembus Range High ($${rangeHigh.toFixed(rangeHigh >= 10 ? 2 : 4)})`);
+    if (cs4 >= 0.7) wykPass.push(`Close strength kuat (${(cs4 * 100).toFixed(0)}% ≥ 70%)`);
+    else wykFail.push(`Close strength lemah (${(cs4 * 100).toFixed(0)}% < 70%)`);
+    if (btcRegime.riskOn || rsVsBtc >= 0.015) wykPass.push('Regime BTC/RS mendukung Long');
+    else wykFail.push(`Regime BTC belum riskOn & RS ${(rsVsBtc * 100).toFixed(1)}% < +1.5%`);
+  } else if (wykBias === 'short') {
+    wykPass.push('Tren 4H bearish (EMA9 < EMA21)');
+    if (b4.close < rangeLow) wykPass.push(`Breakdown di bawah Range Low`);
+    else wykFail.push(`Close belum jebol Range Low ($${rangeLow.toFixed(rangeLow >= 10 ? 2 : 4)})`);
+    if (cs4 <= 0.3) wykPass.push(`Close strength bearish kuat (${(cs4 * 100).toFixed(0)}% ≤ 30%)`);
+    else wykFail.push(`Close strength kurang bearish (${(cs4 * 100).toFixed(0)}% > 30%)`);
+    if (btcRegime.riskOff || rsVsBtc <= -0.015) wykPass.push('Regime BTC/RS mendukung Short');
+    else wykFail.push(`Regime BTC belum riskOff & RS ${(rsVsBtc * 100).toFixed(1)}% > -1.5%`);
+  } else {
+    wykFail.push('EMA9 ≈ EMA21 (belum ada bias tren 4H)');
+  }
+
+  let wykStatus: AgentDiagnosticDetail['status'] = 'WAIT';
+  if (wykSig) {
+    if (wykSig.conviction.baseLeverage > 0) {
+      wykStatus = 'SIGNAL';
+      wykPass.push(`Conviction ${wykSig.conviction.score}/5 -> Base ${wykSig.conviction.baseLeverage}x`);
+    } else {
+      wykStatus = 'LOW_CONVICTION';
+      wykFail.push(`Skor Conviction terlalu rendah (${wykSig.conviction.score}/5, min 2/5)`);
+    }
+  }
+
+  // --- SMC-1H-Bear Diagnostic ---
+  const smcPass: string[] = [];
+  const smcFail: string[] = [];
+  let smcStatus: AgentDiagnosticDetail['status'] = 'WAIT';
+  const smcBias: Side | 'neutral' = b4.close > e21 ? 'long' : b4.close < e21 ? 'short' : 'neutral';
+
+  if (btcRegime.macroBull) {
+    smcStatus = 'INACTIVE_BULL_MACRO';
+    smcFail.push('Nonaktif: BTC di atas 4H EMA200 (SMC-1H khusus rezim Bear)');
+  } else {
+    smcPass.push('Rezim Bear aktif (BTC < 4H EMA200)');
+    const smcSig = evaluateSmc1HBearAt(symbol, d1, i1, b4.close, e21, btcRegime);
+    const reclaim = d1.bars[i1]!;
+    const sweep = d1.bars[i1 - 1]!;
+    const a1 = d1.atr14[i1] ?? 0;
+    let winLo = Infinity;
+    let winHi = -Infinity;
+    for (let k = Math.max(0, i1 - 25); k < i1 - 1; k++) {
+      if (d1.bars[k]!.low < winLo) winLo = d1.bars[k]!.low;
+      if (d1.bars[k]!.high > winHi) winHi = d1.bars[k]!.high;
+    }
+    const cs1 = (reclaim.close - reclaim.low) / Math.max(reclaim.high - reclaim.low, 1e-12);
+    const bodyAtr = a1 > 0 ? Math.abs(reclaim.close - reclaim.open) / a1 : 99;
+
+    if (bodyAtr < 1.08) smcPass.push(`Body reclaim sehat (${bodyAtr.toFixed(2)} ATR < 1.08)`);
+    else smcFail.push(`Body reclaim terlalu panjang (${bodyAtr.toFixed(2)} ATR ≥ 1.08)`);
+
+    if (smcBias === 'long') {
+      smcPass.push('Bias 4H di atas EMA21 (cari Sweep Low)');
+      if (sweep.low < winLo) smcPass.push('Terjadi Sweep Low 24 jam');
+      else smcFail.push('Belum ada Sweep Low 24 jam');
+      if (reclaim.close > sweep.high && reclaim.close > reclaim.open && cs1 >= 0.65) {
+        smcPass.push(`Reclaim bullish kuat (${(cs1 * 100).toFixed(0)}%)`);
+      } else {
+        smcFail.push(`Belum reclaim di atas sweep high / CS ${(cs1 * 100).toFixed(0)}% < 65%`);
+      }
+    } else {
+      smcPass.push('Bias 4H di bawah EMA21 (cari Sweep High)');
+      if (sweep.high > winHi) smcPass.push('Terjadi Sweep High 24 jam');
+      else smcFail.push('Belum ada Sweep High 24 jam');
+      if (reclaim.close < sweep.low && reclaim.close < reclaim.open && cs1 <= 0.35) {
+        smcPass.push(`Rejection bearish kuat (${(cs1 * 100).toFixed(0)}%)`);
+      } else {
+        smcFail.push(`Belum rejection di bawah sweep low / CS ${(cs1 * 100).toFixed(0)}% > 35%`);
+      }
+    }
+
+    if (smcSig) {
+      if (smcSig.conviction.baseLeverage > 0) {
+        smcStatus = 'SIGNAL';
+        smcPass.push(`Conviction ${smcSig.conviction.score}/5 -> Base ${smcSig.conviction.baseLeverage}x`);
+      } else {
+        smcStatus = 'LOW_CONVICTION';
+        smcFail.push(`Skor Conviction terlalu rendah (${smcSig.conviction.score}/5, min 2/5)`);
+      }
+    }
+  }
+
+  return {
+    symbol,
+    lastPrice,
+    change24hPct: Number(change24hPct.toFixed(2)),
+    trend4h,
+    atr4hPct: Number(atr4hPct.toFixed(2)),
+    rvol4h: Number(rvol4h.toFixed(2)),
+    rsVsBtcPct: Number((rsVsBtc * 100).toFixed(2)),
+    wyckoff4h: {
+      status: wykStatus,
+      directionBias: wykBias,
+      passedChecks: wykPass,
+      failedChecks: wykFail,
+    },
+    smc1hBear: {
+      status: smcStatus,
+      directionBias: smcBias,
+      passedChecks: smcPass,
+      failedChecks: smcFail,
+    },
+  };
 }

@@ -22,7 +22,7 @@ import {
 } from './market-data.js';
 import { buildStructuredMemoryPack, computeVetoCalibration, loadLessons, saveLessons } from './memory.js';
 import { fetchSanitizedCryptoNews } from './news.js';
-import { evaluateSignalWithGemini } from './gemini-evaluator.js';
+import { evaluateSignalWithGemini, pingGeminiPretradeModel } from './gemini-evaluator.js';
 import {
   bookEquityUsd,
   checkPortfolioRiskBeforeEntry,
@@ -34,6 +34,7 @@ import {
   breakevenStopPrice,
   computeBtcRegimeAt,
   DEFAULT_FEE_PER_SIDE,
+  diagnoseCoinAt,
   evaluateSmc1HBearAt,
   evaluateWyckoff4HAt,
   extractLatestClosedBars,
@@ -50,6 +51,7 @@ import type {
   OpenPosition,
   PendingOrder,
   ShadowVetoedSignal,
+  UniverseCoinDiagnostic,
 } from './types.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -559,7 +561,11 @@ function advanceShadowVetoed(
   }
 }
 
-function buildDashboardSummary(ledger: FuturesLedger, markPrices: Record<string, number>) {
+function buildDashboardSummary(
+  ledger: FuturesLedger,
+  markPrices: Record<string, number>,
+  universeDiagnostics: UniverseCoinDiagnostic[],
+) {
   const totalEquityUsd = totalPortfolioEquityUsd(ledger, markPrices);
   const agents = Object.values(ledger.books).map((book) => {
     const eq = bookEquityUsd(book, markPrices);
@@ -608,7 +614,9 @@ function buildDashboardSummary(ledger: FuturesLedger, markPrices: Record<string,
       (((totalEquityUsd - ledger.startingCapitalUsd) / ledger.startingCapitalUsd) * 100).toFixed(2),
     ),
     btcRegime: ledger.btcRegime,
+    llmHealth: ledger.llmHealth ?? null,
     universe: ledger.universe,
+    universeDiagnostics,
     agents,
     openPositions: Object.values(ledger.books).flatMap((b) => b.positions),
     pendingOrders: Object.values(ledger.books).flatMap((b) =>
@@ -641,10 +649,19 @@ async function main() {
         ),
       ]),
     ];
-    if (universeAgeDays >= 7 || ledger.universe.length === 0) {
+    if (universeAgeDays >= 7 || ledger.universe.length < 6) {
       const discovered = await discoverDynamicUniverse(pinnedSymbols);
       ledger.universe = discovered.symbols;
       ledger.universeUpdatedAt = discovered.updatedAt;
+    }
+
+    // 1b. Daily lightweight LLM health smoke-check (~50 tokens once per 24h)
+    const llmHealthAgeHours = ledger.llmHealth?.checkedAt
+      ? (nowMs - Date.parse(ledger.llmHealth.checkedAt)) / 3_600_000
+      : Infinity;
+    if (!ledger.llmHealth || !ledger.llmHealth.ok || llmHealthAgeHours >= 24) {
+      ledger.llmHealth = await pingGeminiPretradeModel();
+      console.log(`[LLM Health] ${ledger.llmHealth.ok ? 'OK' : 'FAIL'} (${ledger.llmHealth.modelUsed}): ${ledger.llmHealth.detail}`);
     }
 
     // 2. Fetch BTC 4H Macro Regime
@@ -770,8 +787,9 @@ async function main() {
       }
     }
 
-    // 5. Scan New Signals & Evaluate Qualifying Candidates (Conviction >= 2) with Gemini 4 Neon
+    // 5. Scan New Signals & Build Per-Coin Evaluation Diagnostics
     const macroWindow = evaluateMacroWindow(nowMs);
+    const universeDiagnostics: UniverseCoinDiagnostic[] = [];
     let newOrdersCreated = 0;
     let vetoedCount = 0;
 
@@ -779,6 +797,8 @@ async function main() {
       const d4 = data4h.get(sym);
       const d1 = data1h.get(sym);
       if (!d4 || !d1) continue;
+
+      universeDiagnostics.push(diagnoseCoinAt(sym, d4, d1, btcRegime, markPrices[sym]));
 
       const candidates = [
         evaluateWyckoff4HAt(sym, d4, d4.bars.length - 1, btcRegime, {
@@ -831,6 +851,15 @@ async function main() {
           headlines,
           memory,
         });
+        if (!evaluation.fallbackUsed && evaluation.modelUsed !== 'deterministic-macro-guard') {
+          ledger.llmHealth = {
+            checkedAt: evaluation.evaluatedAt,
+            ok: true,
+            modelUsed: evaluation.modelUsed,
+            latencyMs: 0,
+            detail: `Evaluasi live ${candidate.symbol} (${evaluation.action} ${evaluation.finalLeverage}x) berhasil.`,
+          };
+        }
 
         const expiresAt = new Date(nowMs + candidate.expiryHours * 3_600_000).toISOString();
 
@@ -899,7 +928,7 @@ async function main() {
 
     fs.mkdirSync(DESK_DIR, { recursive: true });
     fs.writeFileSync(LEDGER_PATH, JSON.stringify(ledger, null, 2) + '\n');
-    const summary = buildDashboardSummary(ledger, markPrices);
+    const summary = buildDashboardSummary(ledger, markPrices, universeDiagnostics);
     fs.writeFileSync(SUMMARY_PATH, JSON.stringify(summary, null, 2) + '\n');
     fs.appendFileSync(
       LOG_PATH,

@@ -74,6 +74,9 @@ export function NavBar() {
               <Link href="/futures#agents" className="rounded-md px-2.5 py-1 font-mono text-xs text-ink-muted hover:bg-surface hover:text-ink">
                 Agen (2)
               </Link>
+              <Link href="/futures#universe" className="rounded-md px-2.5 py-1 font-mono text-xs text-ink-muted hover:bg-surface hover:text-ink">
+                Universe
+              </Link>
               <Link href="/futures#positions" className="rounded-md px-2.5 py-1 font-mono text-xs text-ink-muted hover:bg-surface hover:text-ink">
                 Posisi &amp; Order
               </Link>

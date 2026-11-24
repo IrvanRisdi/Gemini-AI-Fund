@@ -265,6 +265,33 @@ export interface AgentBook {
   shadowVetoed: ShadowVetoedSignal[];
 }
 
+export interface AgentDiagnosticDetail {
+  status: 'SIGNAL' | 'LOW_CONVICTION' | 'WAIT' | 'INACTIVE_BULL_MACRO';
+  directionBias: Side | 'neutral';
+  passedChecks: string[];
+  failedChecks: string[];
+}
+
+export interface UniverseCoinDiagnostic {
+  symbol: string;
+  lastPrice: number;
+  change24hPct: number;
+  trend4h: 'UPTREND' | 'DOWNTREND' | 'SIDEWAYS';
+  atr4hPct: number;
+  rvol4h: number;
+  rsVsBtcPct: number;
+  wyckoff4h: AgentDiagnosticDetail;
+  smc1hBear: AgentDiagnosticDetail;
+}
+
+export interface LlmHealthStatus {
+  checkedAt: string;
+  ok: boolean;
+  modelUsed: string;
+  latencyMs: number;
+  detail: string;
+}
+
 export interface FuturesLedger {
   version: 'futures-v1';
   mode: 'paper-cron';
@@ -277,5 +304,6 @@ export interface FuturesLedger {
   universe: string[];
   universeUpdatedAt: string;
   btcRegime: BtcMacroRegime | null;
+  llmHealth?: LlmHealthStatus | null;
   books: Record<AgentId, AgentBook>;
 }

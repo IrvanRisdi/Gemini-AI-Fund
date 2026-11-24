@@ -99,6 +99,33 @@ export interface FuturesClosedTrade {
   closeReason: string;
 }
 
+export interface FuturesAgentDiagnostic {
+  status: 'SIGNAL' | 'LOW_CONVICTION' | 'WAIT' | 'INACTIVE_BULL_MACRO';
+  directionBias: 'long' | 'short' | 'neutral';
+  passedChecks: string[];
+  failedChecks: string[];
+}
+
+export interface FuturesUniverseDiagnostic {
+  symbol: string;
+  lastPrice: number;
+  change24hPct: number;
+  trend4h: 'UPTREND' | 'DOWNTREND' | 'SIDEWAYS';
+  atr4hPct: number;
+  rvol4h: number;
+  rsVsBtcPct: number;
+  wyckoff4h: FuturesAgentDiagnostic;
+  smc1hBear: FuturesAgentDiagnostic;
+}
+
+export interface FuturesLlmHealth {
+  checkedAt: string;
+  ok: boolean;
+  modelUsed: string;
+  latencyMs: number;
+  detail: string;
+}
+
 export interface FuturesDashboardSummary {
   generatedAt: string | null;
   mode: string;
@@ -117,7 +144,9 @@ export interface FuturesDashboardSummary {
     riskOn: boolean;
     riskOff: boolean;
   } | null;
+  llmHealth?: FuturesLlmHealth | null;
   universe: string[];
+  universeDiagnostics?: FuturesUniverseDiagnostic[];
   agents: FuturesAgentSummary[];
   openPositions: FuturesOpenPosition[];
   pendingOrders: FuturesPendingOrder[];

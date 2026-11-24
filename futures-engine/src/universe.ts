@@ -56,7 +56,7 @@ export async function discoverDynamicUniverse(
     maxSymbols?: number;
   } = {},
 ): Promise<UniverseSelectionResult> {
-  const minVolumeUsd = options.minVolumeUsd ?? 150_000_000;
+  const minVolumeUsd = options.minVolumeUsd ?? 50_000_000;
   const minAtr = options.minMedianAtrPct ?? 0.015;
   const maxAtr = options.maxMedianAtrPct ?? 0.045;
   const maxSymbols = options.maxSymbols ?? 12;

@@ -69,6 +69,20 @@ export default async function FuturesDeskPage() {
             <span className="rounded-full border border-border bg-surface px-2.5 py-0.5 font-mono text-[10px] text-ink-muted">
               Entry Gate: Gemini 4 Neon · Weekly Audit: Gemini 4 Carbon
             </span>
+            {summary.llmHealth ? (
+              <span
+                className={`rounded-full border px-2.5 py-0.5 font-mono text-[10px] font-semibold ${
+                  summary.llmHealth.ok
+                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                    : 'border-rose-500/30 bg-rose-500/10 text-rose-300'
+                }`}
+                title={summary.llmHealth.detail}
+              >
+                {summary.llmHealth.ok
+                  ? `✓ LLM Live: ${summary.llmHealth.modelUsed}`
+                  : `⚠ LLM: ${summary.llmHealth.modelUsed}`}
+              </span>
+            ) : null}
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
             Futures Desk (Long &amp; Short)
@@ -135,7 +149,7 @@ export default async function FuturesDeskPage() {
             {summary.openPositions.length} Posisi · {summary.pendingOrders.length} Pending
           </div>
           <div className="mt-1 font-mono text-[11px] text-ink-muted truncate">
-            {summary.universe.length} pair (Vol ≥ $150M · ATR 1,5–4,5%)
+            {summary.universe.length} pair (Vol ≥ $50M · ATR 1,5–4,5%)
           </div>
         </div>
 
@@ -223,6 +237,136 @@ export default async function FuturesDeskPage() {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      {/* Universe Terpilih & Evaluasi Indikator per Token */}
+      <section id="universe" className="mb-8 scroll-mt-24 rounded-xl border border-border bg-surface p-4 sm:p-5">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="text-lg font-semibold text-ink">
+              Universe Terpilih &amp; Evaluasi Indikator per Token
+            </h2>
+            <p className="font-mono text-[11px] text-ink-faint">
+              Harga terkini dan rincian indikator yang lolos (✓) maupun belum masuk (✗) pada penutupan candle 4H &amp; 1H terakhir.
+            </p>
+          </div>
+          <span className="rounded-full border border-border px-2.5 py-0.5 font-mono text-[10px] text-ink-muted">
+            {(summary.universeDiagnostics ?? []).length || summary.universe.length} token dipantau
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[860px] text-left font-mono text-xs">
+            <thead className="border-b border-border text-[10px] uppercase text-ink-faint">
+              <tr>
+                <th className="py-2 pr-3">Token &amp; Harga</th>
+                <th className="px-3 py-2">Metrik 4H</th>
+                <th className="px-3 py-2">Evaluasi Wyckoff-4H (Core)</th>
+                <th className="py-2 pl-3">Evaluasi SMC-1H-Bear (Booster)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(summary.universeDiagnostics ?? []).map((coin) => {
+                const badgeClass = (status: string) =>
+                  status === 'SIGNAL'
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                    : status === 'LOW_CONVICTION'
+                      ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                      : 'bg-bg text-ink-muted border-border';
+
+                return (
+                  <tr
+                    key={coin.symbol}
+                    className="border-b border-border/60 align-top text-ink-muted last:border-0 hover:bg-surface-hover"
+                  >
+                    <td className="py-3 pr-3 whitespace-nowrap">
+                      <div className="font-bold text-ink">{coin.symbol}</div>
+                      <div className="mt-0.5 text-sm font-semibold text-ink">
+                        {fmtPrice(coin.lastPrice)}
+                      </div>
+                      <div className={`text-[11px] font-semibold ${tone(coin.change24hPct)}`}>
+                        24j: {coin.change24hPct >= 0 ? '+' : ''}
+                        {coin.change24hPct.toFixed(2)}%
+                      </div>
+                    </td>
+
+                    <td className="px-3 py-3 whitespace-nowrap text-[11px]">
+                      <div
+                        className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+                          coin.trend4h === 'UPTREND'
+                            ? 'bg-emerald-500/15 text-emerald-300'
+                            : coin.trend4h === 'DOWNTREND'
+                              ? 'bg-rose-500/15 text-rose-300'
+                              : 'bg-bg text-ink-muted'
+                        }`}
+                      >
+                        {coin.trend4h}
+                      </div>
+                      <div className="mt-1">ATR 4H: <span className="text-ink">{coin.atr4hPct.toFixed(2)}%</span></div>
+                      <div>RVOL 4H: <span className="text-ink">{coin.rvol4h.toFixed(2)}x</span></div>
+                      <div>
+                        RS vs BTC:{' '}
+                        <span className={tone(coin.rsVsBtcPct)}>
+                          {coin.rsVsBtcPct >= 0 ? '+' : ''}
+                          {coin.rsVsBtcPct.toFixed(2)}%
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="px-3 py-3 font-sans text-xs max-w-xs">
+                      <div className="mb-1.5 flex items-center gap-1.5 font-mono text-[10px]">
+                        <span className={`rounded border px-1.5 py-0.5 font-semibold ${badgeClass(coin.wyckoff4h.status)}`}>
+                          {coin.wyckoff4h.status}
+                        </span>
+                        <span className="uppercase text-ink-faint">Bias: {coin.wyckoff4h.directionBias}</span>
+                      </div>
+                      <ul className="space-y-0.5 text-[11px]">
+                        {coin.wyckoff4h.passedChecks.map((item, idx) => (
+                          <li key={`wp-${idx}`} className="text-emerald-300/90">
+                            ✓ {item}
+                          </li>
+                        ))}
+                        {coin.wyckoff4h.failedChecks.map((item, idx) => (
+                          <li key={`wf-${idx}`} className="text-amber-200/80">
+                            ✗ {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </td>
+
+                    <td className="py-3 pl-3 font-sans text-xs max-w-xs">
+                      <div className="mb-1.5 flex items-center gap-1.5 font-mono text-[10px]">
+                        <span className={`rounded border px-1.5 py-0.5 font-semibold ${badgeClass(coin.smc1hBear.status)}`}>
+                          {coin.smc1hBear.status}
+                        </span>
+                        <span className="uppercase text-ink-faint">Bias: {coin.smc1hBear.directionBias}</span>
+                      </div>
+                      <ul className="space-y-0.5 text-[11px]">
+                        {coin.smc1hBear.passedChecks.map((item, idx) => (
+                          <li key={`sp-${idx}`} className="text-emerald-300/90">
+                            ✓ {item}
+                          </li>
+                        ))}
+                        {coin.smc1hBear.failedChecks.map((item, idx) => (
+                          <li key={`sf-${idx}`} className="text-amber-200/80">
+                            ✗ {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </td>
+                  </tr>
+                );
+              })}
+              {(summary.universeDiagnostics ?? []).length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-6 text-center font-sans text-sm text-ink-faint">
+                    Menunggu siklus cron berikutnya untuk mengisi tabel harga &amp; diagnostik indikator per token ({summary.universe.join(', ')}).
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
         </div>
       </section>
 

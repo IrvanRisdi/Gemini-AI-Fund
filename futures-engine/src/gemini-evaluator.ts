@@ -4,6 +4,7 @@ import type {
   GeminiEvaluation,
   LessonItem,
   LeverageTier,
+  LlmHealthStatus,
   MacroWindowStatus,
   SignalCandidate,
 } from './types.js';
@@ -376,4 +377,52 @@ export async function runWeeklyForensicWithCarbon(params: {
     recommendedLessons: recommendedLessons.length > 0 ? recommendedLessons : params.existingLessons,
     modelUsed,
   };
+}
+
+/**
+ * Lightweight Gemini 4 Neon connectivity & JSON-schema smoke check (~50 tokens).
+ * Run once on first cycle or when LLM health is older than 24 hours so we always
+ * know for sure that GEMINI_API_KEY and Gemini 4 Neon work live on GitHub Actions.
+ */
+export async function pingGeminiPretradeModel(): Promise<LlmHealthStatus> {
+  const checkedAt = new Date().toISOString();
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) {
+    return {
+      checkedAt,
+      ok: false,
+      modelUsed: 'none',
+      latencyMs: 0,
+      detail: 'GEMINI_API_KEY belum terpasang di GitHub Actions Secrets.',
+    };
+  }
+
+  const started = Date.now();
+  const models = parseModelList('GEMINI_PRETRADE_MODELS', PRETRADE_MODEL_PRIORITY);
+  try {
+    const { text, modelUsed } = await callGeminiJson(
+      'Balas HANYA JSON valid: {"status":"OK","role":"pretrade-gate"}',
+      models,
+      apiKey,
+    );
+    const parsed = extractJsonObject(text);
+    const ok = String(parsed.status ?? '').toUpperCase() === 'OK';
+    return {
+      checkedAt,
+      ok,
+      modelUsed,
+      latencyMs: Date.now() - started,
+      detail: ok
+        ? `Koneksi & JSON schema ${modelUsed} aktif (${Date.now() - started} ms).`
+        : `Respons JSON tidak sesuai ekspektasi dari ${modelUsed}.`,
+    };
+  } catch (err) {
+    return {
+      checkedAt,
+      ok: false,
+      modelUsed: 'failed',
+      latencyMs: Date.now() - started,
+      detail: `Gagal memanggil Gemini API: ${String(err).slice(0, 180)}`,
+    };
+  }
 }
