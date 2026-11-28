@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "source": "asymmetry-screen",
+  "reportDate": "2026-11-28",
+  "generatedAt": "2026-11-28T00:00:40.134Z",
+  "headline": "Screen otomatis: SKY, JUP, MET, CRV, UNI",
+  "btcFilter": {
+    "greenAbove": 71109,
+    "redBelow": 71109
+  },
+  "assets": [
+    {
+      "ticker": "SKY",
+      "name": "Sky",
+      "score": 8.4,
+      "verdict": "Finalis screen otomatis · tren harian campuran",
+      "thesis": "MC/HR 9.4x · holder revenue 128 jt USD/thn (+86% 30h) · harga 30h -21%",
+      "invalidation": "Close harian di bawah 0.04317 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.04763918,
+            0.05065719800093241
+          ],
+          "stop": 0.043170624916,
+          "targets": [
+            0.05872,
+            0.06,
+            0.0665449174546656
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "JUP",
+      "name": "Jupiter",
+      "score": 7.6,
+      "verdict": "Finalis screen otomatis · tren harian campuran",
+      "thesis": "MC/HR 15.9x · holder revenue 52 jt USD/thn (+162% 30h) · harga 30h -12%",
+      "invalidation": "Close harian di bawah 0.2335 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.2442075603625828,
+            0.24777500000000002
+          ],
+          "stop": 0.23354350000000001,
+          "targets": [
+            0.2525,
+            0.2582,
+            0.28071137011033104
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "MET",
+      "name": "Meteora",
+      "score": 6.7,
+      "verdict": "Finalis screen otomatis · akumulasi pullback defensif (tren harian korektif)",
+      "thesis": "MC/HR 19.7x · holder revenue 6 jt USD/thn (+227% 30h) · harga 30h -37%",
+      "invalidation": "Close harian di bawah 0.1742 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.17752175,
+            0.186865
+          ],
+          "stop": 0.1742465,
+          "targets": [
+            0.2018,
+            0.21547569107321965,
+            0.2434
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "CRV",
+      "name": "Curve DAO",
+      "score": 5.9,
+      "verdict": "Finalis screen otomatis · akumulasi pullback defensif (tren harian korektif)",
+      "thesis": "MC/HR 12.8x · holder revenue 22 jt USD/thn (-5% 30h) · harga 30h -47%",
+      "invalidation": "Close harian di bawah 0.1675 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            0.17215,
+            0.1740498
+          ],
+          "stop": 0.16745000000000002,
+          "targets": [
+            0.1903917233701103,
+            0.2172,
+            0.2195
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "UNI",
+      "name": "Uniswap",
+      "score": 5.5,
+      "verdict": "Finalis screen otomatis · akumulasi pullback defensif (tren harian korektif)",
+      "thesis": "MC/HR 29.4x · holder revenue 99 jt USD/thn (+10% 30h) · harga 30h -33%",
+      "invalidation": "Close harian di bawah 3.948 atau keluar dari shortlist screen",
+      "setups": [
+        {
+          "name": "A · Pullback (draf otomatis)",
+          "kind": "pullback",
+          "primary": true,
+          "entry": [
+            4.356367499999999,
+            4.585649999999999
+          ],
+          "stop": 3.947740228499999,
+          "targets": [
+            5.852,
+            5.944259613210632,
+            6.45
+          ]
+        }
+      ]
+    }
+  ]
+}

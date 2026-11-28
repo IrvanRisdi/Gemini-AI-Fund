@@ -1,40 +1,56 @@
 {
-  "generatedAt": "2026-10-27T11:48:28.889Z",
-  "dateWib": "2026-10-27",
+  "generatedAt": "2026-11-28T06:27:01.669Z",
+  "dateWib": "2026-11-28",
   "session": "ASIA_OPEN",
   "modelUsed": "gemini-4-argon",
   "portfolio": {
-    "cryptoEquityIdr": 300000000,
-    "cryptoCashIdr": 300000000,
-    "cryptoOpenPositions": 0,
-    "cryptoPendingOrders": 0,
-    "stockEquityIdr": 500000000,
-    "stockOpenPositions": 0,
-    "totalCombinedEquityIdr": 800000000
+    "cryptoEquityIdr": 294023764.1127749,
+    "cryptoCashIdr": 261477912.19294092,
+    "cryptoOpenPositions": 3,
+    "cryptoPendingOrders": 2,
+    "stockEquityIdr": 491472858.3,
+    "stockOpenPositions": 9,
+    "totalCombinedEquityIdr": 785496622.4127749
   },
   "cryptoSummary": {
-    "posture": "WAIT / SELEKTIF — menunggu konfirmasi setup probabilitas tinggi",
-    "regimeReason": "BTC 4H belum memenuhi EMA9/21, harga, dan ADX",
-    "btcPriceUsdt": 80599.41,
-    "btcChange24hPct": null,
-    "pairsScanned": 40,
-    "uptrendCount": 2,
+    "posture": "AKTIF SELEKTIF — pantau area entry & manajemen stop",
+    "regimeReason": "BTC 4H netral/korektif; strategi selektif tetap berjalan sesuai filter masing-masing",
+    "btcPriceUsdt": 60029.2,
+    "btcChange24hPct": -0.02250085489570275,
+    "pairsScanned": 43,
+    "uptrendCount": 17,
     "topSetups": [
       {
-        "pair": "BMT/USDT",
-        "agent": "Watchlist 4H Uptrend",
-        "entry": "-",
-        "stop": "-",
-        "target": "-",
-        "note": "Struktur 4H Uptrend (RSI -, RVOL 1.2x) — pantau breakout/pullback"
+        "pair": "STG/USDT",
+        "agent": "aggressive-breakout-trader",
+        "entry": "0.187356 USDT – 0.187356 USDT",
+        "stop": "0.179985 USDT",
+        "target": "0.213981 USDT",
+        "note": "Momentum ignition 1H: breakout 24 jam dengan RVOL >=3,5x dan relative strength terhadap BTC."
       },
       {
-        "pair": "BOME/USDT",
-        "agent": "Watchlist 4H Uptrend",
-        "entry": "-",
-        "stop": "-",
-        "target": "-",
-        "note": "Struktur 4H Uptrend (RSI -, RVOL 1.1x) — pantau breakout/pullback"
+        "pair": "SKY/USDT",
+        "agent": "asymmetry-journal-trader",
+        "entry": "0.047639 USDT – 0.050657 USDT",
+        "stop": "0.043171 USDT",
+        "target": "0.066545 USDT",
+        "note": "Asimetri: MC/HR 9.4x · holder revenue 128 jt USD/thn (+86% 30h) · harga 30h -21%"
+      },
+      {
+        "pair": "JUP/USDT",
+        "agent": "asymmetry-journal-trader",
+        "entry": "0.244208 USDT – 0.247775 USDT",
+        "stop": "0.233544 USDT",
+        "target": "0.280711 USDT",
+        "note": "Asimetri: MC/HR 15.9x · holder revenue 52 jt USD/thn (+162% 30h) · harga 30h -12%"
+      },
+      {
+        "pair": "MET/USDT",
+        "agent": "asymmetry-journal-trader",
+        "entry": "0.177522 USDT – 0.186865 USDT",
+        "stop": "0.174247 USDT",
+        "target": "0.215476 USDT",
+        "note": "Asimetri: MC/HR 19.7x · holder revenue 6 jt USD/thn (+227% 30h) · harga 30h -37%"
       }
     ]
   },
@@ -46,68 +62,79 @@
     "regimeLabel": "SELECTIVE",
     "topSetups": [
       {
-        "symbol": "AALI",
-        "name": "Astra Agro Lestari Tbk.",
-        "agent": "Top Screener IDX",
-        "price": "Rp 9.625",
-        "entry": "Rp 9.625",
-        "stop": "Rp 9.225",
-        "target": "Rp 10.400",
+        "symbol": "KKGI",
+        "name": "Resource Alam Indonesia Tbk.",
+        "agent": "Actionable Setup",
+        "price": "Rp 324",
+        "entry": "Rp 324",
+        "stop": "Rp 310",
+        "target": "Rp 350",
         "score": 100,
         "note": "Sektor  · Skor teknikal & likuiditas 100/100"
       },
       {
-        "symbol": "SGER",
-        "name": "Sumber Global Energy Tbk.",
+        "symbol": "EMAS",
+        "name": "Merdeka Gold Resources Tbk.",
+        "agent": "Top Screener IDX",
+        "price": "Rp 4.740",
+        "entry": "Rp 4.740",
+        "stop": "Rp 4.550",
+        "target": "Rp 5.125",
+        "score": 89,
+        "note": "Sektor  · Skor teknikal & likuiditas 89/100"
+      },
+      {
+        "symbol": "GIAA",
+        "name": "Garuda Indonesia (Persero) Tbk",
+        "agent": "Top Screener IDX",
+        "price": "Rp 50",
+        "entry": "Rp 50",
+        "stop": "Rp 50",
+        "target": "Rp 53",
+        "score": 82,
+        "note": "Sektor  · Skor teknikal & likuiditas 82/100"
+      },
+      {
+        "symbol": "DGNS",
+        "name": "Diagnos Laboratorium Utama Tbk",
         "agent": "Actionable Setup",
-        "price": "Rp 840",
-        "entry": "Rp 840",
-        "stop": "Rp 805",
-        "target": "Rp 910",
-        "score": 94,
-        "note": "Sektor  · Skor teknikal & likuiditas 94/100"
+        "price": "Rp 308",
+        "entry": "Rp 308",
+        "stop": "Rp 294",
+        "target": "Rp 334",
+        "score": 80,
+        "note": "Sektor  · Skor teknikal & likuiditas 80/100"
       },
       {
-        "symbol": "INPS",
-        "name": "Indah Prakasa Sentosa Tbk.",
+        "symbol": "DKHH",
+        "name": "Cipta Sarana Medika Tbk.",
         "agent": "Top Screener IDX",
-        "price": "Rp 1.065",
-        "entry": "Rp 1.065",
-        "stop": "Rp 1.020",
-        "target": "Rp 1.155",
-        "score": 85,
-        "note": "Sektor  · Skor teknikal & likuiditas 85/100"
-      },
-      {
-        "symbol": "ISSP",
-        "name": "Steel Pipe Industry of Indones",
-        "agent": "Top Screener IDX",
-        "price": "Rp 450",
-        "entry": "Rp 450",
-        "stop": "Rp 432",
-        "target": "Rp 486",
-        "score": 85,
-        "note": "Sektor  · Skor teknikal & likuiditas 85/100"
-      },
-      {
-        "symbol": "PTSP",
-        "name": "Pioneerindo Gourmet Internatio",
-        "agent": "Top Screener IDX",
-        "price": "Rp 2.250",
-        "entry": "Rp 2.250",
-        "stop": "Rp 2.160",
-        "target": "Rp 2.430",
-        "score": 85,
-        "note": "Sektor  · Skor teknikal & likuiditas 85/100"
+        "price": "Rp 98",
+        "entry": "Rp 98",
+        "stop": "Rp 94",
+        "target": "Rp 106",
+        "score": 80,
+        "note": "Sektor  · Skor teknikal & likuiditas 80/100"
       }
     ]
   },
   "aiDigest": {
-    "headline": "Fokus Selektif: Pantau BMT/USDT, BOME/USDT di Kripto & AALI, SGER, INPS di Saham IDX dengan Disiplin Stop-Loss Ketat",
-    "marketWeather": "Pasar Kripto saat ini berada pada fase Selektif / Konsolidasi dengan harga acuan BTC di 80,599.41 USDT (2 pair dalam tren naik 4H). Sementara itu, indeks saham Indonesia (IHSG) berada di level menunggu penutupan BEI dengan kecenderungan NEUTRAL (fase pasar: POSTCLOSE). Artinya, kita tidak perlu terburu-buru mengejar harga yang sudah naik tinggi; fokuslah pada aset yang sedang berada di area beli (pullback/breakout valid).",
-    "cryptoRecommendation": "Prioritaskan pemantauan pada BMT/USDT, BOME/USDT. Gunakan strategi antre beli (limit/pullback) atau tunggu penutupan candle 4H yang kuat. Pastikan batas rugi (stop-loss) selalu terpasang sekitar 3,5%–5% di bawah harga beli dan geser stop ke titik impas (breakeven) segera setelah profit berjalan +1,25R.",
-    "stockRecommendation": "Di Bursa Efek Indonesia (BEI), saham dengan skor dan struktur terbaik hari ini adalah AALI, SGER, INPS. Seluruh order harian menggunakan aturan NEXT_OPEN (eksekusi pada pembukaan sesi berikutnya jika tidak terjadi gap >2%) serta dilindungi buffer 30 menit pertama (09:00–09:30 WIB) agar tidak terkena gocekan jarum bawah pembukaan pasar.",
-    "actionableTakeaway": "Total modal kelolaan gabungan saat ini adalah Rp 800.000.000 (Rp 300.000.000 di Kripto Spot & Rp 500.000.000 di Saham IDX). Gunakan maksimal 1–3% risiko per transaksi dan biarkan sistem mengeksekusi hanya peluang dengan rasio untung-rugi (Reward/Risk) minimal 1,8x hingga 3,0x setelah biaya."
+    "headline": "Pasar Bergerak Mendatar, Saatnya Berburu Peluang Selektif pada Koin Berfundamental Kuat dan Saham Pilihan IDX",
+    "marketWeather": "Pasar kripto saat ini sedang beristirahat dengan Bitcoin (BTC) bergerak stabil di kisaran $60.029, namun menariknya hampir 40% koin alternatif masih menunjukkan tren naik yang sehat. Sementara itu, bursa saham Indonesia (IHSG) berada dalam fase netral pasca-penutupan, yang artinya kita tidak perlu terburu-buru dan bisa fokus memilih saham-saham individual yang punya kekuatan teknikal tersendiri.",
+    "cryptoRecommendation": "Untuk Kripto Spot, kita punya dua strategi menarik: pertama, ikuti lonjakan momentum pada STG/USDT (area beli 0.187356 USDT, batas rugi/stop 0.179985 USDT, target jual 0.213981 USDT) yang volumenya sedang meledak dan lebih kuat dari BTC. Kedua, cicil beli koin yang harganya sedang terdiskon namun pendapatan proyeknya melonjak tajam, yaitu SKY/USDT (beli 0.047639 – 0.050657 USDT, stop 0.043171 USDT, target 0.066545 USDT), JUP/USDT (beli 0.244208 – 0.247775 USDT, stop 0.233544 USDT, target 0.280711 USDT), serta MET/USDT (beli 0.177522 – 0.186865 USDT, stop 0.174247 USDT, target 0.215476 USDT). Masuklah secara bertahap di area beli dan pastikan langsung memasang titik stop loss otomatis untuk melindungi modal.",
+    "stockRecommendation": "Di pasar saham IDX, fokus utama kita jatuh pada KKGI yang mencetak skor teknikal dan likuiditas sempurna (100/100) dengan titik Entry Rp 324, Stop Loss Rp 310, dan Target Rp 350, disusul oleh EMAS yang juga sangat solid (skor 89/100) di Entry Rp 4.740, Stop Loss Rp 4.550, dan Target Rp 5.125. Sebagai alternatif diversifikasi dengan skor teknikal kuat di atas 80, Anda juga bisa mencermati DGNS (Entry Rp 308, Stop Loss Rp 294, Target Rp 334) serta DKHH (Entry Rp 98, Stop Loss Rp 94, Target Rp 106). Sementara untuk GIAA (Entry Rp 50, Stop Loss Rp 50, Target Rp 53), sebaiknya dipantau ketat saja karena berada di batas harga bawah Rp 50 sehingga menuntut kehati-hatian ekstra terhadap likuiditas antrean.",
+    "actionableTakeaway": "Mengingat portofolio Anda sudah cukup aktif dengan 3 posisi kripto (senilai Rp 294 juta) dan 9 posisi saham (senilai Rp 491,4 juta), jangan memaksakan diri membuka terlalu banyak posisi baru dan prioritaskan hanya peluang dengan skor tertinggi. Tetaplah tenang, disiplin pasang batas risiko (Stop Loss) sejak awal transaksi, dan biarkan uang kas yang tersisa menjadi pelindung sekaligus amunisi saat pasar memberikan kepastian arah."
   },
-  "whatsappText": "📊 LAPORAN HARIAN GEMINI AI-FUND\n📅 Tanggal: 2026-10-27 (Edisi Pagi Terpadu)\n🧠 Analis AI: gemini-4-argon\n\n💡 Intisari Hari Ini:\nFokus Selektif: Pantau BMT/USDT, BOME/USDT di Kripto & AALI, SGER, INPS di Saham IDX dengan Disiplin Stop-Loss Ketat\n\n🌤️ Cuaca Pasar (Kripto & Saham IDX):\nPasar Kripto saat ini berada pada fase Selektif / Konsolidasi dengan harga acuan BTC di 80,599.41 USDT (2 pair dalam tren naik 4H). Sementara itu, indeks saham Indonesia (IHSG) berada di level menunggu penutupan BEI dengan kecenderungan NEUTRAL (fase pasar: POSTCLOSE). Artinya, kita tidak perlu terburu-buru mengejar harga yang sudah naik tinggi; fokuslah pada aset yang sedang berada di area beli (pullback/breakout valid).\n\n🪙 Rekomendasi & Pantauan Kripto Spot:\nPrioritaskan pemantauan pada BMT/USDT, BOME/USDT. Gunakan strategi antre beli (limit/pullback) atau tunggu penutupan candle 4H yang kuat. Pastikan batas rugi (stop-loss) selalu terpasang sekitar 3,5%–5% di bawah harga beli dan geser stop ke titik impas (breakeven) segera setelah profit berjalan +1,25R.\n1. BMT/USDT (Watchlist 4H Uptrend)\n   • Area Beli: -\n   • Stop: - | Target: -\n   • Catatan: Struktur 4H Uptrend (RSI -, RVOL 1.2x) — pantau breakout/pullback\n2. BOME/USDT (Watchlist 4H Uptrend)\n   • Area Beli: -\n   • Stop: - | Target: -\n   • Catatan: Struktur 4H Uptrend (RSI -, RVOL 1.1x) — pantau breakout/pullback\n\n📈 Rekomendasi & Pantauan Saham IDX (BEI):\nDi Bursa Efek Indonesia (BEI), saham dengan skor dan struktur terbaik hari ini adalah AALI, SGER, INPS. Seluruh order harian menggunakan aturan NEXT_OPEN (eksekusi pada pembukaan sesi berikutnya jika tidak terjadi gap >2%) serta dilindungi buffer 30 menit pertama (09:00–09:30 WIB) agar tidak terkena gocekan jarum bawah pembukaan pasar.\n1. AALI (Astra Agro Lestari Tbk.)\n   • Entry: Rp 9.625 | Stop: Rp 9.225 | Target: Rp 10.400\n   • Catatan: Sektor  · Skor teknikal & likuiditas 100/100\n2. SGER (Sumber Global Energy Tbk.)\n   • Entry: Rp 840 | Stop: Rp 805 | Target: Rp 910\n   • Catatan: Sektor  · Skor teknikal & likuiditas 94/100\n3. INPS (Indah Prakasa Sentosa Tbk.)\n   • Entry: Rp 1.065 | Stop: Rp 1.020 | Target: Rp 1.155\n   • Catatan: Sektor  · Skor teknikal & likuiditas 85/100\n\n💼 Status Portofolio Paper Trading:\n• Total Ekuitas Gabungan: Rp 800.000.000\n• Desk Kripto (6 Agen): Rp 300.000.000 (0 posisi aktif)\n• Desk Saham IDX (5 Agen): Rp 500.000.000 (0 posisi aktif)\n\n🛡️ Panduan Risiko:\nTotal modal kelolaan gabungan saat ini adalah Rp 800.000.000 (Rp 300.000.000 di Kripto Spot & Rp 500.000.000 di Saham IDX). Gunakan maksimal 1–3% risiko per transaksi dan biarkan sistem mengeksekusi hanya peluang dengan rasio untung-rugi (Reward/Risk) minimal 1,8x hingga 3,0x setelah biaya."
+  "whatsappText": "📊 LAPORAN HARIAN GEMINI AI-FUND\n📅 Tanggal: 2026-11-28 (Edisi Pagi Terpadu)\n🧠 Analis AI: gemini-4-argon\n\n💡 Intisari Hari Ini:\nPasar Bergerak Mendatar, Saatnya Berburu Peluang Selektif pada Koin Berfundamental Kuat dan Saham Pilihan IDX\n\n🌤️ Cuaca Pasar (Kripto & Saham IDX):\nPasar kripto saat ini sedang beristirahat dengan Bitcoin (BTC) bergerak stabil di kisaran $60.029, namun menariknya hampir 40% koin alternatif masih menunjukkan tren naik yang sehat. Sementara itu, bursa saham Indonesia (IHSG) berada dalam fase netral pasca-penutupan, yang artinya kita tidak perlu terburu-buru dan bisa fokus memilih saham-saham individual yang punya kekuatan teknikal tersendiri.\n\n🪙 Rekomendasi & Pantauan Kripto Spot:\nUntuk Kripto Spot, kita punya dua strategi menarik: pertama, ikuti lonjakan momentum pada STG/USDT (area beli 0.187356 USDT, batas rugi/stop 0.179985 USDT, target jual 0.213981 USDT) yang volumenya sedang meledak dan lebih kuat dari BTC. Kedua, cicil beli koin yang harganya sedang terdiskon namun pendapatan proyeknya melonjak tajam, yaitu SKY/USDT (beli 0.047639 – 0.050657 USDT, stop 0.043171 USDT, target 0.066545 USDT), JUP/USDT (beli 0.244208 – 0.247775 USDT, stop 0.233544 USDT, target 0.280711 USDT), serta MET/USDT (beli 0.177522 – 0.186865 USDT, stop 0.174247 USDT, target 0.215476 USDT). Masuklah secara bertahap di area beli dan pastikan langsung memasang titik stop loss otomatis untuk melindungi modal.\n1. STG/USDT (aggressive-breakout-trader)\n   • Area Beli: 0.187356 USDT – 0.187356 USDT\n   • Stop: 0.179985 USDT | Target: 0.213981 USDT\n   • Catatan: Momentum ignition 1H: breakout 24 jam dengan RVOL >=3,5x dan relative strength terhadap BTC.\n2. SKY/USDT (asymmetry-journal-trader)\n   • Area Beli: 0.047639 USDT – 0.050657 USDT\n   • Stop: 0.043171 USDT | Target: 0.066545 USDT\n   • Catatan: Asimetri: MC/HR 9.4x · holder revenue 128 jt USD/thn (+86% 30h) · harga 30h -21%\n3. JUP/USDT (asymmetry-journal-trader)\n   • Area Beli: 0.244208 USDT – 0.247775 USDT\n   • Stop: 0.233544 USDT | Target: 0.280711 USDT\n   • Catatan: Asimetri: MC/HR 15.9x · holder revenue 52 jt USD/thn (+162% 30h) · harga 30h -12%\n\n📈 Rekomendasi & Pantauan Saham IDX (BEI):\nDi pasar saham IDX, fokus utama kita jatuh pada KKGI yang mencetak skor teknikal dan likuiditas sempurna (100/100) dengan titik Entry Rp 324, Stop Loss Rp 310, dan Target Rp 350, disusul oleh EMAS yang juga sangat solid (skor 89/100) di Entry Rp 4.740, Stop Loss Rp 4.550, dan Target Rp 5.125. Sebagai alternatif diversifikasi dengan skor teknikal kuat di atas 80, Anda juga bisa mencermati DGNS (Entry Rp 308, Stop Loss Rp 294, Target Rp 334) serta DKHH (Entry Rp 98, Stop Loss Rp 94, Target Rp 106). Sementara untuk GIAA (Entry Rp 50, Stop Loss Rp 50, Target Rp 53), sebaiknya dipantau ketat saja karena berada di batas harga bawah Rp 50 sehingga menuntut kehati-hatian ekstra terhadap likuiditas antrean.\n1. KKGI (Resource Alam Indonesia Tbk.)\n   • Entry: Rp 324 | Stop: Rp 310 | Target: Rp 350\n   • Catatan: Sektor  · Skor teknikal & likuiditas 100/100\n2. EMAS (Merdeka Gold Resources Tbk.)\n   • Entry: Rp 4.740 | Stop: Rp 4.550 | Target: Rp 5.125\n   • Catatan: Sektor  · Skor teknikal & likuiditas 89/100\n3. GIAA (Garuda Indonesia (Persero) Tbk)\n   • Entry: Rp 50 | Stop: Rp 50 | Target: Rp 53\n   • Catatan: Sektor  · Skor teknikal & likuiditas 82/100\n\n💼 Status Portofolio Paper Trading:\n• Total Ekuitas Gabungan: Rp 785.496.622\n• Desk Kripto (6 Agen): Rp 294.023.764 (3 posisi aktif)\n• Desk Saham IDX (5 Agen): Rp 491.472.858 (9 posisi aktif)\n\n🛡️ Panduan Risiko:\nMengingat portofolio Anda sudah cukup aktif dengan 3 posisi kripto (senilai Rp 294 juta) dan 9 posisi saham (senilai Rp 491,4 juta), jangan memaksakan diri membuka terlalu banyak posisi baru dan prioritaskan hanya peluang dengan skor tertinggi. Tetaplah tenang, disiplin pasang batas risiko (Stop Loss) sejak awal transaksi, dan biarkan uang kas yang tersisa menjadi pelindung sekaligus amunisi saat pasar memberikan kepastian arah.",
+  "telegramDelivery": {
+    "delivered": true,
+    "deliveredTo": [
+      "Telegram Bot PDF + HTML (@NusaQuantBot -> chat_id: 944112243)"
+    ],
+    "tokenConfigured": true,
+    "chatIdConfigured": true,
+    "botUsername": "@NusaQuantBot",
+    "autoDiscoveredChats": 0,
+    "diagnostic": "PDF & Laporan Harian berhasil dikirim ke Telegram melalui @NusaQuantBot."
+  }
 }
