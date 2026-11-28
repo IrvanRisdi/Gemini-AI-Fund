@@ -1,0 +1,94 @@
+{
+  "generatedAt": "2026-11-24T02:54:35.580Z",
+  "dateWib": "2026-11-24",
+  "totalEquityUsd": 10000,
+  "totalPnlPct": 0,
+  "agentStats": [
+    {
+      "agent": "wyckoff-4h",
+      "label": "Wyckoff-4H (Core)",
+      "allocationPct": 70,
+      "equityUsd": 7000,
+      "startEquityUsd": 7000,
+      "pnlPct": 0,
+      "weeklyTrades": 0,
+      "totalTrades": 0,
+      "winRatePct": 0,
+      "profitFactor": 0,
+      "avgMfeR": 0,
+      "avgMaeR": 0,
+      "quantOnlyPnlUsd": 0,
+      "geminiPnlUsd": 0,
+      "vetoSummary": "Belum cukup sampel kalibrasi A/B (gunakan penilaian objektif standar).",
+      "alphaDecay": false
+    },
+    {
+      "agent": "smc-1h-bear",
+      "label": "SMC-1H-Bear (Booster)",
+      "allocationPct": 30,
+      "equityUsd": 3000,
+      "startEquityUsd": 3000,
+      "pnlPct": 0,
+      "weeklyTrades": 0,
+      "totalTrades": 0,
+      "winRatePct": 0,
+      "profitFactor": 0,
+      "avgMfeR": 0,
+      "avgMaeR": 0,
+      "quantOnlyPnlUsd": 0,
+      "geminiPnlUsd": 0,
+      "vetoSummary": "Belum cukup sampel kalibrasi A/B (gunakan penilaian objektif standar).",
+      "alphaDecay": false
+    }
+  ],
+  "headline": "Audit Mingguan (2026-11-24): Nol Eksekusi Trade di Tengah Rezim Bearish Makro BTC (ADX 33.26); Aturan Dasar Dipertahankan.",
+  "keyFindings": [
+    "Tidak ada closed trades (0 trade) pada kedua agen (Wyckoff-4H dan SMC-1H-Bear), sehingga ekuitas tetap utuh di $10,000 (PnL 0%).",
+    "Distribusi MFE/MAE belum terbentuk (avgMfeR: 0, avgMaeR: 0) karena absennya pemicu sinyal yang valid selama periode observasi.",
+    "Rezim BTC berada dalam fase Macro Bearish kuat (Close 61,270.93 jauh di bawah EMA200 71,626.18 dengan ADX 33.26), namun terjadi konsolidasi jangka pendek (Close sedikit di bawah EMA9 61,285.47 tetapi bertahan di atas EMA21 61,123.11) yang memicu status riskOn lokal dan menahan si"
+  ],
+  "vetoAssessment": "Belum ada sampel evaluasi Shadow A/B (0 trade dievaluasi, 0 VETO, 0 DOWNGRADE, quantOnlyPnlUsd: $0 vs geminiPnlUsd: $0). Efektivitas VETO dan DOWNGRADE belum dapat diukur secara empiris minggu ini; sistem Pre-Trade wajib mempertahankan parameter objektif standar tanpa melakukan over-veto.",
+  "recommendedLessons": [
+    {
+      "id": "seed-1-macro-blackout",
+      "lesson": "Turunkan leverage minimal 1 tingkat jika jadwal rilis FOMC, CPI, atau NFP kurang dari 12 jam.",
+      "evidence": "Volatilitas rilis makro AS sering memicu wick dua arah yang menyapu SL ketat dalam hitungan menit.",
+      "addedAt": "2026-11-24T02:55:58.367Z",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "seed-2-correlation-cluster",
+      "lesson": "Lakukan DOWNGRADE leverage jika portofolio sudah memegang >= 2 posisi terbuka di arah yang sama pada altcoin berkorelasi tinggi.",
+      "evidence": "Altcoin major (SOL, SUI, DOGE, ADA, LINK) memiliki korelasi >0.80 saat BTC bergerak tajam.",
+      "addedAt": "2026-11-24T02:55:58.367Z",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "seed-3-no-fud-overveto",
+      "lesson": "Jangan mem-VETO setup Wyckoff Short dengan RVOL >= 2.5x hanya karena narasi berita umum masih tampak netral/optimis.",
+      "evidence": "Backtest 3 tahun menunjukkan breakdown bervolume tinggi (Skor 4-5) memiliki Profit Factor 1.67 dan Win Rate 60.1%.",
+      "addedAt": "2026-11-24T02:55:58.367Z",
+      "confidence": "MEDIUM"
+    },
+    {
+      "id": "lesson-4-macro-bear-countertrend",
+      "lesson": "Lakukan DOWNGRADE leverage pada setiap setup Long jika harga BTC berada di bawah EMA200 dengan ADX >= 30 meskipun indikator jangka pendek berstatus riskOn.",
+      "evidence": "Data rezim menunjukkan BTC di 61,270.93 (-14.4% di bawah EMA200 71,626.18) dengan kekuatan tren ADX 33.26, menandakan tekanan jual makro yang dominan.",
+      "addedAt": "2026-11-24T02:55:58.367Z",
+      "confidence": "MEDIUM"
+    }
+  ],
+  "modelUsed": "gemini-4-argon",
+  "telegramHtml": "📊 <b>LAPORAN MINGGUAN FUTURES ENGINE</b>\n📅 Tanggal: <b>2026-11-24 WIB</b>  |  🧠 Audit AI: <code>gemini-4-argon</code>\n\n💡 <b>Intisari Audit Minggu Ini:</b>\nAudit Mingguan (2026-11-24): Nol Eksekusi Trade di Tengah Rezim Bearish Makro BTC (ADX 33.26); Aturan Dasar Dipertahankan.\n\n💼 <b>Portofolio Paper Futures (Isolated 1x–3x):</b>\n• Total Ekuitas: <b>$10,000.00</b> (+0.00%)\n• Kompas Pasar: BTC $61,271 · Rezim 4H EMA200: <b>BEAR (Core + SMC-1H Aktif)</b>\n\n🤖 <b>Kinerja 2 Agen &amp; Kalibrasi Shadow A/B:</b>\n• <b>Wyckoff-4H (Core)</b> (70%): <b>$7,000.00</b> (+0.00%)\n   ↳ Minggu ini: 0 trade · Total: 0 (WR 0% · PF 0)\n   ↳ MFE/MAE: +0R / -0R · A/B Gemini vs Quant: +$0.00\n• <b>SMC-1H-Bear (Booster)</b> (30%): <b>$3,000.00</b> (+0.00%)\n   ↳ Minggu ini: 0 trade · Total: 0 (WR 0% · PF 0)\n   ↳ MFE/MAE: +0R / -0R · A/B Gemini vs Quant: +$0.00\n\n🔍 <b>Temuan Forensik (Gemini 4 Carbon):</b>\n1. Tidak ada closed trades (0 trade) pada kedua agen (Wyckoff-4H dan SMC-1H-Bear), sehingga ekuitas tetap utuh di $10,000 (PnL 0%).\n2. Distribusi MFE/MAE belum terbentuk (avgMfeR: 0, avgMaeR: 0) karena absennya pemicu sinyal yang valid selama periode observasi.\n3. Rezim BTC berada dalam fase Macro Bearish kuat (Close 61,270.93 jauh di bawah EMA200 71,626.18 dengan ADX 33.26), namun terjadi konsolidasi jangka pendek (Close sedikit di bawah EMA9 61,285.47 tetapi bertahan di atas EMA21 61,123.11) yang memicu status riskOn lokal dan menahan si\n\n🛡️ <b>Evaluasi Veto &amp; Conviction:</b>\nBelum ada sampel evaluasi Shadow A/B (0 trade dievaluasi, 0 VETO, 0 DOWNGRADE, quantOnlyPnlUsd: $0 vs geminiPnlUsd: $0). Efektivitas VETO dan DOWNGRADE belum dapat diukur secara empiris minggu ini; sistem Pre-Trade wajib mempertahankan parameter objektif standar tanpa melakukan over-veto.\n\n🧠 <b>Memori Terdistilasi (lessons.json — Aktif Minggu Depan):</b>\n1. Turunkan leverage minimal 1 tingkat jika jadwal rilis FOMC, CPI, atau NFP kurang dari 12 jam.\n2. Lakukan DOWNGRADE leverage jika portofolio sudah memegang &gt;= 2 posisi terbuka di arah yang sama pada altcoin berkorelasi tinggi.\n3. Jangan mem-VETO setup Wyckoff Short dengan RVOL &gt;= 2.5x hanya karena narasi berita umum masih tampak netral/optimis.\n4. Lakukan DOWNGRADE leverage pada setiap setup Long jika harga BTC berada di bawah EMA200 dengan ADX &gt;= 30 meskipun indikator jangka pendek berstatus riskOn.",
+  "plainText": "LAPORAN MINGGUAN FUTURES ENGINE — 2026-11-24 WIB\nModel Audit: gemini-4-argon\nIntisari: Audit Mingguan (2026-11-24): Nol Eksekusi Trade di Tengah Rezim Bearish Makro BTC (ADX 33.26); Aturan Dasar Dipertahankan.\nTotal Ekuitas: $10,000.00 (+0.00%)\n\nKinerja Agen:\n- Wyckoff-4H (Core): $7,000.00 (+0.00%) | 0 trade | WR 0% | PF 0\n- SMC-1H-Bear (Booster): $3,000.00 (+0.00%) | 0 trade | WR 0% | PF 0\n\nTemuan Forensik:\n1. Tidak ada closed trades (0 trade) pada kedua agen (Wyckoff-4H dan SMC-1H-Bear), sehingga ekuitas tetap utuh di $10,000 (PnL 0%).\n2. Distribusi MFE/MAE belum terbentuk (avgMfeR: 0, avgMaeR: 0) karena absennya pemicu sinyal yang valid selama periode observasi.\n3. Rezim BTC berada dalam fase Macro Bearish kuat (Close 61,270.93 jauh di bawah EMA200 71,626.18 dengan ADX 33.26), namun terjadi konsolidasi jangka pendek (Close sedikit di bawah EMA9 61,285.47 tetapi bertahan di atas EMA21 61,123.11) yang memicu status riskOn lokal dan menahan si\n\nEvaluasi Veto: Belum ada sampel evaluasi Shadow A/B (0 trade dievaluasi, 0 VETO, 0 DOWNGRADE, quantOnlyPnlUsd: $0 vs geminiPnlUsd: $0). Efektivitas VETO dan DOWNGRADE belum dapat diukur secara empiris minggu ini; sistem Pre-Trade wajib mempertahankan parameter objektif standar tanpa melakukan over-veto.\n\nLessons Aktif:\n1. Turunkan leverage minimal 1 tingkat jika jadwal rilis FOMC, CPI, atau NFP kurang dari 12 jam.\n2. Lakukan DOWNGRADE leverage jika portofolio sudah memegang >= 2 posisi terbuka di arah yang sama pada altcoin berkorelasi tinggi.\n3. Jangan mem-VETO setup Wyckoff Short dengan RVOL >= 2.5x hanya karena narasi berita umum masih tampak netral/optimis.\n4. Lakukan DOWNGRADE leverage pada setiap setup Long jika harga BTC berada di bawah EMA200 dengan ADX >= 30 meskipun indikator jangka pendek berstatus riskOn.",
+  "telegramDelivery": {
+    "delivered": true,
+    "deliveredTo": [
+      "Telegram (@NusaQuantBot -> chat_id: 944112243)"
+    ],
+    "tokenConfigured": true,
+    "chatIdConfigured": true,
+    "botUsername": "@NusaQuantBot",
+    "diagnostic": "Terkirim ke Telegram (@NusaQuantBot -> chat_id: 944112243)"
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "version": "futures-v1",
+  "mode": "paper-cron",
+  "createdAt": "2026-11-24T02:35:28.822Z",
+  "lastCycleAt": "2026-11-28T11:32:20.374Z",
+  "startingCapitalUsd": 10000,
+  "feeRatePerSide": 0.0006,
+  "fundingRatePer8h": 0.0001,
+  "consecutiveErrors": 0,
+  "universe": [
+    "ETHUSDT",
+    "SOLUSDT",
+    "NVDABUSDT",
+    "ZECUSDT",
+    "XRPUSDT",
+    "NEARUSDT",
+    "BNBUSDT",
+    "PEPEUSDT"
+  ],
+  "universeUpdatedAt": "2026-11-24T02:53:35.013Z",
+  "btcRegime": {
+    "timestamp": 1795838400000,
+    "close": 59832,
+    "ema9": 60282.64968699679,
+    "ema21": 60378.3050510425,
+    "ema200": 69509.80323316561,
+    "adx14": 16.64365537814656,
+    "return24h": -0.029858066963985297,
+    "macroBull": false,
+    "riskOn": false,
+    "riskOff": false,
+    "livePrice": 59115.51
+  },
+  "books": {
+    "wyckoff-4h": {
+      "agent": "wyckoff-4h",
+      "allocationShare": 0.7,
+      "freeCashUsd": 7000,
+      "peakEquityUsd": 7000,
+      "dailyStartDateUtc": "2026-11-28",
+      "dailyStartEquityUsd": 7000,
+      "positions": [],
+      "pendingOrders": [],
+      "closedTrades": [],
+      "shadowVetoed": []
+    },
+    "smc-1h-bear": {
+      "agent": "smc-1h-bear",
+      "allocationShare": 0.3,
+      "freeCashUsd": 2970.027978888,
+      "peakEquityUsd": 3000,
+      "dailyStartDateUtc": "2026-11-28",
+      "dailyStartEquityUsd": 2970.027978888,
+      "positions": [],
+      "pendingOrders": [
+        {
+          "id": "smc-1h-bear-ZECUSDT-short-1795644000000",
+          "clientOrderId": "smc-1h-bear-ZECUSDT-1795644000000",
+          "agent": "smc-1h-bear",
+          "symbol": "ZECUSDT",
+          "side": "short",
+          "timeframe": "1h",
+          "createdAt": "2026-11-25T23:02:19.613Z",
+          "expiresAt": "2026-11-26T05:02:19.613Z",
+          "entryLow": 757.605,
+          "entryHigh": 760.1916563047098,
+          "stopPrice": 783.4715630470973,
+          "tp1Price": 726.5651243434833,
+          "tp2Price": null,
+          "trailAtrMultiple": 3,
+          "atrAtSignal": 17.244375364731493,
+          "timeStopHours": 168,
+          "baseLeverage": 2,
+          "baseRiskPct": 0.01,
+          "finalLeverage": 2,
+          "finalRiskPct": 0.01,
+          "convictionScore": 2,
+          "geminiEvaluation": {
+            "action": "APPROVE",
+            "finalLeverage": 2,
+            "finalRiskPct": 0.01,
+            "confidenceScore": 82,
+            "riskFlags": [
+              "rs_slightly_positive_vs_btc"
+            ],
+            "reasoning": "Tidak ditemukan risiko makro, berita ekstrem, paparan portofolio searah, maupun rekam jejak kerugian pada ZECUSDT. Setup short selaras dengan rezim makro BTC bearish sehingga plafon baseLeverage 2x layak disetujui.",
+            "modelUsed": "gemini-4-neon",
+            "evaluatedAt": "2026-11-25T23:02:28.921Z",
+            "fallbackUsed": false
+          },
+          "status": "filled",
+          "statusNote": "Partial TP1 aktif: TP1=0.559 ($406.15), Runner=0.56 ($406.88) [step=0.001, minNotional=$5]."
+        }
+      ],
+      "closedTrades": [
+        {
+          "id": "tr-pos-smc-1h-bear-ZECUSDT-short-1795644000000",
+          "clientOrderId": "smc-1h-bear-ZECUSDT-1795644000000",
+          "agent": "smc-1h-bear",
+          "symbol": "ZECUSDT",
+          "side": "short",
+          "openedAt": "2026-11-25T23:10:00.000Z",
+          "closedAt": "2026-11-26T00:15:00.000Z",
+          "holdHours": 1.1,
+          "entryPrice": 757.61,
+          "exitPrice": 783.47,
+          "leverage": 2,
+          "partialTpEnabled": true,
+          "tp1Hit": false,
+          "pnlUsd": -29.97,
+          "rMultiple": -1,
+          "quantOnlyPnlUsd": -29.97,
+          "quantOnlyRMultiple": -1,
+          "geminiAction": "APPROVE",
+          "feesUsd": 1.03,
+          "fundingUsd": 0,
+          "mfeR": 0,
+          "maeR": 1.214,
+          "closeReason": "Stop Loss Struktur/ATR"
+        }
+      ],
+      "shadowVetoed": []
+    }
+  },
+  "llmHealth": {
+    "checkedAt": "2026-11-28T00:02:23.173Z",
+    "ok": true,
+    "modelUsed": "gemini-4-neon",
+    "latencyMs": 3373,
+    "detail": "Koneksi & JSON schema gemini-4-neon aktif (3373 ms)."
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "updatedAt": "2026-11-24T02:55:58.367Z",
+  "maxLessons": 10,
+  "lessons": [
+    {
+      "id": "seed-1-macro-blackout",
+      "lesson": "Turunkan leverage minimal 1 tingkat jika jadwal rilis FOMC, CPI, atau NFP kurang dari 12 jam.",
+      "evidence": "Volatilitas rilis makro AS sering memicu wick dua arah yang menyapu SL ketat dalam hitungan menit.",
+      "addedAt": "2026-11-24T02:55:58.367Z",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "seed-2-correlation-cluster",
+      "lesson": "Lakukan DOWNGRADE leverage jika portofolio sudah memegang >= 2 posisi terbuka di arah yang sama pada altcoin berkorelasi tinggi.",
+      "evidence": "Altcoin major (SOL, SUI, DOGE, ADA, LINK) memiliki korelasi >0.80 saat BTC bergerak tajam.",
+      "addedAt": "2026-11-24T02:55:58.367Z",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "seed-3-no-fud-overveto",
+      "lesson": "Jangan mem-VETO setup Wyckoff Short dengan RVOL >= 2.5x hanya karena narasi berita umum masih tampak netral/optimis.",
+      "evidence": "Backtest 3 tahun menunjukkan breakdown bervolume tinggi (Skor 4-5) memiliki Profit Factor 1.67 dan Win Rate 60.1%.",
+      "addedAt": "2026-11-24T02:55:58.367Z",
+      "confidence": "MEDIUM"
+    },
+    {
+      "id": "lesson-4-macro-bear-countertrend",
+      "lesson": "Lakukan DOWNGRADE leverage pada setiap setup Long jika harga BTC berada di bawah EMA200 dengan ADX >= 30 meskipun indikator jangka pendek berstatus riskOn.",
+      "evidence": "Data rezim menunjukkan BTC di 61,270.93 (-14.4% di bawah EMA200 71,626.18) dengan kekuatan tren ADX 33.26, menandakan tekanan jual makro yang dominan.",
+      "addedAt": "2026-11-24T02:55:58.367Z",
+      "confidence": "MEDIUM"
+    }
+  ]
+}
